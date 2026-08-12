@@ -23,18 +23,6 @@
                 <p class="mt-2 max-w-3xl text-sm leading-relaxed text-indigo-100">
                     {{ $assessment->recommendedProgram?->description }}
                 </p>
-
-                <div class="mt-5 flex flex-wrap gap-3 text-sm">
-                    <span class="rounded-lg bg-white/15 px-3 py-1.5">
-                        Nilai K&nbsp;: <strong>{{ number_format($assessment->recommended_k_value, 6) }}</strong>
-                    </span>
-                    <span class="rounded-lg bg-white/15 px-3 py-1.5">
-                        Skala 0&ndash;100&nbsp;: <strong>{{ number_format($assessment->recommended_k_normal, 2) }}</strong>
-                    </span>
-                    <span class="rounded-lg bg-white/15 px-3 py-1.5">
-                        Ambang batas&nbsp;: <strong>{{ number_format($assessment->threshold_used, 2) }}</strong>
-                    </span>
-                </div>
             </section>
 
             {{-- Penjelasan kesesuaian dengan pilihan --}}
@@ -230,17 +218,11 @@
 
             {{-- Tabel peringkat --}}
             <section class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
-                <div class="flex flex-wrap items-center justify-between gap-3 p-6">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Peringkat Program Studi</h3>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Diurutkan berdasarkan nilai akhir K hasil perhitungan CoCoSo.
-                        </p>
-                    </div>
-                    <a href="{{ route('assessments.calculation', $assessment) }}"
-                       class="inline-flex items-center rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                        Lihat Detail Perhitungan
-                    </a>
+                <div class="p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Peringkat Program Studi</h3>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                        Diurutkan dari yang paling sesuai dengan profil Anda.
+                    </p>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -249,11 +231,6 @@
                             <tr>
                                 <th class="px-6 py-3">#</th>
                                 <th class="px-6 py-3">Program Studi</th>
-                                <th class="px-6 py-3">Kode Holland</th>
-                                <th class="px-6 py-3 text-right">S<sub>i</sub></th>
-                                <th class="px-6 py-3 text-right">P<sub>i</sub></th>
-                                <th class="px-6 py-3 text-right">K<sub>i</sub></th>
-                                <th class="px-6 py-3 text-right">Skala 0&ndash;100</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -276,11 +253,6 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-3">{{ $result->studyProgram->holland_code }}</td>
-                                    <td class="px-6 py-3 text-right tabular-nums">{{ number_format($result->s_value, 6) }}</td>
-                                    <td class="px-6 py-3 text-right tabular-nums">{{ number_format($result->p_value, 6) }}</td>
-                                    <td class="px-6 py-3 text-right font-semibold tabular-nums">{{ number_format($result->k_value, 6) }}</td>
-                                    <td class="px-6 py-3 text-right tabular-nums">{{ number_format($result->k_normal, 2) }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
