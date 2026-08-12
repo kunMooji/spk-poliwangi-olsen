@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Menyembunyikan elemen Alpine sampai komponennya siap, agar tidak berkedip. */
+[x-cloak] {
+    display: none !important;
+}

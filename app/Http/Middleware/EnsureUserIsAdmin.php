@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Http\Middleware;
+
+use Closure;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
+
+/**
+ * Panel pengelolaan data hanya boleh disentuh admin.
+ */
+class EnsureUserIsAdmin
+{
+    public function handle(Request $request, Closure $next): Response
+    {
+        abort_unless($request->user()?->isAdmin(), 403, 'Halaman ini hanya untuk administrator.');
+
+        return $next($request);
+    }
+}
