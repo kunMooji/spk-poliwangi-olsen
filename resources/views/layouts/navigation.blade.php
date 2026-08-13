@@ -22,27 +22,56 @@
                         <x-nav-link :href="route('admin.criteria.index')" :active="request()->routeIs('admin.criteria.*')">
                             Kriteria
                         </x-nav-link>
-                        <x-nav-link :href="route('admin.questions.index')" :active="request()->routeIs('admin.questions.*')">
-                            Pernyataan
-                        </x-nav-link>
-                        <x-nav-link :href="route('admin.tracer.index')" :active="request()->routeIs('admin.tracer.*')">
-                            Tracer Study
-                        </x-nav-link>
                         <x-nav-link :href="route('admin.recap.index')" :active="request()->routeIs('admin.recap.*')">
                             Rekap Hasil Tes
                         </x-nav-link>
                         <x-nav-link :href="route('admin.statistics')" :active="request()->routeIs('admin.statistics')">
                             Statistik
                         </x-nav-link>
-                        <x-nav-link :href="route('admin.settings.edit')" :active="request()->routeIs('admin.settings.*')">
-                            Pengaturan
-                        </x-nav-link>
+
+                        {{-- Menu pengelolaan yang lebih jarang dibuka dikumpulkan
+                             di sini supaya bilah navigasi tetap terbaca. --}}
+                        @php
+                            $kelolaAktif = request()->routeIs('admin.questions.*')
+                                || request()->routeIs('admin.tracer.*')
+                                || request()->routeIs('admin.periods.*')
+                                || request()->routeIs('admin.users.*')
+                                || request()->routeIs('admin.activity-logs.*')
+                                || request()->routeIs('admin.settings.*');
+                        @endphp
+                        <div class="flex items-center">
+                            <x-dropdown align="left" width="w-56">
+                                <x-slot name="trigger">
+                                    <button class="inline-flex h-16 items-center gap-1 border-b-2 px-1 text-sm font-medium transition
+                                                   {{ $kelolaAktif
+                                                       ? 'border-indigo-400 text-gray-900 focus:border-indigo-700 dark:border-indigo-600 dark:text-gray-100'
+                                                       : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-700 dark:hover:text-gray-300' }}">
+                                        Pengelolaan
+                                        <svg class="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </x-slot>
+
+                                <x-slot name="content">
+                                    <x-dropdown-link :href="route('admin.questions.index')">Pernyataan RIASEC</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.tracer.index')">Tracer Study</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.periods.index')">Gelombang PMB</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.users.index')">Akun Pengguna</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.activity-logs.index')">Catatan Perubahan</x-dropdown-link>
+                                    <x-dropdown-link :href="route('admin.settings.edit')">Pengaturan</x-dropdown-link>
+                                </x-slot>
+                            </x-dropdown>
+                        </div>
                     @else
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                             Beranda
                         </x-nav-link>
                         <x-nav-link :href="route('assessments.index')" :active="request()->routeIs('assessments.*')">
                             Tes Saya
+                        </x-nav-link>
+                        <x-nav-link :href="route('assessments.compare')" :active="request()->routeIs('assessments.compare')">
+                            Bandingkan Hasil
                         </x-nav-link>
                     @endif
                 </div>
@@ -119,6 +148,15 @@
                 <x-responsive-nav-link :href="route('admin.statistics')" :active="request()->routeIs('admin.statistics')">
                     Statistik
                 </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.periods.index')" :active="request()->routeIs('admin.periods.*')">
+                    Gelombang PMB
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.users.index')" :active="request()->routeIs('admin.users.*')">
+                    Akun Pengguna
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.activity-logs.index')" :active="request()->routeIs('admin.activity-logs.*')">
+                    Catatan Perubahan
+                </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.settings.edit')" :active="request()->routeIs('admin.settings.*')">
                     Pengaturan
                 </x-responsive-nav-link>
@@ -128,6 +166,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('assessments.index')" :active="request()->routeIs('assessments.*')">
                     Tes Saya
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('assessments.compare')" :active="request()->routeIs('assessments.compare')">
+                    Bandingkan Hasil
                 </x-responsive-nav-link>
             @endif
         </div>

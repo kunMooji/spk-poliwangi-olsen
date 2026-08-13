@@ -3,6 +3,7 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Models\Concerns\RecordsActivity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,7 +12,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, RecordsActivity;
 
     public const ROLE_ADMIN = 'admin';
 
@@ -27,6 +28,7 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'is_active',
     ];
 
     /**
@@ -40,6 +42,17 @@ class User extends Authenticatable
     ];
 
     /**
+     * Nilai bawaan kolom tidak terbaca oleh instance yang baru dibuat — tanpa
+     * ini `is_active` bernilai null sampai model dimuat ulang dari basis data,
+     * dan akun yang baru mendaftar langsung dianggap nonaktif.
+     *
+     * @var array<string, mixed>
+     */
+    protected $attributes = [
+        'is_active' => true,
+    ];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -49,7 +62,20 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Kata sandi sengaja tidak ikut dicatat — jejak perubahan tidak boleh
+     * menyimpan hash kredensial. Peristiwa reset dicatat terpisah oleh
+     * controller sebagai tindakan, bukan sebagai selisih nilai.
+     *
+     * @return array<int, string>
+     */
+    protected function activityAttributes(): array
+    {
+        return ['name', 'email', 'role', 'is_active'];
     }
 
     /** @return HasMany<Assessment> */
@@ -78,5 +104,11 @@ class User extends Authenticatable
     public function scopeAdmin(Builder $query): void
     {
         $query->where('role', self::ROLE_ADMIN);
+    }
+
+    /** @param  Builder<User>  $query */
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('is_active', true);
     }
 }

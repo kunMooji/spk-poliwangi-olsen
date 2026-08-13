@@ -23,11 +23,25 @@ class ResultController extends Controller
                 ->with('info', 'Kuesioner belum selesai, sehingga hasil belum dapat ditampilkan.');
         }
 
+        return view('assessments.result', $this->resultData($assessment, $explanation));
+    }
+
+    /**
+     * Data lembar hasil, dipakai bersama tampilan layar dan lembar cetak.
+     *
+     * Keduanya harus menampilkan angka yang persis sama — lembar cetak yang
+     * berbeda dari layar akan menimbulkan keraguan atas hasilnya.
+     *
+     * @return array<string, mixed>
+     */
+    private function resultData(Assessment $assessment, ExplanationService $explanation): array
+    {
         $assessment->load([
             'results.studyProgram',
             'priorities.studyProgram',
             'recommendedProgram',
             'primaryProgram',
+            'period',
         ]);
 
         $percentages = $assessment->riasecPercentages();
@@ -56,7 +70,7 @@ class ResultController extends Controller
             )
             : [];
 
-        return view('assessments.result', [
+        return [
             'assessment' => $assessment,
             'percentages' => $percentages,
             'chart' => [
@@ -69,8 +83,29 @@ class ResultController extends Controller
             'recommendedResult' => $recommendedResult,
             'contributions' => $contributions,
             'highlights' => $explanation->highlights($contributions),
-            'comparison' => array_slice($comparison, 0, 4),
-        ]);
+            'comparison' => \array_slice($comparison, 0, 4),
+        ];
+    }
+
+    /**
+     * Lembar hasil siap cetak.
+     *
+     * Dibuat sebagai halaman HTML ber-`@media print`, bukan lewat pustaka PDF,
+     * supaya tidak menambah dependensi: peramban mencetaknya ke PDF sendiri.
+     * Berkas inilah yang dibawa calon mahasiswa untuk didiskusikan dengan orang
+     * tua atau guru BK.
+     */
+    public function print(Assessment $assessment, ExplanationService $explanation): View|RedirectResponse
+    {
+        $this->authorize('view', $assessment);
+
+        if (! $assessment->isCompleted()) {
+            return redirect()
+                ->route('assessments.questionnaire', $assessment)
+                ->with('info', 'Kuesioner belum selesai, sehingga lembar hasil belum dapat dicetak.');
+        }
+
+        return view('assessments.print', $this->resultData($assessment, $explanation));
     }
 
     /**

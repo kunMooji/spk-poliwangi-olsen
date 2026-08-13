@@ -14,14 +14,14 @@ class SettingSeeder extends Seeder
                 'key' => 'threshold',
                 'value' => '70',
                 'type' => 'float',
-                'label' => 'Ambang Batas (Threshold) Rekomendasi',
-                'description' => 'Nilai minimum yang harus dicapai prodi prioritas pertama agar tetap dijadikan rekomendasi utama.',
+                'label' => 'Ambang Batas Kelayakan',
+                'description' => 'Nilai minimum agar sebuah prodi ditandai layak dipertimbangkan. Bersifat penanda pada lembar hasil — tidak menentukan prodi mana yang direkomendasikan, karena rekomendasi mengikuti peringkat CoCoSo.',
             ],
             [
                 'key' => 'threshold_mode',
                 'value' => 'normal',
                 'type' => 'string',
-                'label' => 'Mode Pembanding Threshold',
+                'label' => 'Mode Pembanding Ambang Batas',
                 'description' => '"normal" membandingkan terhadap K ternormalisasi (0-100), "raw" membandingkan terhadap nilai K asli.',
             ],
             [

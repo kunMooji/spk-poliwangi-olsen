@@ -80,6 +80,20 @@ Seluruh model menetapkan nama tabel eksplisit lewat `protected $table`.
 | `Criteria` | Konstanta `SOURCES`; `totalActiveWeight()`; scope `active()`, `ordered()` |
 | `RiasecQuestion` | Scope `active()`, `ordered()`; atribut `dimension_name` |
 | `Setting` | Key-value dengan cache selamanya; `values()`, `get()`, `set()`, `forgetCache()`; konstanta `DEFAULTS` |
+| `Period` | Gelombang PMB; scope `active()`, statis `current()`, atribut `range_label` |
+| `ActivityLog` | Jejak perubahan; konstanta `SUBJECT_LABELS`, `ACTION_LABELS`; scope `latestFirst()` |
+
+### `app/Models/Concerns/`
+
+| Berkas | Isi |
+|---|---|
+| `RecordsActivity.php` | Trait pencatat perubahan. Dipakai `Criteria`, `Setting`, `StudyProgram`, `RiasecQuestion`, `Period`, `User` |
+
+Model pemakai boleh menimpa `activityAttributes()` (kolom yang dicatat) dan
+`activityLabel()` (penanda yang tetap terbaca setelah datanya dihapus).
+
+Trait ini dilewati bila tidak ada pengguna yang masuk, sehingga seeder dan
+perintah konsol tidak ikut mengotori log.
 
 ### `app/Http/Controllers/`
 
@@ -87,15 +101,19 @@ Seluruh model menetapkan nama tabel eksplisit lewat `protected $table`.
 |---|---|
 | `HomeController` | `/` — halaman depan publik |
 | `DashboardController` | `/dashboard` — mengalihkan admin ke panelnya |
-| `AssessmentController` | Alur pengisian tes |
-| `ResultController` | Lembar hasil + rincian perhitungan |
+| `AssessmentController` | Alur pengisian tes + simpan sebagian jawaban |
+| `AssessmentComparisonController` | `/tes/bandingkan` — perbandingan antar sesi |
+| `ResultController` | Lembar hasil, rincian perhitungan, lembar cetak |
 | `Admin/DashboardController` | `/admin` |
 | `Admin/StudyProgramController` | CRUD prodi |
 | `Admin/CriteriaController` | CRUD kriteria |
 | `Admin/RiasecQuestionController` | CRUD pernyataan |
+| `Admin/PeriodController` | CRUD gelombang PMB |
+| `Admin/UserController` | Manajemen akun calon mahasiswa |
+| `Admin/ActivityLogController` | Catatan perubahan (baca saja) |
 | `Admin/SettingController` | Parameter algoritma |
 | `Admin/TracerStudyController` | Pembaruan tracer massal |
-| `Admin/AssessmentRecapController` | Rekap, detail, sensitivitas, hapus |
+| `Admin/AssessmentRecapController` | Rekap, ekspor CSV, detail, sensitivitas, hapus |
 | `Admin/StatisticsController` | Statistik institusional |
 
 ### `app/Http/Requests/`
@@ -103,11 +121,13 @@ Seluruh model menetapkan nama tabel eksplisit lewat `protected $table`.
 | Berkas | Dipakai untuk |
 |---|---|
 | `StoreAssessmentRequest` | Biodata + nilai rapor + prioritas |
-| `StoreAnswersRequest` | Jawaban kuesioner |
+| `StoreAnswersRequest` | Jawaban kuesioner, mewajibkan seluruh butir |
+| `AutosaveAnswersRequest` | Jawaban sebagian, punya `answers()` yang membuang butir kosong |
 | `Admin/StudyProgramRequest` | Tambah/ubah prodi, punya `payload()` |
 | `Admin/CriteriaRequest` | Tambah/ubah kriteria, punya `payload()` |
 | `Admin/RiasecQuestionRequest` | Tambah/ubah pernyataan, punya `payload()` |
-| `Admin/UpdateSettingsRequest` | Parameter algoritma |
+| `Admin/PeriodRequest` | Tambah/ubah gelombang, punya `payload()` |
+| `Admin/UpdateSettingsRequest` | Parameter algoritma — **seluruh kunci wajib dikirim sekaligus** |
 | `Admin/UpdateTracerRequest` | Pembaruan tracer massal, validasi per baris |
 
 Metode `payload()` mengembalikan data yang sudah siap disimpan — termasuk nilai
@@ -120,17 +140,29 @@ turunannya tidak tercecer di banyak tempat.
 ```
 layouts/          app, guest, navigation (bercabang per peran)
 components/       alert, flash, + komponen bawaan Breeze
-assessments/      index, create, questionnaire, result, calculation
+assessments/      index, create, questionnaire, result, calculation, print, compare
 admin/
   dashboard.blade.php
   statistics.blade.php
   study-programs/   index, create, edit, form
   criteria/         index, create, edit, form
   riasec-questions/ index, create, edit, form
+  periods/          index, create, edit, form
+  users/            index
+  activity-logs/    index
   tracer/           index
   settings/         edit
   recap/            index, show, sensitivity
 ```
+
+`assessments/print.blade.php` sengaja **berdiri sendiri** tanpa layout aplikasi
+dan tanpa Tailwind: gaya cetak perlu kendali penuh atas ukuran kertas,
+pemenggalan halaman, dan warna yang ikut tercetak.
+
+Menu admin yang lebih jarang dibuka dikumpulkan dalam dropdown **Pengelolaan**
+di `layouts/navigation.blade.php` supaya bilah navigasi tetap terbaca. Perhatikan
+komponen `x-dropdown`: nilai `width` selain `48` diteruskan mentah sebagai kelas,
+jadi tulis `width="w-56"`, bukan `width="56"`.
 
 Berkas `form.blade.php` adalah partial bersama halaman tambah dan ubah,
 disisipkan dengan `@include`. Variabelnya diberi nama tunggal (`$program`,
@@ -207,7 +239,7 @@ menonaktifkan pernyataan tidak merusak persentase tes yang sudah selesai.
 
 | Kunci | Rentang | Arti |
 |---|---|---|
-| `threshold` | 0–100 | Nilai minimum agar prioritas pertama tetap direkomendasikan |
+| `threshold` | 0–100 | Ambang kelayakan yang ditampilkan pada lembar hasil — tidak menentukan rekomendasi |
 | `threshold_mode` | `normal` \| `raw` | Pembanding: K ternormalisasi atau K mentah |
 | `lambda` | 0–1 | Keseimbangan S_i dan P_i pada K_ic |
 | `epsilon` | 1e-7 – 0.01 | Batas bawah nilai ternormalisasi |
@@ -238,8 +270,9 @@ php artisan test tests/Unit                   # satu direktori
 | `Unit/ExplanationServiceTest` | Kontribusi, perbandingan, sorotan |
 | `Unit/SensitivityServiceTest` | Sweep λ, pergeseran bobot, penskalaan ulang |
 | `Feature/AssessmentFlowTest` | Alur calon mahasiswa ujung ke ujung, otorisasi, penjelasan hasil |
-| `Feature/RecommendationServiceTest` | Penyimpanan hasil, snapshot, aturan threshold |
+| `Feature/RecommendationServiceTest` | Penyimpanan hasil, snapshot, rekomendasi mengikuti peringkat, pengaruh nilai rapor |
 | `Feature/AdminPanelTest` | Pemisahan peran, seluruh CRUD, rekap, sensitivitas, statistik |
+| `Feature/NewFeaturesTest` | Gelombang, manajemen akun, catatan perubahan, ekspor CSV, lembar cetak, simpan sebagian, perbandingan |
 | `Feature/Auth/*`, `Feature/ProfileTest` | Bawaan Breeze |
 
 Uji unit memakai `PHPUnit\Framework\TestCase` tanpa `RefreshDatabase` karena
@@ -259,6 +292,13 @@ Perhatikan bila salah satunya gagal:
 | `test_pernyataan_yang_sudah_dijawab_tidak_dapat_dihapus` | Keutuhan arsip |
 | `test_riwayat_hanya_menampilkan_tes_milik_sendiri` | Kerahasiaan data |
 | `test_nilai_rapor_dikalikan_relevansi_mapel_sehingga_kolom_bervariasi` | Koreksi kolom konstan |
+| `test_mengganti_gelombang_aktif_tidak_memindahkan_tes_lama` | Penandaan gelombang bersifat snapshot |
+| `test_hanya_satu_gelombang_boleh_aktif` | `Period::current()` tidak ambigu |
+| `test_kata_sandi_tidak_pernah_ikut_tersimpan_di_catatan_perubahan` | Log tidak menyimpan kredensial |
+| `test_seeder_tidak_ikut_tercatat_karena_berjalan_tanpa_pengguna` | Log hanya berisi tindakan admin |
+| `test_akun_yang_sudah_pernah_tes_tidak_dapat_dihapus` | Keutuhan arsip |
+| `test_sesi_berjalan_terputus_setelah_akunnya_dinonaktifkan` | Penonaktifan berlaku seketika |
+| `test_jawaban_sebagian_tersimpan_tanpa_menjalankan_perhitungan` | Perhitungan hanya dari jawaban lengkap |
 
 ---
 
@@ -306,6 +346,30 @@ membaca daftar kriteria dari `weights_snapshot`, bukan dari tabel `criteria`.
 Kriteria yang dihapus admin tetap muncul pada hasil lama — memang itu yang
 diinginkan.
 
+### Nilai bawaan kolom tidak terbaca instance baru
+
+`users.is_active` bawaannya `true` di basis data, tetapi model yang **baru
+dibuat** tidak membaca nilai itu — `$user->is_active` bernilai `null` sampai
+model dimuat ulang. Karena itu `User::$attributes` menetapkannya secara
+eksplisit. Tanpa itu, setiap akun yang baru mendaftar langsung dianggap nonaktif
+dan tidak dapat masuk.
+
+Berlaku untuk setiap kolom boolean baru yang mengandalkan `default()` di migrasi.
+
+### Rute statis harus mendahului rute ber-parameter
+
+`/tes/bandingkan` dan `/admin/rekap/ekspor` didaftarkan **sebelum**
+`/tes/{assessment}/...` dan `/admin/rekap/{assessment}`. Bila terbalik, kata
+"bandingkan" dan "ekspor" akan tertangkap sebagai kode sesi tes dan menghasilkan
+404.
+
+### Pencatatan perubahan bergantung pada event model
+
+`RecordsActivity` menyimak event `created`, `updated`, dan `deleted`. Pembaruan
+massal seperti `Model::query()->update([...])` **tidak memicu event**, sehingga
+tidak tercatat. Bila perlu tercatat, iterasi per model — seperti yang dilakukan
+`PeriodController::persist()` saat menonaktifkan gelombang lain.
+
 ### Peran pada pendaftaran
 
 `role` ada di `User::$fillable` karena dibutuhkan seeder dan factory. Karena itu
@@ -326,11 +390,13 @@ ke basis data lain, bagian ini perlu disesuaikan.
 
 | Pekerjaan | Catatan |
 |---|---|
-| Ekspor CSV rekap dan matriks | Rencananya `response()->streamDownload`, tanpa paket tambahan |
 | Impor CSV tracer study | Perlu unduh template, pratinjau sebelum simpan, dan laporan baris gagal |
-| Manajemen akun pengguna | Reset kata sandi, nonaktifkan akun, tambah admin |
-| Periode / gelombang PMB | Penandaan sesi tes agar rekap dapat disaring per gelombang |
-| Catatan perubahan data master | Siapa mengubah bobot, kapan, dari berapa ke berapa |
-| Simpan sebagian jawaban kuesioner | Saat ini jawaban baru tersimpan ketika seluruh butir dikirim |
+| Ekspor matriks keputusan | Rekap sudah bisa diunduh; matriks per sesi tes belum |
+| Konfigurasi pengiriman surel | `MAIL_MAILER=log`; pemulihan kata sandi mandiri belum berfungsi |
+| Notifikasi hasil selesai | Calon mahasiswa perlu membuka sendiri lembar hasilnya |
 | Pembatasan laju pengiriman tes | Belum ada `throttle` pada rute pengiriman |
 | `docs/perhitungan.md` | Contoh perhitungan manual untuk lampiran laporan |
+
+Sudah dikerjakan sejak versi sebelumnya: ekspor CSV rekap, manajemen akun,
+gelombang PMB, catatan perubahan, simpan sebagian jawaban, lembar cetak, dan
+perbandingan antar sesi.

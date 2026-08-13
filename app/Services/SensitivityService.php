@@ -29,6 +29,9 @@ final class SensitivityService
      * @param  array<string|int, array<string, float>>  $matrix
      * @param  array<string, float>  $weights
      * @param  array<string, string>  $types
+     * @param  array<string, array{min: float, max: float}>  $bounds  batas normalisasi tetap,
+     *                                                               wajib sama dengan yang dipakai
+     *                                                               saat perhitungan asli
      * @return array{
      *     baseline: array{winner: string|int, ranking: array<string|int, int>, k_normal: array<string|int, float>},
      *     lambda: array<int, array{lambda: float, winner: string|int, stable: bool, margin: float}>,
@@ -42,12 +45,13 @@ final class SensitivityService
         array $types = [],
         float $lambda = 0.5,
         float $epsilon = 1e-6,
+        array $bounds = [],
     ): array {
-        $baseline = $this->cocoso->calculate($matrix, $weights, $types, $lambda, $epsilon);
+        $baseline = $this->cocoso->calculate($matrix, $weights, $types, $lambda, $epsilon, $bounds);
         $baselineWinner = array_search(1, $baseline['ranking'], true);
 
-        $lambdaScenarios = $this->sweepLambda($matrix, $weights, $types, $epsilon, $baselineWinner);
-        $weightScenarios = $this->shiftWeights($matrix, $weights, $types, $lambda, $epsilon, $baselineWinner);
+        $lambdaScenarios = $this->sweepLambda($matrix, $weights, $types, $epsilon, $baselineWinner, $bounds);
+        $weightScenarios = $this->shiftWeights($matrix, $weights, $types, $lambda, $epsilon, $baselineWinner, $bounds);
 
         $scenarios = array_merge($lambdaScenarios, $weightScenarios);
         $stable = count(array_filter($scenarios, fn (array $row) => $row['stable']));
@@ -82,6 +86,7 @@ final class SensitivityService
      * @param  array<string|int, array<string, float>>  $matrix
      * @param  array<string, float>  $weights
      * @param  array<string, string>  $types
+     * @param  array<string, array{min: float, max: float}>  $bounds
      * @return array<int, array{lambda: float, winner: string|int, stable: bool, margin: float}>
      */
     private function sweepLambda(
@@ -90,11 +95,12 @@ final class SensitivityService
         array $types,
         float $epsilon,
         string|int|false $baselineWinner,
+        array $bounds = [],
     ): array {
         $rows = [];
 
         foreach (self::DEFAULT_LAMBDAS as $value) {
-            $result = $this->cocoso->calculate($matrix, $weights, $types, $value, $epsilon);
+            $result = $this->cocoso->calculate($matrix, $weights, $types, $value, $epsilon, $bounds);
             $winner = array_search(1, $result['ranking'], true);
 
             $rows[] = [
@@ -117,6 +123,7 @@ final class SensitivityService
      * @param  array<string|int, array<string, float>>  $matrix
      * @param  array<string, float>  $weights
      * @param  array<string, string>  $types
+     * @param  array<string, array{min: float, max: float}>  $bounds
      * @return array<int, array{code: string, shift: float, weight: float, winner: string|int, stable: bool, rank_of_baseline_winner: int}>
      */
     private function shiftWeights(
@@ -126,6 +133,7 @@ final class SensitivityService
         float $lambda,
         float $epsilon,
         string|int|false $baselineWinner,
+        array $bounds = [],
     ): array {
         $rows = [];
         $total = array_sum($weights);
@@ -138,7 +146,7 @@ final class SensitivityService
                     continue;
                 }
 
-                $result = $this->cocoso->calculate($matrix, $adjusted, $types, $lambda, $epsilon);
+                $result = $this->cocoso->calculate($matrix, $adjusted, $types, $lambda, $epsilon, $bounds);
                 $winner = array_search(1, $result['ranking'], true);
 
                 $rows[] = [

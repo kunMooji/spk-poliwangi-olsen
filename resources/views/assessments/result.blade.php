@@ -30,23 +30,25 @@
                 <x-alert type="success">
                     Program studi pilihan pertama Anda,
                     <strong>{{ $assessment->primaryProgram?->full_name }}</strong>,
-                    mencapai nilai
+                    sekaligus menempati peringkat teratas dengan nilai
                     <strong>{{ number_format($primaryResult?->k_normal ?? 0, 2) }}</strong>
-                    dan telah memenuhi ambang batas
-                    <strong>{{ number_format($assessment->threshold_used, 2) }}</strong>.
-                    Karena itu pilihan Anda tetap dijadikan rekomendasi utama.
+                    dari {{ $assessment->results->count() }} program studi.
+                    Peringkat ini murni hasil perhitungan seluruh kriteria &mdash;
+                    bukan karena Anda menempatkannya sebagai pilihan pertama.
                 </x-alert>
             @else
                 <x-alert type="warning">
                     Program studi pilihan pertama Anda,
                     <strong>{{ $assessment->primaryProgram?->full_name ?? '-' }}</strong>,
-                    memperoleh nilai
-                    <strong>{{ number_format($primaryResult?->k_normal ?? 0, 2) }}</strong>
-                    dan belum mencapai ambang batas
-                    <strong>{{ number_format($assessment->threshold_used, 2) }}</strong>.
-                    Sistem menyarankan
+                    berada di peringkat
+                    <strong>{{ $primaryResult?->ranking ?? '-' }}</strong>
+                    dari {{ $assessment->results->count() }} program studi dengan nilai
+                    <strong>{{ number_format($primaryResult?->k_normal ?? 0, 2) }}</strong>.
+                    Nilai tertinggi diraih
                     <strong>{{ $assessment->recommendedProgram?->full_name }}</strong>
-                    yang memperoleh nilai tertinggi. Keputusan akhir tetap berada di tangan Anda.
+                    ({{ number_format($recommendedResult?->k_normal ?? 0, 2) }}).
+                    Minat Anda sudah ikut diperhitungkan sebagai salah satu kriteria,
+                    dan keputusan akhir tetap berada di tangan Anda.
                 </x-alert>
             @endif
 
@@ -264,6 +266,13 @@
                 <a href="{{ route('assessments.index') }}"
                    class="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                     Kembali ke Riwayat
+                </a>
+                <a href="{{ route('assessments.print', $assessment) }}" target="_blank"
+                   class="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 9V4h12v5M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2M6 14h12v6H6v-6z" />
+                    </svg>
+                    Cetak / Simpan PDF
                 </a>
                 <a href="{{ route('assessments.create') }}"
                    class="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">

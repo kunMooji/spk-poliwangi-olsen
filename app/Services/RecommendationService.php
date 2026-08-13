@@ -53,17 +53,18 @@ final class RecommendationService
         }
 
         $types = $criteria->pluck('type', 'code')->all();
+        $bounds = DecisionMatrixBuilder::boundsFor($criteria->pluck('source', 'code')->all());
 
         $lambda = (float) Setting::get('lambda');
         $epsilon = (float) Setting::get('epsilon');
 
-        return DB::transaction(function () use ($assessment, $criteria, $programs, $weights, $types, $lambda, $epsilon) {
+        return DB::transaction(function () use ($assessment, $criteria, $programs, $weights, $types, $bounds, $lambda, $epsilon) {
             $this->applyRiasecProfile($assessment);
 
             $assessment->load('priorities');
 
             $matrix = $this->matrixBuilder->build($assessment, $programs, $criteria);
-            $calculation = $this->cocoso->calculate($matrix, $weights, $types, $lambda, $epsilon);
+            $calculation = $this->cocoso->calculate($matrix, $weights, $types, $lambda, $epsilon, $bounds);
 
             $this->storeResults($assessment, $calculation);
             $this->applyRecommendation($assessment, $calculation, $criteria, $lambda);
@@ -143,11 +144,17 @@ final class RecommendationService
     /**
      * Terapkan aturan rekomendasi dan simpan snapshot parameter algoritma.
      *
-     * Aturan: bila prodi prioritas pertama mencapai ambang batas, prodi itulah yang
-     * direkomendasikan. Bila tidak, sistem mengambil prodi dengan K tertinggi.
-     * Ketika seluruh prodi berada di bawah ambang batas dan prioritas pertama
-     * kebetulan menempati peringkat 1, prodi tersebut tetap yang terbaik yang
-     * tersedia sehingga tetap direkomendasikan.
+     * Aturan: rekomendasi mengikuti peringkat CoCoSo apa adanya — prodi dengan
+     * K tertinggi.
+     *
+     * Prioritas calon mahasiswa sengaja tidak lagi dipakai untuk menimpa hasil.
+     * Minat sudah diperhitungkan sebagai kriteria C8 di dalam matriks keputusan;
+     * menjadikannya juga sebagai aturan penimpa di tahap ini berarti menghitung
+     * minat dua kali, dan membuat prodi pilihan pertama nyaris selalu terpilih
+     * terlepas dari nilai rapor maupun kesesuaian kepribadiannya.
+     *
+     * Ambang batas tetap disimpan, namun perannya kini sebatas penanda kelayakan
+     * yang ditampilkan pada hasil — bukan penentu prodi mana yang direkomendasikan.
      *
      * @param  Collection<int, Criteria>  $criteria
      */
@@ -160,15 +167,9 @@ final class RecommendationService
         $threshold = (float) Setting::get('threshold');
         $mode = (string) Setting::get('threshold_mode');
 
-        $scale = $mode === 'raw' ? $calculation['k'] : $calculation['k_normal'];
-
         $primaryId = $assessment->priorities->first()?->study_program_id;
 
-        $recommendedId = $primaryId !== null
-            && isset($scale[$primaryId])
-            && $scale[$primaryId] >= $threshold
-                ? $primaryId
-                : array_search(1, $calculation['ranking'], true);
+        $recommendedId = array_search(1, $calculation['ranking'], true);
 
         $assessment->fill([
             'primary_program_id' => $primaryId,

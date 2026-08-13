@@ -14,6 +14,10 @@ use InvalidArgumentException;
  *   1. Normalisasi matriks keputusan
  *        benefit : r_ij = (x_ij - min_j) / (max_j - min_j)
  *        cost    : r_ij = (max_j - x_ij) / (max_j - min_j)
+ *
+ *      min_j dan max_j bawaannya diambil dari sampel alternatif yang sedang
+ *      dibandingkan. Kriteria yang rentang teoretisnya sudah baku boleh
+ *      menggantinya lewat parameter $bounds — lihat catatan pada calculate().
  *   2. S_i = Σ_j ( w_j · r_ij )                      -> weighted sum
  *   3. P_i = Σ_j ( r_ij ^ w_j )                      -> weighted product
  *   4. K_ia = (P_i + S_i) / Σ_i (P_i + S_i)
@@ -31,9 +35,22 @@ final class CocosoService
     /**
      * Jalankan seluruh tahapan CoCoSo.
      *
+     * Parameter $bounds mengganti batas normalisasi kolom tertentu dengan rentang
+     * teoretis yang sudah baku, menggantikan batas yang diambil dari sampel.
+     *
+     * Ini diperlukan ketika sebuah kolom berbentuk `konstanta × nilai_per_alternatif`.
+     * Normalisasi min-max berbasis sampel mencoret konstanta itu secara aljabar:
+     *
+     *   (c·v_i - c·v_min) / (c·v_max - c·v_min) = (v_i - v_min) / (v_max - v_min)
+     *
+     * sehingga konstantanya tidak berpengaruh sama sekali terhadap hasil. Pada
+     * SPK ini konstanta tersebut adalah nilai rapor calon mahasiswa (C1..C6) —
+     * tanpa batas tetap, nilai rapor tidak mengubah peringkat sedikit pun.
+     *
      * @param  array<string|int, array<string, float>>  $matrix  x_ij: [kunciAlternatif => [kodeKriteria => nilai]]
      * @param  array<string, float>  $weights  w_j:  [kodeKriteria => bobot]
      * @param  array<string, string>  $types  [kodeKriteria => 'benefit'|'cost']
+     * @param  array<string, array{min: float, max: float}>  $bounds  batas tetap per kriteria
      * @return array{
      *     alternatives: array<int, string|int>,
      *     criteria: array<int, string>,
@@ -59,6 +76,7 @@ final class CocosoService
         array $types = [],
         float $lambda = 0.5,
         float $epsilon = 1e-6,
+        array $bounds = [],
     ): array {
         $alternatives = array_keys($matrix);
         $criteria = array_keys($weights);
@@ -78,7 +96,7 @@ final class CocosoService
         $epsilon = max($epsilon, 0.0);
 
         // --- Tahap 1: normalisasi -------------------------------------------------
-        [$min, $max] = $this->columnBounds($matrix, $alternatives, $criteria);
+        [$min, $max] = $this->columnBounds($matrix, $alternatives, $criteria, $bounds);
         $normalized = $this->normalize($matrix, $alternatives, $criteria, $min, $max, $types, $epsilon);
 
         // --- Tahap 2 & 3: S_i dan P_i ---------------------------------------------
@@ -153,17 +171,28 @@ final class CocosoService
     /**
      * Nilai terkecil dan terbesar tiap kolom kriteria.
      *
+     * Kriteria yang punya batas tetap memakai batas itu; sisanya memakai batas
+     * yang diambil dari sampel alternatif seperti rumus CoCoSo bawaan.
+     *
      * @param  array<string|int, array<string, float>>  $matrix
      * @param  array<int, string|int>  $alternatives
      * @param  array<int, string>  $criteria
+     * @param  array<string, array{min: float, max: float}>  $bounds
      * @return array{0: array<string, float>, 1: array<string, float>}
      */
-    private function columnBounds(array $matrix, array $alternatives, array $criteria): array
+    private function columnBounds(array $matrix, array $alternatives, array $criteria, array $bounds = []): array
     {
         $min = [];
         $max = [];
 
         foreach ($criteria as $code) {
+            if (isset($bounds[$code])) {
+                $min[$code] = (float) $bounds[$code]['min'];
+                $max[$code] = (float) $bounds[$code]['max'];
+
+                continue;
+            }
+
             $column = [];
             foreach ($alternatives as $alternative) {
                 $column[] = (float) ($matrix[$alternative][$code] ?? 0.0);
@@ -220,7 +249,9 @@ final class CocosoService
                     ? ($max[$code] - $value) / $range
                     : ($value - $min[$code]) / $range;
 
-                $normalized[$alternative][$code] = max($r, $epsilon);
+                // Batas tetap tidak dijamin melingkupi seluruh nilai seperti batas
+                // sampel, sehingga hasilnya dijepit agar tetap berada di 0..1.
+                $normalized[$alternative][$code] = max(min($r, 1.0), $epsilon);
             }
         }
 

@@ -3,14 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Exceptions\CalculationException;
+use App\Http\Requests\AutosaveAnswersRequest;
 use App\Http\Requests\StoreAnswersRequest;
 use App\Http\Requests\StoreAssessmentRequest;
 use App\Models\Assessment;
+use App\Models\AssessmentAnswer;
+use App\Models\Period;
 use App\Models\RiasecQuestion;
 use App\Models\Setting;
 use App\Models\StudyProgram;
 use App\Services\RecommendationService;
 use App\Support\Riasec;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -55,9 +59,16 @@ class AssessmentController extends Controller
 
     public function store(StoreAssessmentRequest $request): RedirectResponse
     {
-        $assessment = DB::transaction(function () use ($request) {
+        // Gelombang disalin saat tes dibuat, bukan dibaca ulang saat rekap.
+        // Dengan begitu mengganti gelombang aktif tidak memindahkan tes lama.
+        $period = Period::current();
+
+        $assessment = DB::transaction(function () use ($request, $period) {
             $assessment = $request->user()->assessments()->create(
-                $request->safe()->except('priorities') + ['status' => 'questionnaire']
+                $request->safe()->except('priorities') + [
+                    'status' => 'questionnaire',
+                    'period_id' => $period?->id,
+                ]
             );
 
             foreach ($request->priorityIds() as $index => $programId) {
@@ -89,6 +100,53 @@ class AssessmentController extends Controller
             'questions' => RiasecQuestion::query()->active()->ordered()->get(),
             'saved' => $assessment->answers()->pluck('score', 'riasec_question_id'),
             'likert' => Riasec::LIKERT_LABELS,
+        ]);
+    }
+
+    /**
+     * Simpan sebagian jawaban tanpa menjalankan perhitungan.
+     *
+     * Dipanggil berkala oleh halaman kuesioner. Tanpa ini, jawaban hanya ada di
+     * peramban sampai seluruh butir dikirim — berpindah perangkat, kehabisan
+     * baterai, atau membersihkan riwayat peramban berarti mengulang dari awal.
+     */
+    public function autosave(AutosaveAnswersRequest $request, Assessment $assessment): JsonResponse
+    {
+        if ($assessment->isCompleted()) {
+            return response()->json([
+                'message' => 'Tes ini sudah selesai sehingga jawabannya tidak dapat diubah lagi.',
+            ], 409);
+        }
+
+        $questions = RiasecQuestion::query()->active()->pluck('dimension', 'id');
+        $now = now();
+
+        $rows = [];
+        foreach ($request->answers() as $questionId => $score) {
+            if (! $questions->has($questionId)) {
+                continue;
+            }
+
+            $rows[] = [
+                'assessment_id' => $assessment->id,
+                'riasec_question_id' => $questionId,
+                'dimension' => $questions[$questionId],
+                'score' => $score,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        // Upsert memakai indeks unik (assessment_id, riasec_question_id),
+        // sehingga menjawab ulang butir yang sama menimpa nilai sebelumnya
+        // alih-alih menggandakan barisnya.
+        if ($rows !== []) {
+            AssessmentAnswer::query()->upsert($rows, ['assessment_id', 'riasec_question_id'], ['dimension', 'score', 'updated_at']);
+        }
+
+        return response()->json([
+            'saved' => count($rows),
+            'saved_at' => $now->format('H:i'),
         ]);
     }
 

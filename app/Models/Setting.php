@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\RecordsActivity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Cache;
  */
 class Setting extends Model
 {
+    use RecordsActivity;
+
     protected $table = 'settings';
 
     protected $fillable = ['key', 'value', 'type', 'label', 'description'];
@@ -89,6 +92,22 @@ class Setting extends Model
     public static function forgetCache(): void
     {
         Cache::forget(self::CACHE_KEY);
+    }
+
+    /**
+     * Yang bermakna dicatat hanyalah nilainya; `key`, `type`, dan `label`
+     * praktis tidak pernah berubah setelah baris pengaturan dibuat.
+     *
+     * @return array<int, string>
+     */
+    protected function activityAttributes(): array
+    {
+        return ['value'];
+    }
+
+    protected function activityLabel(): string
+    {
+        return (string) ($this->label ?: $this->key);
     }
 
     public function castedValue(): mixed

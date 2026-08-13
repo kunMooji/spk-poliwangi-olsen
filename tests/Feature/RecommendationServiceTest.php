@@ -31,12 +31,13 @@ class RecommendationServiceTest extends TestCase
 
     /**
      * @param  array<string, int>  $likertBias  skor Likert per dimensi
+     * @param  array<string, float>  $scores  nilai rapor, menimpa nilai bawaan
      */
-    private function makeAssessment(array $likertBias = [], int $priorityCount = 3): Assessment
+    private function makeAssessment(array $likertBias = [], int $priorityCount = 3, array $scores = []): Assessment
     {
         $user = User::query()->where('role', User::ROLE_MAHASISWA)->firstOrFail();
 
-        $assessment = Assessment::query()->create([
+        $assessment = Assessment::query()->create($scores + [
             'user_id' => $user->id,
             'full_name' => 'Calon Mahasiswa Uji',
             'math_score' => 88,
@@ -91,17 +92,22 @@ class RecommendationServiceTest extends TestCase
 
     public function test_profil_riasec_tersimpan_dari_jawaban_kuesioner(): void
     {
-        // Setiap dimensi memiliki 5 butir dengan skala 1-5.
-        // Dimensi I dijawab 5 pada seluruh butir  -> skor 25, persentase 100.
-        // Dimensi A dijawab 2 pada seluruh butir  -> skor 10, persentase 25.
+        // Jumlah butir per dimensi tidak sama rata (I 7 butir, A 6 butir), namun
+        // persentase tetap sebanding karena tiap dimensi dibagi jumlah butirnya
+        // sendiri: persen = (jawaban - 1) / 4 x 100 bila seluruh butir dijawab sama.
+        // Dimensi I dijawab 5 -> skor 7x5 = 35, persentase 100.
+        // Dimensi A dijawab 2 -> skor 6x2 = 12, persentase 25.
         $assessment = $this->makeAssessment();
 
         $this->recommendation->calculate($assessment);
         $assessment->refresh();
 
-        $this->assertSame(25, $assessment->score_i);
+        $itemsI = RiasecQuestion::query()->active()->where('dimension', 'I')->count();
+        $itemsA = RiasecQuestion::query()->active()->where('dimension', 'A')->count();
+
+        $this->assertSame($itemsI * 5, $assessment->score_i);
         $this->assertSame(100.0, $assessment->percent_i);
-        $this->assertSame(10, $assessment->score_a);
+        $this->assertSame($itemsA * 2, $assessment->score_a);
         $this->assertSame(25.0, $assessment->percent_a);
 
         // Persentase: I 100, C 75, lalu R/S/E sama-sama 50. Nilai seri dipecah
@@ -123,8 +129,13 @@ class RecommendationServiceTest extends TestCase
         $this->assertSame('normal', $assessment->threshold_mode_used);
         $this->assertSame(0.5, $assessment->lambda_used);
 
+        // Bobot dibaca dari data, bukan dipatok angka, supaya penyetelan ulang
+        // bobot oleh admin tidak menjatuhkan tes ini.
+        $bobotC7 = (float) Criteria::query()->where('code', 'C7')->value('weight');
+
         $this->assertCount(9, $assessment->weights_snapshot);
-        $this->assertSame(0.2, $assessment->weights_snapshot['C7']['weight']);
+        $this->assertSame($bobotC7, $assessment->weights_snapshot['C7']['weight']);
+        $this->assertEqualsWithDelta(1.0, array_sum(array_column($assessment->weights_snapshot, 'weight')), 1e-9);
     }
 
     public function test_snapshot_bobot_tidak_ikut_berubah_saat_admin_memperbarui_kriteria(): void
@@ -132,34 +143,18 @@ class RecommendationServiceTest extends TestCase
         $assessment = $this->makeAssessment();
         $this->recommendation->calculate($assessment);
 
-        Criteria::query()->where('code', 'C7')->update(['weight' => 0.4]);
+        $sebelum = (float) Criteria::query()->where('code', 'C7')->value('weight');
+
+        Criteria::query()->where('code', 'C7')->update(['weight' => $sebelum + 0.1]);
         Setting::forgetCache();
 
         $assessment->refresh();
 
-        $this->assertSame(0.2, $assessment->weights_snapshot['C7']['weight']);
+        $this->assertSame($sebelum, $assessment->weights_snapshot['C7']['weight']);
     }
 
-    public function test_pilihan_utama_dipakai_ketika_memenuhi_ambang_batas(): void
+    public function test_rekomendasi_selalu_prodi_dengan_peringkat_teratas(): void
     {
-        Setting::set('threshold', 0);
-        Setting::forgetCache();
-
-        $assessment = $this->makeAssessment();
-        $this->recommendation->calculate($assessment);
-        $assessment->refresh();
-
-        $this->assertTrue($assessment->matches_preference);
-        $this->assertSame($assessment->primary_program_id, $assessment->recommended_program_id);
-    }
-
-    public function test_dialihkan_ke_nilai_k_tertinggi_ketika_pilihan_utama_di_bawah_ambang_batas(): void
-    {
-        // Ambang batas 100 hanya dapat dicapai oleh prodi peringkat pertama,
-        // karena K ternormalisasi selalu diskalakan sehingga puncaknya tepat 100.
-        Setting::set('threshold', 100);
-        Setting::forgetCache();
-
         $assessment = $this->makeAssessment();
         $calculation = $this->recommendation->calculate($assessment);
         $assessment->refresh();
@@ -168,6 +163,40 @@ class RecommendationServiceTest extends TestCase
 
         $this->assertSame($topProgramId, $assessment->recommended_program_id);
         $this->assertSame(100.0, $assessment->recommended_k_normal);
+    }
+
+    public function test_ambang_batas_tidak_lagi_menentukan_prodi_yang_direkomendasikan(): void
+    {
+        // Ambang batas berapa pun tidak boleh memindahkan rekomendasi: minat calon
+        // mahasiswa sudah dihitung sebagai kriteria C8, sehingga memakainya lagi
+        // sebagai aturan penimpa berarti menghitung minat dua kali.
+        $assessment = $this->makeAssessment();
+
+        Setting::set('threshold', 0);
+        Setting::forgetCache();
+        $this->recommendation->calculate($assessment->fresh(['priorities', 'answers']));
+        $longgar = $assessment->fresh()->recommended_program_id;
+
+        Setting::set('threshold', 100);
+        Setting::forgetCache();
+        $calculation = $this->recommendation->calculate($assessment->fresh(['priorities', 'answers']));
+        $ketat = $assessment->fresh()->recommended_program_id;
+
+        $this->assertSame($longgar, $ketat);
+        $this->assertSame(array_search(1, $calculation['ranking'], true), $ketat);
+    }
+
+    public function test_matches_preference_menandai_pilihan_pertama_yang_menempati_peringkat_satu(): void
+    {
+        $assessment = $this->makeAssessment();
+        $this->recommendation->calculate($assessment);
+        $assessment->refresh();
+
+        $primaryRank = $assessment->results()
+            ->where('study_program_id', $assessment->primary_program_id)
+            ->value('ranking');
+
+        $this->assertSame($primaryRank === 1, (bool) $assessment->matches_preference);
     }
 
     public function test_perhitungan_ulang_menimpa_hasil_sebelumnya(): void
@@ -250,6 +279,32 @@ class RecommendationServiceTest extends TestCase
         $this->assertCount(9, $result->normalized);
         $this->assertArrayHasKey('C7', $result->matrix);
         $this->assertGreaterThan(0, $result->normalized['C7']);
+    }
+
+    public function test_nilai_rapor_yang_berbeda_menghasilkan_peringkat_yang_berbeda(): void
+    {
+        // Regresi atas cacat normalisasi: nilai rapor sama untuk seluruh prodi
+        // dalam satu sesi, sehingga pada kolom `rapor x relevansi` nilai rapor
+        // berlaku sebagai konstanta pengali. Normalisasi min-max berbasis sampel
+        // mencoret konstanta itu, membuat calon mahasiswa bernilai 95 di seluruh
+        // mapel eksakta memperoleh peringkat yang persis sama dengan yang
+        // bernilai 40. Batas normalisasi tetap 0-100 mengembalikan pengaruhnya.
+        $eksakta = $this->makeAssessment(scores: [
+            'math_score' => 95, 'physics_score' => 95, 'chemistry_score' => 92, 'biology_score' => 90,
+            'indonesian_score' => 60, 'english_score' => 60,
+        ]);
+        $bahasa = $this->makeAssessment(scores: [
+            'math_score' => 45, 'physics_score' => 40, 'chemistry_score' => 42, 'biology_score' => 48,
+            'indonesian_score' => 95, 'english_score' => 95,
+        ]);
+
+        $this->recommendation->calculate($eksakta);
+        $this->recommendation->calculate($bahasa);
+
+        $peringkatEksakta = $eksakta->results()->orderBy('ranking')->pluck('study_program_id')->all();
+        $peringkatBahasa = $bahasa->results()->orderBy('ranking')->pluck('study_program_id')->all();
+
+        $this->assertNotSame($peringkatEksakta, $peringkatBahasa);
     }
 
     public function test_nilai_rapor_dikalikan_relevansi_mapel_sehingga_kolom_bervariasi(): void

@@ -5,8 +5,11 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Assessment;
 use App\Models\AssessmentPriority;
+use App\Models\Period;
 use App\Models\StudyProgram;
 use App\Support\Riasec;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
@@ -19,12 +22,24 @@ use Illuminate\View\View;
  */
 class StatisticsController extends Controller
 {
-    public function __invoke(): View
+    /**
+     * Gelombang yang sedang disaring; null berarti seluruh gelombang.
+     *
+     * Disimpan sebagai properti karena hampir setiap metrik di bawah perlu
+     * menyaring dengan nilai yang sama.
+     */
+    private ?string $periodId = null;
+
+    public function __invoke(Request $request): View
     {
-        $totalCompleted = Assessment::query()->completed()->count();
+        $this->periodId = $request->input('period') ?: null;
+
+        $totalCompleted = $this->base()->count();
 
         return view('admin.statistics', [
             'totalCompleted' => $totalCompleted,
+            'periods' => Period::query()->orderByDesc('starts_at')->orderByDesc('id')->get(),
+            'selectedPeriod' => $this->periodId,
             'schools' => $this->topSchools(),
             'majors' => $this->distribution('school_major'),
             'genders' => $this->distribution('gender'),
@@ -34,11 +49,25 @@ class StatisticsController extends Controller
             'dominantDistribution' => $this->distribution('dominant_type'),
             'dimensionLabels' => Riasec::LABELS,
             'subjects' => Riasec::SUBJECTS,
-            'averageFit' => round((float) Assessment::query()->completed()->avg('recommended_k_normal'), 2),
+            'averageFit' => round((float) $this->base()->avg('recommended_k_normal'), 2),
             'matchRatio' => $totalCompleted > 0
-                ? round(Assessment::query()->completed()->where('matches_preference', true)->count() / $totalCompleted * 100, 1)
+                ? round($this->base()->where('matches_preference', true)->count() / $totalCompleted * 100, 1)
                 : 0.0,
         ]);
+    }
+
+    /**
+     * Titik awal seluruh metrik: tes selesai, dipersempit gelombang bila dipilih.
+     *
+     * @return Builder<Assessment>
+     */
+    private function base(): Builder
+    {
+        return Assessment::query()
+            ->completed()
+            ->when($this->periodId, fn (Builder $query, string $period) => $period === 'none'
+                ? $query->whereNull('period_id')
+                : $query->where('period_id', $period));
     }
 
     /**
@@ -46,7 +75,7 @@ class StatisticsController extends Controller
      */
     private function topSchools(): Collection
     {
-        return Assessment::query()->completed()
+        return $this->base()
             ->whereNotNull('school_name')
             ->selectRaw('school_name, count(*) as total, avg(recommended_k_normal) as average_fit')
             ->groupBy('school_name')
@@ -62,7 +91,7 @@ class StatisticsController extends Controller
      */
     private function distribution(string $column): Collection
     {
-        return Assessment::query()->completed()
+        return $this->base()
             ->whereNotNull($column)
             ->selectRaw("{$column} as label, count(*) as total")
             ->groupBy($column)
@@ -77,7 +106,7 @@ class StatisticsController extends Controller
      */
     private function monthlyTrend(): Collection
     {
-        return Assessment::query()->completed()
+        return $this->base()
             ->where('completed_at', '>=', now()->subYear()->startOfMonth())
             ->selectRaw("DATE_FORMAT(completed_at, '%Y-%m') as period, count(*) as total")
             ->groupBy('period')
@@ -92,11 +121,9 @@ class StatisticsController extends Controller
      */
     private function subjectAverages(): array
     {
-        $query = Assessment::query()->completed();
-
         $averages = [];
         foreach (array_keys(Riasec::SUBJECTS) as $subject) {
-            $averages[$subject] = round((float) (clone $query)->avg($subject.'_score'), 2);
+            $averages[$subject] = round((float) $this->base()->avg($subject.'_score'), 2);
         }
 
         return $averages;
@@ -114,14 +141,18 @@ class StatisticsController extends Controller
      */
     private function interestGap(): Collection
     {
+        // Sesi tes yang masuk hitungan disamakan dengan metrik lain agar
+        // "diminati" dan "direkomendasikan" benar-benar sebanding.
+        $scopedIds = $this->base()->select('id');
+
         $chosen = AssessmentPriority::query()
             ->where('priority_order', 1)
-            ->whereHas('assessment', fn ($query) => $query->completed())
+            ->whereIn('assessment_id', $scopedIds)
             ->selectRaw('study_program_id, count(*) as total')
             ->groupBy('study_program_id')
             ->pluck('total', 'study_program_id');
 
-        $recommended = Assessment::query()->completed()
+        $recommended = $this->base()
             ->whereNotNull('recommended_program_id')
             ->selectRaw('recommended_program_id, count(*) as total')
             ->groupBy('recommended_program_id')

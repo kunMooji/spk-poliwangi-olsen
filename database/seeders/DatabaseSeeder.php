@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             CriteriaSeeder::class,
             RiasecQuestionSeeder::class,
             StudyProgramSeeder::class,
+            PeriodSeeder::class,
             UserSeeder::class,
         ]);
     }

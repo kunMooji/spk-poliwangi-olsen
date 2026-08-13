@@ -16,6 +16,7 @@
              total: {{ $questions->count() }},
              storageKey: 'spk-draft-{{ $assessment->code }}',
              initial: {{ Js::from($initial) }},
+             autosaveUrl: '{{ route('assessments.answers.autosave', $assessment) }}',
          })"
          x-init="init()">
 
@@ -37,6 +38,15 @@
                         </span>
                     @endforeach
                 </div>
+
+                <p class="mt-4 rounded-lg bg-sky-50 px-3 py-2 text-xs leading-relaxed text-sky-800 dark:bg-sky-900/30 dark:text-sky-200">
+                    Jawaban Anda <strong>tersimpan otomatis</strong> beberapa saat setelah dipilih. Bila halaman
+                    tertutup atau Anda berpindah perangkat, pengisian dapat dilanjutkan dari butir terakhir
+                    &mdash; tidak perlu mengulang dari awal.
+                    @if ($saved->isNotEmpty())
+                        Saat ini <strong>{{ $saved->count() }} jawaban</strong> Anda sudah tersimpan.
+                    @endif
+                </p>
             </div>
         </div>
 
@@ -47,7 +57,18 @@
                     <span class="font-medium text-gray-700 dark:text-gray-200">
                         Terjawab <span x-text="answeredCount"></span> dari {{ $questions->count() }}
                     </span>
-                    <span class="font-semibold text-indigo-600 dark:text-indigo-400" x-text="percent + '%'"></span>
+                    <div class="flex items-center gap-3">
+                        {{-- Penanda simpan otomatis: calon mahasiswa perlu tahu
+                             jawabannya sudah aman di server, bukan sekadar di layar. --}}
+                        <span class="text-xs" x-show="saveState !== 'idle'" x-cloak
+                              :class="{
+                                  'text-gray-500 dark:text-gray-400': saveState === 'saving',
+                                  'text-emerald-600 dark:text-emerald-400': saveState === 'saved',
+                                  'text-rose-600 dark:text-rose-400': saveState === 'error',
+                              }"
+                              x-text="saveMessage"></span>
+                        <span class="font-semibold text-indigo-600 dark:text-indigo-400" x-text="percent + '%'"></span>
+                    </div>
                 </div>
                 <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                     <div class="h-full rounded-full bg-indigo-600 transition-all duration-300" :style="`width: ${percent}%`"></div>
@@ -111,11 +132,16 @@
 
     @push('scripts')
         <script>
-            function questionnaire({ total, storageKey, initial }) {
+            function questionnaire({ total, storageKey, initial, autosaveUrl }) {
                 return {
                     total,
                     storageKey,
+                    autosaveUrl,
                     answers: {},
+                    saveState: 'idle',
+                    saveMessage: '',
+                    timer: null,
+                    pending: false,
 
                     init() {
                         // Draft lokal mencegah jawaban hilang bila halaman tertutup
@@ -129,9 +155,73 @@
 
                         this.answers = { ...draft, ...initial };
 
+                        // Draft lokal yang belum sempat terkirim langsung
+                        // disusulkan ke server begitu halaman dibuka lagi.
+                        if (Object.keys(draft).some((id) => !(id in initial))) {
+                            this.schedule();
+                        }
+
                         this.$watch('answers', (value) => {
                             localStorage.setItem(this.storageKey, JSON.stringify(value));
+                            this.schedule();
                         });
+                    },
+
+                    /**
+                     * Menunda pengiriman sebentar supaya rentetan klik cepat
+                     * menjadi satu permintaan, bukan satu permintaan per butir.
+                     */
+                    schedule() {
+                        clearTimeout(this.timer);
+                        this.timer = setTimeout(() => this.save(), 1200);
+                    },
+
+                    async save() {
+                        if (this.pending) {
+                            // Satu pengiriman sedang berjalan; coba lagi setelahnya
+                            // agar jawaban terakhir tidak terlewat.
+                            this.schedule();
+                            return;
+                        }
+
+                        const payload = Object.fromEntries(
+                            Object.entries(this.answers).filter(([, value]) => value !== '' && value !== null)
+                        );
+
+                        if (Object.keys(payload).length === 0) {
+                            return;
+                        }
+
+                        this.pending = true;
+                        this.saveState = 'saving';
+                        this.saveMessage = 'Menyimpan…';
+
+                        try {
+                            const response = await fetch(this.autosaveUrl, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                },
+                                body: JSON.stringify({ answers: payload }),
+                            });
+
+                            if (!response.ok) {
+                                throw new Error('Gagal menyimpan');
+                            }
+
+                            const data = await response.json();
+                            this.saveState = 'saved';
+                            this.saveMessage = `Tersimpan otomatis ${data.saved_at}`;
+                        } catch (error) {
+                            // Jawaban tetap aman di localStorage, jadi kegagalan
+                            // jaringan cukup diberitahukan tanpa menghentikan apa pun.
+                            this.saveState = 'error';
+                            this.saveMessage = 'Gagal tersimpan — jawaban masih tersimpan di perangkat ini';
+                        } finally {
+                            this.pending = false;
+                        }
                     },
 
                     get answeredCount() {

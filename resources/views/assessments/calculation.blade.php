@@ -26,7 +26,7 @@
                 <dl class="mt-4 grid gap-4 sm:grid-cols-3">
                     @foreach ([
                         'Lambda (λ)' => number_format($assessment->lambda_used, 3),
-                        'Ambang batas' => number_format($assessment->threshold_used, 4).' ('.$assessment->threshold_mode_used.')',
+                        'Ambang kelayakan' => number_format($assessment->threshold_used, 2).' ('.$assessment->threshold_mode_used.')',
                         'Jumlah alternatif' => $results->count().' program studi',
                     ] as $label => $value)
                         <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-900/40">

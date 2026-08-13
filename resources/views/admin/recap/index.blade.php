@@ -1,10 +1,19 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Rekap Hasil Tes</h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {{ $totalCompleted }} tes selesai dari {{ $totalAll }} sesi yang pernah dibuat calon mahasiswa.
-            </p>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+            <div>
+                <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Rekap Hasil Tes</h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    {{ $totalCompleted }} tes selesai dari {{ $totalAll }} sesi yang pernah dibuat calon mahasiswa.
+                </p>
+            </div>
+            <a href="{{ route('admin.recap.export', request()->query()) }}"
+               class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+                </svg>
+                Unduh CSV
+            </a>
         </div>
     </x-slot>
 
@@ -61,12 +70,26 @@
                     </select>
                 </div>
 
+                <div>
+                    <x-input-label for="period" value="Gelombang" />
+                    <select id="period" name="period"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                        <option value="">Semua gelombang</option>
+                        @foreach ($periods as $periodOption)
+                            <option value="{{ $periodOption->id }}" @selected(request('period') == $periodOption->id)>
+                                {{ $periodOption->name }} &mdash; {{ $periodOption->academic_year }}
+                            </option>
+                        @endforeach
+                        <option value="none" @selected(request('period') === 'none')>Tanpa gelombang</option>
+                    </select>
+                </div>
+
                 <div class="flex items-end gap-3 sm:col-span-2 lg:col-span-6">
                     <button type="submit"
                             class="rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white">
                         Terapkan Filter
                     </button>
-                    @if (request()->hasAny(['q', 'status', 'dominant', 'program', 'match']))
+                    @if (request()->hasAny(['q', 'status', 'dominant', 'program', 'match', 'period']))
                         <a href="{{ route('admin.recap.index') }}"
                            class="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
                             Reset
@@ -86,6 +109,7 @@
                                     <th class="px-6 py-3">Kode</th>
                                     <th class="px-6 py-3">Calon Mahasiswa</th>
                                     <th class="px-6 py-3">Tanggal</th>
+                                    <th class="px-6 py-3">Gelombang</th>
                                     <th class="px-6 py-3">Holland</th>
                                     <th class="px-6 py-3">Rekomendasi</th>
                                     <th class="px-6 py-3">Pilihan Pertama</th>
@@ -102,6 +126,14 @@
                                             <p class="text-xs text-gray-500 dark:text-gray-400">{{ $assessment->user?->email ?? '-' }}</p>
                                         </td>
                                         <td class="whitespace-nowrap px-6 py-4">{{ $assessment->created_at->translatedFormat('d M Y') }}</td>
+                                        <td class="px-6 py-4">
+                                            @if ($assessment->period)
+                                                <span class="text-gray-700 dark:text-gray-300">{{ $assessment->period->name }}</span>
+                                                <span class="mt-0.5 block text-xs text-gray-500 dark:text-gray-400">{{ $assessment->period->academic_year }}</span>
+                                            @else
+                                                <span class="text-gray-400">-</span>
+                                            @endif
+                                        </td>
                                         <td class="px-6 py-4 font-semibold">{{ $assessment->holland_code ?? '-' }}</td>
                                         <td class="px-6 py-4">{{ $assessment->recommendedProgram?->full_name ?? '-' }}</td>
                                         <td class="px-6 py-4">

@@ -67,13 +67,22 @@ class AssessmentFlowTest extends TestCase
         $this->get(route('assessments.index'))->assertRedirect(route('login'));
     }
 
-    public function test_kuesioner_berisi_tiga_puluh_pernyataan(): void
+    public function test_kuesioner_berisi_empat_puluh_dua_pernyataan(): void
     {
-        $this->assertSame(30, RiasecQuestion::query()->active()->count());
+        // Mengikuti lembar RIASEC Career Interest Test: 42 pernyataan dengan
+        // jumlah butir per dimensi yang memang tidak sama rata. Persentase tetap
+        // sebanding karena RiasecService membagi tiap dimensi dengan jumlah
+        // butirnya sendiri, bukan dengan angka tetap.
+        $this->assertSame(42, RiasecQuestion::query()->active()->count());
 
         foreach (['R', 'I', 'A', 'S', 'E', 'C'] as $dimension) {
-            $this->assertSame(5, RiasecQuestion::query()->active()->where('dimension', $dimension)->count());
+            $this->assertGreaterThan(0, RiasecQuestion::query()->active()->where('dimension', $dimension)->count());
         }
+
+        $this->assertSame(
+            42,
+            RiasecQuestion::query()->active()->whereIn('dimension', ['R', 'I', 'A', 'S', 'E', 'C'])->count()
+        );
     }
 
     public function test_alur_lengkap_dari_biodata_sampai_hasil(): void
@@ -100,7 +109,7 @@ class AssessmentFlowTest extends TestCase
 
         $this->assertSame('completed', $assessment->status);
         $this->assertNotNull($assessment->recommended_program_id);
-        $this->assertSame(30, $assessment->answers()->count());
+        $this->assertSame(RiasecQuestion::query()->active()->count(), $assessment->answers()->count());
         $this->assertSame(StudyProgram::query()->active()->count(), $assessment->results()->count());
 
         $this->get(route('assessments.result', $assessment))

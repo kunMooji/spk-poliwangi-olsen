@@ -2,16 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\RecordsActivity;
 use App\Support\Riasec;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 /**
  * Butir pernyataan kuesioner minat bakat RIASEC (dijawab dengan skala Likert 1-5).
  */
 class RiasecQuestion extends Model
 {
+    use RecordsActivity;
+
     protected $table = 'riasec_questions';
 
     protected $fillable = ['statement', 'dimension', 'sort_order', 'is_active'];
@@ -45,5 +49,11 @@ class RiasecQuestion extends Model
     public function getDimensionNameAttribute(): string
     {
         return Riasec::name($this->dimension);
+    }
+
+    /** Pernyataan bisa panjang; dipenggal agar log tetap enak dibaca. */
+    protected function activityLabel(): string
+    {
+        return Str::limit((string) $this->statement, 60);
     }
 }

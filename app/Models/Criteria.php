@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\RecordsActivity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -10,6 +11,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Criteria extends Model
 {
+    use RecordsActivity;
+
     protected $table = 'criteria';
 
     protected $fillable = [
@@ -60,5 +63,10 @@ class Criteria extends Model
     public static function totalActiveWeight(): float
     {
         return (float) static::query()->active()->sum('weight');
+    }
+
+    protected function activityLabel(): string
+    {
+        return trim("{$this->code} — {$this->name}");
     }
 }

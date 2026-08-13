@@ -2,11 +2,29 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Statistik Institusional</h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Pola agregat dari {{ $totalCompleted }} tes yang sudah selesai.
-            </p>
+        <div class="flex flex-wrap items-end justify-between gap-4">
+            <div>
+                <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Statistik Institusional</h2>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    Pola agregat dari {{ $totalCompleted }} tes yang sudah selesai.
+                </p>
+            </div>
+
+            <form method="GET" class="flex items-end gap-2">
+                <div>
+                    <x-input-label for="period" value="Gelombang" />
+                    <select id="period" name="period" onchange="this.form.submit()"
+                            class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                        <option value="">Semua gelombang</option>
+                        @foreach ($periods as $periodOption)
+                            <option value="{{ $periodOption->id }}" @selected($selectedPeriod == $periodOption->id)>
+                                {{ $periodOption->name }} &mdash; {{ $periodOption->academic_year }}
+                            </option>
+                        @endforeach
+                        <option value="none" @selected($selectedPeriod === 'none')>Tanpa gelombang</option>
+                    </select>
+                </div>
+            </form>
         </div>
     </x-slot>
 
@@ -17,7 +35,11 @@
             @if ($totalCompleted === 0)
                 <div class="rounded-xl bg-white p-10 text-center shadow-sm dark:bg-gray-800">
                     <p class="text-gray-500 dark:text-gray-400">
-                        Belum ada tes yang selesai, sehingga statistik belum dapat disusun.
+                        @if ($selectedPeriod)
+                            Belum ada tes yang selesai pada gelombang ini.
+                        @else
+                            Belum ada tes yang selesai, sehingga statistik belum dapat disusun.
+                        @endif
                     </p>
                 </div>
             @else

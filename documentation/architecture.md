@@ -55,9 +55,12 @@ Nama tabel, kolom, kelas, dan metode: **Inggris**, mengikuti konvensi Laravel.
 users ──< assessments ──< assessment_priorities >── study_programs
                       ├─< assessment_answers    >── riasec_questions
                       └─< assessment_results    >── study_programs
+           ▲
+periods ───┘  (gelombang PMB — penanda sesi tes)
 
-criteria    (mandiri — definisi kriteria C1..C9)
-settings    (mandiri — parameter algoritma)
+criteria       (mandiri — definisi kriteria C1..C9)
+settings       (mandiri — parameter algoritma)
+activity_logs  (mandiri — jejak perubahan data master)
 ```
 
 ### Dua kelompok tabel
@@ -70,15 +73,22 @@ settings    (mandiri — parameter algoritma)
 | `criteria` | Definisi C1..C9: kode, nama, bobot, jenis benefit/cost, sumber nilai |
 | `riasec_questions` | Butir pernyataan kuesioner beserta dimensinya |
 | `settings` | Parameter algoritma: threshold, lambda, epsilon, skala Likert, jumlah minimal prioritas |
+| `periods` | Gelombang PMB: nama, tahun akademik, rentang tanggal, penanda aktif |
 
 **Data transaksi** — jejak satu sesi tes, tidak pernah diubah admin:
 
 | Tabel | Isi |
 |---|---|
-| `assessments` | Biodata, nilai rapor, hasil profil RIASEC, rekomendasi, **snapshot parameter** |
+| `assessments` | Biodata, nilai rapor, hasil profil RIASEC, rekomendasi, **snapshot parameter**, penanda gelombang |
 | `assessment_priorities` | Urutan pilihan prodi calon mahasiswa |
-| `assessment_answers` | Jawaban Likert per butir |
+| `assessment_answers` | Jawaban Likert per butir — ditulis bertahap oleh simpan otomatis |
 | `assessment_results` | Satu baris per prodi: `matrix`, `normalized`, S, P, K_a, K_b, K_c, K, K ternormalisasi, peringkat |
+
+**Data jejak** — hanya ditulis, tidak pernah diubah:
+
+| Tabel | Isi |
+|---|---|
+| `activity_logs` | Siapa mengubah data master apa, kapan, dari nilai berapa ke berapa |
 
 ### Status sesi tes
 
@@ -172,6 +182,8 @@ kode Holland    per kriteria             peringkat
 ### Tahapan CoCoSo
 
 1. **Normalisasi** min–max per kolom kriteria, dibedakan benefit dan cost.
+   Batas `min_j`/`max_j` diambil dari sampel alternatif, **kecuali** kriteria
+   berskala absolut yang memakai batas teoretis tetap — lihat 5.1.
 2. **S_i** = Σ_j (w_j · r_ij) — *weighted sum*.
 3. **P_i** = Σ_j (r_ij ^ w_j) — *weighted product*.
 4. **Tiga strategi kompromi**:
@@ -182,13 +194,38 @@ kode Holland    per kriteria             peringkat
 
 ### Aturan penetapan rekomendasi
 
-Bila prodi prioritas pertama mencapai ambang batas, prodi itulah yang
-direkomendasikan — menghormati pilihan calon mahasiswa. Bila tidak, sistem
-mengambil prodi dengan K tertinggi.
+Rekomendasi adalah prodi dengan **K tertinggi**, tanpa pengecualian.
 
-Ketika seluruh prodi berada di bawah ambang batas dan prioritas pertama kebetulan
-menempati peringkat 1, prodi tersebut tetap yang terbaik yang tersedia sehingga
-tetap direkomendasikan.
+Urutan prioritas calon mahasiswa **tidak** dipakai untuk menimpa hasil. Minat
+sudah diperhitungkan sebagai kriteria C8 di dalam matriks keputusan; memakainya
+sekali lagi sebagai aturan penimpa berarti menghitung minat dua kali, dan
+membuat prodi pilihan pertama nyaris selalu terpilih terlepas dari nilai rapor
+maupun kesesuaian kepribadiannya.
+
+`matches_preference` menandai apakah pilihan pertama kebetulan menempati
+peringkat 1 — murni informasi pada lembar hasil, bukan aturan keputusan.
+
+Pengaturan `threshold` dipertahankan sebagai **ambang kelayakan** yang
+ditampilkan pada lembar hasil, bukan penentu prodi mana yang direkomendasikan.
+
+### Pembagian bobot kriteria
+
+Nilai rapor **0.45** · RIASEC **0.35** · tracer study **0.15** · minat **0.05**.
+
+C8 (urutan prioritas) sengaja memegang bobot terkecil. Berbeda dari delapan
+kriteria lain, nilainya bukan atribut yang melekat pada program studi melainkan
+pernyataan keinginan responden itu sendiri. Bobot besar membuat sistem
+mengembalikan pilihan yang sudah disebutkan calon mahasiswa alih-alih memberi
+informasi baru — dan itu meniadakan gunanya sebagai alat bantu keputusan. Pada
+0.05, C8 hanya sanggup membalikkan keputusan yang sudah nyaris seri: berperan
+sebagai pemecah seri, bukan penggerak hasil.
+
+Minat tetap tertimbang besar, tetapi lewat C7 yang mengukurnya dengan instrumen
+RIASEC alih-alih menanyakan preferensi secara langsung.
+
+C7 ditahan di 0.35 dan tidak dinaikkan lebih jauh: menaruh 0.40–0.45 pada satu
+kuesioner laporan-diri membuat hampir separuh keputusan bertumpu pada satu
+instrumen. Dengan pembagian ini tidak ada kriteria tunggal yang melewati 0.35.
 
 ---
 
@@ -196,17 +233,49 @@ tetap direkomendasikan.
 
 Ketiganya bukan hiasan: tanpa salah satunya perhitungan gagal atau menyesatkan.
 
-### 5.1 Kolom konstan
+### 5.1 Kolom konstan dan tercoretnya nilai rapor
 
-**Masalah.** Nilai rapor calon mahasiswa sama untuk semua prodi. Kolom C1–C6
-menjadi konstan, `max − min = 0`, normalisasi membagi nol.
+**Masalah pertama.** Nilai rapor calon mahasiswa sama untuk semua prodi. Kolom
+C1–C6 menjadi konstan, `max − min = 0`, normalisasi membagi nol.
 
 **Penyelesaian.** Bobot relevansi mapel per prodi: `x_ij = nilai_rapor_j ×
 relevansi_ij`. Informatika memberi bobot besar pada Matematika, Teknik Sipil pada
 Fisika — kolomnya jadi bervariasi dan normalisasi bermakna.
 
+**Masalah kedua — yang tidak selesai oleh penyelesaian di atas.** Kolomnya memang
+jadi bervariasi, tetapi seluruh variasinya berasal dari relevansi prodi, bukan
+dari nilai rapor. Nilai rapor kini berlaku sebagai konstanta pengali `c` yang
+sama di seluruh baris, dan normalisasi min–max berbasis sampel mencoretnya:
+
+```
+(c·v_i − c·v_min) / (c·v_max − c·v_min) = (v_i − v_min) / (v_max − v_min)
+```
+
+Akibatnya calon mahasiswa bernilai 95 di seluruh mapel eksakta memperoleh
+peringkat yang **persis sama** dengan yang bernilai 40 — separuh bobot model
+(C1–C6) tidak berpengaruh sama sekali.
+
+**Penyelesaian.** Kriteria yang besarannya bermakna absolut dinormalisasi
+terhadap **skala bakunya**, bukan terhadap batas sampel:
+
+| Kriteria | Batas | Alasan |
+|---|---|---|
+| C1–C6 `subject_score` | 0 – 100 | rapor 0–100 × relevansi 0–1; batas tetap mengembalikan pengaruh nilai rapor |
+| C9 `tracer` | 0.00 – 1.00 | rasio keterserapan bermakna apa adanya — 0.80 berarti 80% alumni terserap |
+
+C7 (`riasec`) dan C8 (`priority`) tetap memakai min–max sampel. Cosine similarity
+tidak punya tafsir absolut — 69 bukan berarti "69% cocok" — dan urutan prioritas
+hanya bermakna relatif terhadap pilihan lain pada sesi yang sama; untuk keduanya
+perbandingan antar alternatif justru tafsir yang benar.
+
+Tanpa batas tetap pada C9, selisih nyata yang kecil (mis. 0.78–0.89) direntangkan
+menjadi 0–1 penuh, sehingga beda 11 poin diperlakukan seolah beda terburuk lawan
+terbaik dan C9 mendominasi hasil jauh melebihi bobotnya.
+
 **Pengaman tetap ada.** Bila `max == min`, seluruh `r_ij` diberi nilai `1.0`
-karena kriteria tersebut memang tidak membedakan apa pun.
+karena kriteria tersebut memang tidak membedakan apa pun. Nilai ternormalisasi
+juga dijepit ke rentang 0–1, karena batas tetap tidak dijamin melingkupi seluruh
+nilai sebagaimana batas sampel.
 
 > **Catatan rancangan.** Perbedaan antar prodi sengaja ditaruh pada **nilai
 > matriks (x_ij)**, bukan pada **bobot kriteria (w_j)**. Bobot per alternatif
@@ -226,12 +295,12 @@ pengaman terakhir pada seluruh penyebut.
 ### 5.3 Skala K_i bukan 0–1
 
 **Masalah.** K_ib selalu ≥ 2, sehingga K_i berada di rentang ~1–5 dan bergeser
-mengikuti jumlah alternatif. Ambang batas tidak dapat ditetapkan secara stabil.
+mengikuti jumlah alternatif. Nilainya tidak dapat dibandingkan antar sesi tes.
 
 **Penyelesaian.** Simpan keduanya: `k_value` (mentah, untuk lampiran laporan) dan
-`k_normal = K_i / max(K_i) × 100`. Ambang batas dibandingkan terhadap `k_normal`.
-Pengaturan `threshold_mode` (`normal` | `raw`) tersedia bila pembimbing meminta
-versi mentah.
+`k_normal = K_i / max(K_i) × 100` sebagai angka yang ditampilkan. Ambang
+kelayakan dibandingkan terhadap `k_normal`; pengaturan `threshold_mode`
+(`normal` | `raw`) tersedia bila pembimbing meminta versi mentah.
 
 ---
 
@@ -272,7 +341,28 @@ Kiriman `role=admin` pada formulir pendaftaran tidak berpengaruh.
 SQL. Tidak ada jalur pembuatan admin lewat antarmuka, sehingga permukaan serangan
 untuk peningkatan hak akses tidak ada sama sekali.
 
-### Lapis 4 — Cakupan query
+Panel **Akun Pengguna** menegakkan hal yang sama: akun admin hanya ditampilkan,
+tidak dapat dinonaktifkan maupun disetel ulang kata sandinya dari sana, dan admin
+tidak dapat menyunting akunnya sendiri lewat panel itu.
+
+### Lapis 4 — Akun aktif
+
+`users.is_active` diperiksa di **dua** tempat, dan keduanya diperlukan:
+
+| Tempat | Menangani |
+|---|---|
+| `LoginRequest::authenticate()` | Percobaan masuk baru. Diperiksa **setelah** kredensial terbukti benar, karena akun nonaktif tetap memiliki kata sandi yang sah |
+| `EnsureAccountIsActive` (middleware `web`) | Sesi yang sedang berjalan. Tanpa ini, penonaktifan baru berlaku setelah sesinya kedaluwarsa sendiri |
+
+Akun **dinonaktifkan, bukan dihapus**: `assessments.user_id` memakai
+`cascadeOnDelete`, sehingga menghapus akun ikut menghapus seluruh arsip hasil
+tesnya. Penghapusan hanya diizinkan bagi akun yang belum pernah mengerjakan tes.
+
+`User::$attributes` menetapkan `is_active = true`. Nilai bawaan kolom tidak
+terbaca oleh instance yang baru dibuat, sehingga tanpa ini setiap akun yang baru
+mendaftar akan langsung dianggap nonaktif.
+
+### Lapis 5 — Cakupan query
 
 Riwayat calon mahasiswa selalu dibaca lewat `$request->user()->assessments()`,
 bukan `Assessment::all()` yang disaring belakangan. Kebocoran data tidak mungkin
@@ -304,6 +394,7 @@ rekapitulasi.
 | `GET/PATCH/DELETE /profile` | `profile.*` | Profil pengguna |
 | `GET /tes/{id}/hasil` | `assessments.result` | Pemilik atau admin |
 | `GET /tes/{id}/perhitungan` | `assessments.calculation` | Pemilik atau admin |
+| `GET /tes/{id}/cetak` | `assessments.print` | Lembar cetak; pemilik atau admin |
 
 ### Calon mahasiswa (`middleware: mahasiswa`)
 
@@ -311,9 +402,14 @@ rekapitulasi.
 |---|---|
 | `GET /tes` | `assessments.index` |
 | `GET /tes/mulai` | `assessments.create` |
+| `GET /tes/bandingkan` | `assessments.compare` |
 | `POST /tes` | `assessments.store` |
 | `DELETE /tes/{id}` | `assessments.destroy` |
 | `GET/POST /tes/{id}/kuesioner` | `assessments.questionnaire`, `assessments.answers.store` |
+| `POST /tes/{id}/kuesioner/simpan` | `assessments.answers.autosave` |
+
+`/tes/bandingkan` didaftarkan **sebelum** rute ber-parameter agar tidak
+tertangkap sebagai kode sesi tes.
 
 ### Admin (`prefix: admin`, `middleware: auth + admin`)
 
@@ -323,10 +419,17 @@ rekapitulasi.
 | `resource /admin/prodi` | `admin.study-programs.*` |
 | `resource /admin/kriteria` | `admin.criteria.*` |
 | `resource /admin/pernyataan` | `admin.questions.*` |
+| `resource /admin/periode` | `admin.periods.*` |
+| `GET /admin/pengguna` | `admin.users.index` |
+| `PUT /admin/pengguna/{id}/status` | `admin.users.status` |
+| `PUT /admin/pengguna/{id}/kata-sandi` | `admin.users.password` |
+| `DELETE /admin/pengguna/{id}` | `admin.users.destroy` |
+| `GET /admin/log` | `admin.activity-logs.index` |
 | `GET/PUT /admin/tracer` | `admin.tracer.*` |
 | `GET/PUT /admin/pengaturan` | `admin.settings.*` |
 | `GET /admin/statistik` | `admin.statistics` |
 | `GET /admin/rekap` | `admin.recap.index` |
+| `GET /admin/rekap/ekspor` | `admin.recap.export` |
 | `GET /admin/rekap/{id}` | `admin.recap.show` |
 | `GET /admin/rekap/{id}/sensitivitas` | `admin.recap.sensitivity` |
 | `DELETE /admin/rekap/{id}` | `admin.recap.destroy` |
@@ -410,14 +513,112 @@ bila total bobot benar-benar nol.
 
 ---
 
-## 12. Batasan yang Diketahui
+## 12. Gelombang Penerimaan
+
+Sesi tes **menyalin** gelombang yang aktif saat tes dibuat ke
+`assessments.period_id`, bukan membacanya ulang saat rekap disusun. Prinsipnya
+sama dengan `weights_snapshot`: penandaan melekat pada sesi tes itu sendiri,
+sehingga membuka gelombang berikutnya tidak memindahkan tes yang sudah tercatat.
+
+Hanya **satu gelombang boleh aktif**, ditegakkan `PeriodController::persist()`.
+Dua gelombang aktif membuat `Period::current()` ambigu dan sesi tes bisa masuk ke
+gelombang yang salah tanpa disadari.
+
+Gelombang yang sudah dipakai tidak dapat dihapus — sejalan dengan prinsip 3.3.
+Kunci asingnya `nullOnDelete` sehingga hasil tes tidak ikut hilang, tetapi
+penandaannya tidak dapat dipulihkan.
+
+---
+
+## 13. Catatan Perubahan
+
+`activity_logs` menjawab pertanyaan yang selalu muncul saat hasil dipersoalkan:
+*siapa mengubah bobot C7, kapan, dari berapa ke berapa.*
+
+Pencatatan dipasang di **tingkat model** lewat trait `RecordsActivity`, bukan di
+controller, supaya perubahan lewat jalur mana pun ikut terekam — termasuk
+`Setting::set()` yang dipanggil dari luar controller.
+
+| Keputusan | Alasan |
+|---|---|
+| Dilewati bila tidak ada pengguna yang masuk | Seeder dan perintah konsol bukan tindakan admin; mencatatnya hanya mengaburkan jejak |
+| Penyimpanan tanpa perubahan nilai tidak dicatat | Menekan tombol Simpan tanpa mengubah apa pun bukan peristiwa |
+| `user_name` ikut disalin | Jejak tetap terbaca setelah akun pelakunya dihapus |
+| Kata sandi tidak masuk `User::activityAttributes()` | Jejak perubahan tidak boleh menyimpan hash kredensial; peristiwa reset dicatat sebagai tindakan, bukan selisih nilai |
+
+Halaman log **hanya dapat dibaca**. Catatan yang dapat disunting tidak lagi
+berguna sebagai bukti telusur.
+
+---
+
+## 14. Keluaran untuk Dibawa Pulang
+
+### Lembar cetak calon mahasiswa
+
+`GET /tes/{id}/cetak` menghasilkan halaman HTML ber-`@media print`, bukan PDF
+dari pustaka. Peramban yang mencetaknya menjadi PDF, sehingga **tidak ada
+dependensi tambahan** yang perlu dipasang dan dipelihara.
+
+Lembar dan layar membaca data dari `ResultController::resultData()` yang sama —
+lembar cetak yang angkanya berbeda dari layar akan menimbulkan keraguan atas
+hasilnya.
+
+### Ekspor CSV rekap
+
+`GET /admin/rekap/ekspor` memakai `response()->streamDownload` dengan `chunk()`,
+sehingga rekap besar tidak dirakit seluruhnya di memori. Penyaringannya dibagi
+dengan halaman rekap lewat `AssessmentRecapController::filtered()`, supaya berkas
+yang terunduh benar-benar berisi baris yang sedang dilihat admin.
+
+Ditulis dengan BOM UTF-8 agar Excel di Windows tidak salah membaca huruf beraksen.
+
+---
+
+## 15. Simpan Sebagian Jawaban
+
+Kuesioner menyimpan jawaban di **dua lapis**:
+
+| Lapis | Kapan | Menangani |
+|---|---|---|
+| `localStorage` | Setiap perubahan | Halaman tertutup mendadak, koneksi putus |
+| `assessment_answers` lewat `POST .../kuesioner/simpan` | 1,2 detik setelah perubahan terakhir | Berpindah perangkat, membersihkan riwayat peramban |
+
+Pengiriman ditunda sebentar supaya rentetan klik cepat menjadi satu permintaan.
+Penyimpanan memakai `upsert` pada indeks unik
+`(assessment_id, riasec_question_id)`, sehingga menjawab ulang butir yang sama
+menimpa nilainya alih-alih menggandakan baris.
+
+Draft lokal yang belum sempat terkirim disusulkan ke server saat halaman dibuka
+kembali. Bila pengiriman gagal, jawaban tetap aman di `localStorage` dan
+pengguna diberi tahu tanpa alur pengisiannya terhenti.
+
+Perhitungan **tidak pernah** dijalankan dari jawaban sebagian — hanya
+`storeAnswers()` yang memicunya, dan ia tetap mewajibkan seluruh butir terjawab.
+
+---
+
+## 16. Perbandingan Antar Sesi
+
+Calon mahasiswa yang mengulang tes ingin tahu apa yang berubah. Halaman
+`/tes/bandingkan` menyandingkan dua sesi: pergeseran persentase RIASEC per
+dimensi, perubahan nilai rapor per mata pelajaran, dan apakah rekomendasinya
+berpindah.
+
+Seluruh angka dibaca dari sesi tes masing-masing, tidak ada yang dihitung ulang,
+sehingga perbandingannya setia pada hasil yang pernah terbit.
+
+Rekomendasi yang **tetap sama** di beberapa sesi adalah informasi tersendiri: ia
+memperkuat keyakinan bahwa prodi tersebut memang sesuai, bukan hasil kebetulan.
+
+---
+
+## 17. Batasan yang Diketahui
 
 | Batasan | Keterangan |
 |---|---|
-| Belum ada ekspor CSV | Direncanakan, belum dikerjakan |
 | Belum ada impor CSV | Data tracer study dimasukkan manual lewat formulir |
-| Belum ada manajemen akun | Admin tidak dapat mereset kata sandi atau menonaktifkan akun calon mahasiswa |
-| Belum ada periode/gelombang | Seluruh sesi tes menumpuk dalam satu kumpulan |
-| Belum ada catatan perubahan | Perubahan bobot tidak terekam pelakunya |
-| Kuesioner tidak tersimpan sebagian | Jawaban baru tersimpan ketika seluruh butir dikirim |
+| Belum ada pembuatan admin lewat antarmuka | Disengaja — lihat §6. Admin dibuat lewat seeder atau SQL |
+| Pengiriman surel belum dikonfigurasi | `MAIL_MAILER=log`; pemulihan kata sandi mandiri belum berfungsi, karena itu admin dibekali setel ulang manual |
+| Belum ada notifikasi hasil | Calon mahasiswa perlu membuka sendiri lembar hasilnya |
+| Belum ada `throttle` pada pengiriman tes | Rute pengiriman belum dibatasi lajunya |
 | Terikat MySQL | Statistik memakai `DATE_FORMAT`; `pdo_sqlite` tidak aktif di lingkungan pengembangan |

@@ -50,6 +50,18 @@ class LoginRequest extends FormRequest
             ]);
         }
 
+        // Akun yang dinonaktifkan admin tetap punya kata sandi yang sah, karena
+        // itu penolakannya dilakukan setelah kredensialnya terbukti benar.
+        if (! Auth::user()->is_active) {
+            Auth::guard('web')->logout();
+            $this->session()->invalidate();
+            $this->session()->regenerateToken();
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun Anda dinonaktifkan. Silakan hubungi administrator.',
+            ]);
+        }
+
         RateLimiter::clear($this->throttleKey());
     }
 

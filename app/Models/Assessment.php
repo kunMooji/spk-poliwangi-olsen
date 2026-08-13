@@ -18,7 +18,7 @@ class Assessment extends Model
     protected $table = 'assessments';
 
     protected $fillable = [
-        'user_id', 'code',
+        'user_id', 'period_id', 'code',
         'full_name', 'gender', 'school_name', 'school_major', 'graduation_year', 'phone',
         'math_score', 'physics_score', 'chemistry_score', 'biology_score', 'indonesian_score', 'english_score',
         'score_r', 'score_i', 'score_a', 'score_s', 'score_e', 'score_c',
@@ -71,6 +71,12 @@ class Assessment extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /** @return BelongsTo<Period, Assessment> */
+    public function period(): BelongsTo
+    {
+        return $this->belongsTo(Period::class);
     }
 
     /** @return HasMany<AssessmentPriority> */
