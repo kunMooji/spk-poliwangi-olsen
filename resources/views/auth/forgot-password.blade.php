@@ -14,14 +14,14 @@
         </div>
 
         <button type="submit"
-                class="w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                class="w-full rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-700">
             Kirim Tautan Setel Ulang
         </button>
     </form>
 
     <p class="mt-6 border-t border-gray-100 pt-6 text-center text-sm text-gray-600 dark:border-gray-700 dark:text-gray-400">
         Ingat kata sandinya?
-        <a href="{{ route('login') }}" class="font-semibold text-indigo-600 transition hover:text-indigo-500 dark:text-indigo-400">
+        <a href="{{ route('login') }}" class="font-semibold text-brand-600 transition hover:text-brand-500 dark:text-brand-400">
             Kembali ke halaman masuk
         </a>
     </p>

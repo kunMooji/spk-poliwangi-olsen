@@ -14,7 +14,7 @@
                 <div>
                     <x-input-label for="period" value="Gelombang" />
                     <select id="period" name="period" onchange="this.form.submit()"
-                            class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                            class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                         <option value="">Semua gelombang</option>
                         @foreach ($periods as $periodOption)
                             <option value="{{ $periodOption->id }}" @selected($selectedPeriod == $periodOption->id)>
@@ -156,7 +156,7 @@
                                         <span class="font-semibold tabular-nums text-gray-900 dark:text-gray-100">{{ number_format($value, 2) }}</span>
                                     </div>
                                     <div class="mt-1 h-2 overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
-                                        <div class="h-full rounded-full bg-indigo-500" style="width: {{ min(100, max(0, $value)) }}%"></div>
+                                        <div class="h-full rounded-full bg-brand-500" style="width: {{ min(100, max(0, $value)) }}%"></div>
                                     </div>
                                 </div>
                             @endforeach
@@ -229,7 +229,7 @@
                                 @foreach ($monthly as $period => $total)
                                     <div class="flex flex-1 flex-col items-center gap-1">
                                         <span class="text-[10px] tabular-nums text-gray-500 dark:text-gray-400">{{ $total }}</span>
-                                        <div class="w-full rounded-t bg-indigo-500"
+                                        <div class="w-full rounded-t bg-brand-500"
                                              style="height: {{ max(4, round($total / max($peak, 1) * 100)) }}%"
                                              title="{{ $period }}: {{ $total }} tes"></div>
                                         <span class="text-[10px] text-gray-400">{{ substr($period, 5) }}</span>

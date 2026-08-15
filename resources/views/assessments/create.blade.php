@@ -28,7 +28,7 @@
                         <div>
                             <x-input-label for="gender" value="Jenis Kelamin" />
                             <select id="gender" name="gender"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                                 <option value="">— Pilih —</option>
                                 <option value="L" @selected(old('gender') === 'L')>Laki-laki</option>
                                 <option value="P" @selected(old('gender') === 'P')>Perempuan</option>
@@ -54,7 +54,7 @@
                             <div>
                                 <x-input-label for="school_major" value="Jurusan" />
                                 <select id="school_major" name="school_major"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                                     <option value="">— Pilih —</option>
                                     @foreach (['IPA', 'IPS', 'Bahasa', 'SMK', 'Lainnya'] as $major)
                                         <option value="{{ $major }}" @selected(old('school_major') === $major)>{{ $major }}</option>
@@ -113,7 +113,7 @@
                                     @endif
                                 </x-input-label>
                                 <select id="priority_{{ $i }}" name="priorities[{{ $i }}]"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
                                         @if ($i < $minPriorities) required @endif>
                                     <option value="">— Pilih program studi —</option>
                                     @foreach ($programs as $program)
@@ -134,7 +134,7 @@
                         Batal
                     </a>
                     <button type="submit"
-                            class="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                            class="rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
                         Lanjut ke Kuesioner
                     </button>
                 </div>

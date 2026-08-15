@@ -5,7 +5,7 @@
                 Riwayat Tes Saya
             </h2>
             <a href="{{ route('assessments.create') }}"
-               class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">
+               class="inline-flex items-center rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700">
                 Mulai Tes Baru
             </a>
         </div>
@@ -20,7 +20,7 @@
                     <div class="p-10 text-center">
                         <p class="text-gray-500 dark:text-gray-400">Anda belum pernah mengikuti tes.</p>
                         <a href="{{ route('assessments.create') }}"
-                           class="mt-4 inline-flex items-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                           class="mt-4 inline-flex items-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
                             Mulai Tes Pertama
                         </a>
                     </div>
@@ -54,7 +54,7 @@
                                         <td class="whitespace-nowrap px-6 py-4 text-right">
                                             @if ($assessment->isCompleted())
                                                 <a href="{{ route('assessments.result', $assessment) }}"
-                                                   class="font-medium text-indigo-600 hover:underline dark:text-indigo-400">Lihat Hasil</a>
+                                                   class="font-medium text-brand-600 hover:underline dark:text-brand-400">Lihat Hasil</a>
                                             @else
                                                 <a href="{{ route('assessments.questionnaire', $assessment) }}"
                                                    class="font-medium text-amber-600 hover:underline dark:text-amber-400">Lanjutkan</a>

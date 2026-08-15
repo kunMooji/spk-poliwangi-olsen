@@ -12,6 +12,17 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
 
+        {{-- Menentukan tema sebelum halaman dicat — lihat catatan yang sama
+             di layouts/app.blade.php. --}}
+        <script>
+            (function () {
+                var stored = localStorage.getItem('theme');
+                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var isDark = stored ? stored === 'dark' : prefersDark;
+                document.documentElement.classList.toggle('dark', isDark);
+            })();
+        </script>
+
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
 
@@ -20,7 +31,7 @@
         <header class="sticky top-0 z-30 border-b border-gray-100 bg-white/90 backdrop-blur dark:border-gray-800 dark:bg-gray-900/90">
             <nav class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
                 <a href="{{ route('home') }}" class="flex items-center gap-3">
-                    <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-sm font-bold text-white">SPK</span>
+                    <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600 text-sm font-bold text-white">SPK</span>
                     <span class="hidden text-sm font-semibold leading-tight sm:block">
                         {{ config('app.name') }}
                         <span class="block text-xs font-normal text-gray-500 dark:text-gray-400">Politeknik Negeri Banyuwangi</span>
@@ -28,16 +39,18 @@
                 </a>
 
                 <div class="hidden items-center gap-8 text-sm font-medium text-gray-600 md:flex dark:text-gray-300">
-                    <a href="#cara-kerja" class="transition hover:text-indigo-600 dark:hover:text-indigo-400">Cara Kerja</a>
-                    <a href="#kriteria" class="transition hover:text-indigo-600 dark:hover:text-indigo-400">Kriteria</a>
-                    <a href="#riasec" class="transition hover:text-indigo-600 dark:hover:text-indigo-400">RIASEC</a>
-                    <a href="#prodi" class="transition hover:text-indigo-600 dark:hover:text-indigo-400">Program Studi</a>
+                    <a href="#cara-kerja" class="transition hover:text-brand-600 dark:hover:text-brand-400">Cara Kerja</a>
+                    <a href="#kriteria" class="transition hover:text-brand-600 dark:hover:text-brand-400">Kriteria</a>
+                    <a href="#riasec" class="transition hover:text-brand-600 dark:hover:text-brand-400">RIASEC</a>
+                    <a href="#prodi" class="transition hover:text-brand-600 dark:hover:text-brand-400">Program Studi</a>
                 </div>
 
                 <div class="flex items-center gap-2">
+                    <x-theme-toggle />
+
                     @auth
                         <a href="{{ route('dashboard') }}"
-                           class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                           class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700">
                             Buka Dasbor
                         </a>
                     @else
@@ -46,7 +59,7 @@
                             Masuk
                         </a>
                         <a href="{{ route('register') }}"
-                           class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                           class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700">
                             Daftar
                         </a>
                     @endauth
@@ -57,18 +70,18 @@
         <main>
             {{-- Hero --}}
             <section class="relative overflow-hidden">
-                <div class="absolute inset-0 bg-gradient-to-br from-indigo-50 via-white to-violet-50 dark:from-gray-900 dark:via-gray-900 dark:to-indigo-950"></div>
+                <div class="absolute inset-0 bg-gradient-to-br from-brand-50 via-white to-brand-100 dark:from-gray-900 dark:via-gray-900 dark:to-brand-950"></div>
 
                 <div class="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 lg:py-28">
                     <div class="grid items-center gap-12 lg:grid-cols-2">
                         <div>
-                            <span class="inline-flex items-center rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                            <span class="inline-flex items-center rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
                                 Metode CoCoSo &middot; Kepribadian RIASEC
                             </span>
 
                             <h1 class="mt-5 text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl">
                                 Pilih program studi dengan
-                                <span class="text-indigo-600 dark:text-indigo-400">dasar yang terukur</span>,
+                                <span class="text-brand-600 dark:text-brand-400">dasar yang terukur</span>,
                                 bukan sekadar ikut teman.
                             </h1>
 
@@ -81,12 +94,12 @@
                             <div class="mt-8 flex flex-wrap gap-3">
                                 @auth
                                     <a href="{{ route('dashboard') }}"
-                                       class="inline-flex items-center rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700">
+                                       class="inline-flex items-center rounded-xl bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700">
                                         Buka Dasbor Saya
                                     </a>
                                 @else
                                     <a href="{{ route('register') }}"
-                                       class="inline-flex items-center rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700">
+                                       class="inline-flex items-center rounded-xl bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700">
                                         Mulai Tes Gratis
                                     </a>
                                     <a href="{{ route('login') }}"
@@ -109,7 +122,7 @@
                                 ['value' => count(Riasec::DIMENSIONS), 'label' => 'Dimensi kepribadian'],
                             ] as $stat)
                                 <div class="rounded-2xl border border-gray-100 bg-white/80 p-6 shadow-sm backdrop-blur dark:border-gray-800 dark:bg-gray-800/80">
-                                    <p class="text-4xl font-extrabold text-indigo-600 dark:text-indigo-400">{{ $stat['value'] }}</p>
+                                    <p class="text-4xl font-extrabold text-brand-600 dark:text-brand-400">{{ $stat['value'] }}</p>
                                     <p class="mt-2 text-sm leading-snug text-gray-600 dark:text-gray-300">{{ $stat['label'] }}</p>
                                 </div>
                             @endforeach
@@ -144,7 +157,7 @@
                         ],
                     ] as $index => $step)
                         <li class="relative rounded-2xl border border-gray-100 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-800">
-                            <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-lg font-bold text-white">
+                            <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600 text-lg font-bold text-white">
                                 {{ $index + 1 }}
                             </span>
                             <h3 class="mt-4 text-lg font-semibold">{{ $step['title'] }}</h3>
@@ -174,7 +187,7 @@
                                         <span class="font-mono text-xs text-gray-400">{{ $criterion->code }}</span>
                                         <h3 class="mt-0.5 font-semibold leading-snug">{{ $criterion->name }}</h3>
                                     </div>
-                                    <span class="shrink-0 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                                    <span class="shrink-0 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700 dark:bg-brand-900/40 dark:text-brand-300">
                                         {{ number_format($criterion->weight * 100, 0) }}%
                                     </span>
                                 </div>
@@ -250,9 +263,9 @@
 
             {{-- Ajakan --}}
             <section class="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-                <div class="rounded-3xl bg-gradient-to-br from-indigo-600 to-violet-700 px-6 py-14 text-center text-white sm:px-12">
+                <div class="rounded-3xl bg-gradient-to-br from-brand-600 to-brand-900 px-6 py-14 text-center text-white sm:px-12">
                     <h2 class="text-3xl font-bold tracking-tight">Siap mengetahui prodi yang paling cocok?</h2>
-                    <p class="mx-auto mt-3 max-w-2xl text-indigo-100">
+                    <p class="mx-auto mt-3 max-w-2xl text-brand-100">
                         Buat akun calon mahasiswa, kerjakan tesnya, dan bawa hasilnya untuk berdiskusi dengan guru
                         BK maupun orang tua. Keputusan akhir tetap di tangan Anda.
                     </p>
@@ -260,7 +273,7 @@
                     @guest
                         <div class="mt-8 flex flex-wrap justify-center gap-3">
                             <a href="{{ route('register') }}"
-                               class="inline-flex items-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50">
+                               class="inline-flex items-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-brand-700 transition hover:bg-brand-50">
                                 Daftar Sekarang
                             </a>
                             <a href="{{ route('login') }}"
@@ -271,7 +284,7 @@
                     @else
                         <div class="mt-8">
                             <a href="{{ route('dashboard') }}"
-                               class="inline-flex items-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-50">
+                               class="inline-flex items-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-brand-700 transition hover:bg-brand-50">
                                 Buka Dasbor Saya
                             </a>
                         </div>

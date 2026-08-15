@@ -5,7 +5,7 @@
             <div class="sm:col-span-2">
                 <x-input-label for="statement" value="Pernyataan" />
                 <textarea id="statement" name="statement" rows="3" required
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">{{ old('statement', $question->statement) }}</textarea>
+                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">{{ old('statement', $question->statement) }}</textarea>
                 <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                     Tulis sebagai kalimat pengalaman diri, misalnya &ldquo;Saya senang membongkar dan memperbaiki peralatan elektronik.&rdquo;
                 </p>
@@ -15,7 +15,7 @@
             <div>
                 <x-input-label for="dimension" value="Dimensi RIASEC" />
                 <select id="dimension" name="dimension"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                     @foreach ($labels as $code => $label)
                         <option value="{{ $code }}" @selected(old('dimension', $question->dimension) === $code)>{{ $code }} &mdash; {{ $label }}</option>
                     @endforeach
@@ -34,7 +34,7 @@
                 <label class="inline-flex items-center gap-2">
                     <input type="hidden" name="is_active" value="0">
                     <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $question->is_active))
-                           class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900">
+                           class="rounded border-gray-300 text-brand-600 shadow-sm focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900">
                     <span class="text-sm text-gray-700 dark:text-gray-300">Aktif &mdash; muncul pada kuesioner tes baru</span>
                 </label>
             </div>
@@ -47,7 +47,7 @@
             Batal
         </a>
         <button type="submit"
-                class="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                class="rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
             Simpan
         </button>
     </div>

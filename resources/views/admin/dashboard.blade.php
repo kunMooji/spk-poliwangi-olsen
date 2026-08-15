@@ -20,7 +20,7 @@
 
                     <div class="mt-6 flex flex-wrap gap-3">
                         <a href="{{ route('admin.recap.index') }}"
-                           class="inline-flex items-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                           class="inline-flex items-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
                             Lihat Rekap Hasil Tes
                         </a>
                         <a href="{{ route('admin.statistics') }}"
@@ -137,7 +137,7 @@
             <div class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
                 <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 dark:border-gray-700">
                     <h4 class="font-semibold text-gray-900 dark:text-gray-100">Tes Terbaru</h4>
-                    <a href="{{ route('admin.recap.index') }}" class="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">
+                    <a href="{{ route('admin.recap.index') }}" class="text-sm font-medium text-brand-600 hover:underline dark:text-brand-400">
                         Lihat semua
                     </a>
                 </div>
@@ -165,7 +165,7 @@
                                         <td class="px-6 py-4">{{ $assessment->recommendedProgram?->full_name ?? '-' }}</td>
                                         <td class="whitespace-nowrap px-6 py-4 text-right">
                                             <a href="{{ route('admin.recap.show', $assessment) }}"
-                                               class="font-medium text-indigo-600 hover:underline dark:text-indigo-400">Detail</a>
+                                               class="font-medium text-brand-600 hover:underline dark:text-brand-400">Detail</a>
                                         </td>
                                     </tr>
                                 @endforeach

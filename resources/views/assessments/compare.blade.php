@@ -23,7 +23,7 @@
                         {{ $sessions->count() }} hasil tes yang selesai.
                     </p>
                     <a href="{{ route('assessments.create') }}"
-                       class="mt-4 inline-block rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                       class="mt-4 inline-block rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
                         Ikuti Tes
                     </a>
                 </div>
@@ -33,7 +33,7 @@
                     <div>
                         <x-input-label for="a" value="Tes Sebelumnya" />
                         <select id="a" name="a"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                             @foreach ($sessions as $session)
                                 <option value="{{ $session->id }}" @selected($left?->id === $session->id)>
                                     {{ $session->completed_at?->translatedFormat('d M Y, H:i') }} &mdash; {{ $session->code }}
@@ -45,7 +45,7 @@
                     <div>
                         <x-input-label for="b" value="Tes Pembanding" />
                         <select id="b" name="b"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                             @foreach ($sessions as $session)
                                 <option value="{{ $session->id }}" @selected($right?->id === $session->id)>
                                     {{ $session->completed_at?->translatedFormat('d M Y, H:i') }} &mdash; {{ $session->code }}
@@ -72,7 +72,7 @@
                     <section class="grid gap-4 sm:grid-cols-2">
                         @foreach ([['label' => 'Tes Sebelumnya', 'data' => $left, 'tone' => 'gray'], ['label' => 'Tes Pembanding', 'data' => $right, 'tone' => 'indigo']] as $card)
                             <div class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800
-                                        {{ $card['tone'] === 'indigo' ? 'ring-2 ring-indigo-500' : '' }}">
+                                        {{ $card['tone'] === 'indigo' ? 'ring-2 ring-brand-500' : '' }}">
                                 <div class="flex items-baseline justify-between">
                                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ $card['label'] }}</p>
                                     <span class="font-mono text-xs text-gray-400">{{ $card['data']->code }}</span>
@@ -226,7 +226,7 @@
                                         </td>
                                         <td class="whitespace-nowrap px-6 py-3 text-right">
                                             <a href="{{ route('assessments.result', $session) }}"
-                                               class="font-medium text-indigo-600 hover:underline dark:text-indigo-400">Lihat</a>
+                                               class="font-medium text-brand-600 hover:underline dark:text-brand-400">Lihat</a>
                                         </td>
                                     </tr>
                                 @endforeach

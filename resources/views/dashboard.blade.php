@@ -28,7 +28,7 @@
                             </a>
                         @else
                             <a href="{{ route('assessments.create') }}"
-                               class="inline-flex items-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                               class="inline-flex items-center rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
                                 Mulai Tes Rekomendasi
                             </a>
                         @endif

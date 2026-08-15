@@ -14,7 +14,7 @@
             <div>
                 <x-input-label for="level" value="Jenjang" />
                 <select id="level" name="level"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                     @foreach (['D2', 'D3', 'D4', 'S1'] as $level)
                         <option value="{{ $level }}" @selected(old('level', $program->level) === $level)>{{ $level }}</option>
                     @endforeach
@@ -39,7 +39,7 @@
             <div class="sm:col-span-2">
                 <x-input-label for="description" value="Deskripsi" />
                 <textarea id="description" name="description" rows="3"
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">{{ old('description', $program->description) }}</textarea>
+                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">{{ old('description', $program->description) }}</textarea>
                 <x-input-error :messages="$errors->get('description')" class="mt-2" />
             </div>
 
@@ -47,7 +47,7 @@
                 <label class="inline-flex items-center gap-2">
                     <input type="hidden" name="is_active" value="0">
                     <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $program->is_active))
-                           class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900">
+                           class="rounded border-gray-300 text-brand-600 shadow-sm focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900">
                     <span class="text-sm text-gray-700 dark:text-gray-300">Aktif &mdash; ikut diperhitungkan sebagai alternatif pada tes baru</span>
                 </label>
             </div>
@@ -129,7 +129,7 @@
             Batal
         </a>
         <button type="submit"
-                class="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                class="rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
             Simpan
         </button>
     </div>

@@ -142,7 +142,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200 text-gray-700 dark:divide-gray-700 dark:text-gray-300">
                             @foreach ($results as $result)
-                                <tr class="{{ $result->study_program_id === $assessment->recommended_program_id ? 'bg-indigo-50 dark:bg-indigo-900/20' : '' }}">
+                                <tr class="{{ $result->study_program_id === $assessment->recommended_program_id ? 'bg-brand-50 dark:bg-brand-900/20' : '' }}">
                                     <td class="px-4 py-2.5 font-semibold">{{ $result->ranking }}</td>
                                     <td class="whitespace-nowrap px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">
                                         {{ $result->studyProgram->code }}

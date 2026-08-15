@@ -113,7 +113,7 @@
                         </div>
                         <div class="flex flex-wrap gap-3">
                             <a href="{{ route('admin.recap.sensitivity', $assessment) }}"
-                               class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                               class="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700">
                                 Analisis Sensitivitas
                             </a>
                             <a href="{{ route('assessments.result', $assessment) }}"
@@ -141,7 +141,7 @@
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                                 @foreach ($topResults as $result)
-                                    <tr class="text-gray-700 dark:text-gray-300 {{ $result->study_program_id === $assessment->recommended_program_id ? 'bg-indigo-50 dark:bg-indigo-900/20' : '' }}">
+                                    <tr class="text-gray-700 dark:text-gray-300 {{ $result->study_program_id === $assessment->recommended_program_id ? 'bg-brand-50 dark:bg-brand-900/20' : '' }}">
                                         <td class="px-4 py-3 font-semibold">{{ $result->ranking }}</td>
                                         <td class="px-4 py-3 text-gray-900 dark:text-gray-100">{{ $result->studyProgram?->full_name ?? '-' }}</td>
                                         <td class="px-4 py-3 text-right">{{ number_format($result->s_value, 4) }}</td>

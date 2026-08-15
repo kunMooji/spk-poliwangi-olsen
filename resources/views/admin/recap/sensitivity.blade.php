@@ -105,7 +105,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @foreach ($analysis['lambda'] as $row)
-                                <tr class="text-gray-700 dark:text-gray-300 {{ abs($row['lambda'] - $assessment->lambda_used) < 0.001 ? 'bg-indigo-50 dark:bg-indigo-900/20' : '' }}">
+                                <tr class="text-gray-700 dark:text-gray-300 {{ abs($row['lambda'] - $assessment->lambda_used) < 0.001 ? 'bg-brand-50 dark:bg-brand-900/20' : '' }}">
                                     <td class="whitespace-nowrap px-6 py-3 font-mono">{{ number_format($row['lambda'], 1) }}</td>
                                     <td class="px-6 py-3 text-gray-900 dark:text-gray-100">{{ $name($row['winner']) }}</td>
                                     <td class="whitespace-nowrap px-6 py-3 text-right font-mono">{{ number_format($row['margin'], 2) }}</td>

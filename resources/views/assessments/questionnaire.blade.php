@@ -67,11 +67,11 @@
                                   'text-rose-600 dark:text-rose-400': saveState === 'error',
                               }"
                               x-text="saveMessage"></span>
-                        <span class="font-semibold text-indigo-600 dark:text-indigo-400" x-text="percent + '%'"></span>
+                        <span class="font-semibold text-brand-600 dark:text-brand-400" x-text="percent + '%'"></span>
                     </div>
                 </div>
                 <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
-                    <div class="h-full rounded-full bg-indigo-600 transition-all duration-300" :style="`width: ${percent}%`"></div>
+                    <div class="h-full rounded-full bg-brand-600 transition-all duration-300" :style="`width: ${percent}%`"></div>
                 </div>
             </div>
         </div>
@@ -98,9 +98,9 @@
                                            name="answers[{{ $question->id }}]" value="{{ $value }}"
                                            x-model="answers['{{ $question->id }}']">
                                     <span class="block rounded-lg border border-gray-300 px-2 py-2 text-center text-xs transition
-                                                 hover:border-indigo-400 hover:bg-indigo-50
-                                                 peer-checked:border-indigo-600 peer-checked:bg-indigo-600 peer-checked:text-white
-                                                 dark:border-gray-600 dark:hover:bg-gray-700 dark:peer-checked:border-indigo-500 dark:peer-checked:bg-indigo-600">
+                                                 hover:border-brand-400 hover:bg-brand-50
+                                                 peer-checked:border-brand-600 peer-checked:bg-brand-600 peer-checked:text-white
+                                                 dark:border-gray-600 dark:hover:bg-gray-700 dark:peer-checked:border-brand-500 dark:peer-checked:bg-brand-600">
                                         <span class="block text-base font-bold">{{ $value }}</span>
                                         <span class="mt-0.5 block leading-tight">{{ $label }}</span>
                                     </span>
@@ -121,7 +121,7 @@
                         </p>
 
                         <button type="submit" :disabled="!isComplete"
-                                class="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-300 dark:disabled:bg-gray-600">
+                                class="rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-gray-300 dark:disabled:bg-gray-600">
                             Proses &amp; Lihat Hasil
                         </button>
                     </div>

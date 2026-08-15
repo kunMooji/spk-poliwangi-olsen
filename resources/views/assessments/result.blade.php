@@ -17,10 +17,10 @@
             <x-flash />
 
             {{-- Kartu rekomendasi utama --}}
-            <section class="overflow-hidden rounded-xl bg-gradient-to-br from-indigo-600 to-violet-700 p-6 text-white shadow-sm sm:p-8">
-                <p class="text-sm font-medium text-indigo-100">Rekomendasi Utama</p>
+            <section class="overflow-hidden rounded-xl bg-gradient-to-br from-brand-600 to-brand-900 p-6 text-white shadow-sm sm:p-8">
+                <p class="text-sm font-medium text-brand-100">Rekomendasi Utama</p>
                 <h3 class="mt-1 text-3xl font-bold">{{ $assessment->recommendedProgram?->full_name ?? '-' }}</h3>
-                <p class="mt-2 max-w-3xl text-sm leading-relaxed text-indigo-100">
+                <p class="mt-2 max-w-3xl text-sm leading-relaxed text-brand-100">
                     {{ $assessment->recommendedProgram?->description }}
                 </p>
             </section>
@@ -158,65 +158,98 @@
                 </section>
             @endif
 
-            <div class="grid gap-6 lg:grid-cols-5">
-                {{-- Bar chart RIASEC --}}
-                <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800 lg:col-span-3">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Profil Kepribadian RIASEC</h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Kode Holland Anda
-                        <span class="font-semibold text-gray-800 dark:text-gray-200">{{ $assessment->holland_code }}</span>
-                        &mdash; tipe dominan
-                        <span class="font-semibold text-gray-800 dark:text-gray-200">
-                            {{ Riasec::name($assessment->dominant_type) }}
-                        </span>.
-                    </p>
-
-                    <div class="mt-5 h-72">
-                        <canvas data-riasec-chart="{{ json_encode($chart) }}"></canvas>
+            {{-- Bar chart RIASEC --}}
+            <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Profil Kepribadian RIASEC</h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            Kode Holland Anda
+                            <span class="font-semibold text-gray-800 dark:text-gray-200">{{ $assessment->holland_code }}</span>
+                            &mdash; tipe dominan
+                            <span class="font-semibold text-gray-800 dark:text-gray-200">
+                                {{ Riasec::name($assessment->dominant_type) }}
+                            </span>.
+                        </p>
                     </div>
-
-                    <p class="mt-4 rounded-lg bg-gray-50 p-3 text-sm leading-relaxed text-gray-600 dark:bg-gray-900/40 dark:text-gray-300">
-                        {{ Riasec::description($assessment->dominant_type) }}
-                    </p>
-                </section>
-
-                {{-- Rincian dimensi --}}
-                <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800 lg:col-span-2">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Rincian Dimensi</h3>
-
-                    <ul class="mt-4 space-y-3">
-                        @foreach (Riasec::DIMENSIONS as $dimension)
-                            <li>
-                                <div class="flex items-center justify-between text-sm">
-                                    <span class="font-medium text-gray-700 dark:text-gray-200">
-                                        {{ Riasec::label($dimension) }}
-                                    </span>
-                                    <span class="tabular-nums text-gray-500 dark:text-gray-400">
-                                        {{ number_format($percentages[$dimension], 2) }}%
-                                    </span>
-                                </div>
-                                <div class="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
-                                    <div class="h-full rounded-full"
-                                         style="width: {{ $percentages[$dimension] }}%; background-color: {{ Riasec::color($dimension) }}"></div>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ul>
-
-                    <dl class="mt-6 space-y-2 border-t border-gray-200 pt-4 text-sm dark:border-gray-700">
-                        <div class="flex justify-between">
-                            <dt class="text-gray-500 dark:text-gray-400">Skor Likert total</dt>
-                            <dd class="font-medium text-gray-800 dark:text-gray-200">{{ array_sum($assessment->riasecScores()) }}</dd>
+                    <dl class="flex gap-5 text-sm">
+                        <div>
+                            <dt class="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">Skor Likert Total</dt>
+                            <dd class="mt-0.5 font-semibold tabular-nums text-gray-800 dark:text-gray-200">{{ array_sum($assessment->riasecScores()) }}</dd>
                         </div>
-                        <div class="flex justify-between">
-                            <dt class="text-gray-500 dark:text-gray-400">Tanggal tes</dt>
-                            <dd class="font-medium text-gray-800 dark:text-gray-200">
+                        <div>
+                            <dt class="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">Tanggal Tes</dt>
+                            <dd class="mt-0.5 font-semibold text-gray-800 dark:text-gray-200">
                                 {{ $assessment->completed_at?->translatedFormat('d F Y, H:i') }}
                             </dd>
                         </div>
                     </dl>
-                </section>
-            </div>
+                </div>
+
+                <div class="mt-5 h-72">
+                    <canvas data-riasec-chart="{{ json_encode($chart) }}"></canvas>
+                </div>
+
+                <p class="mt-4 rounded-lg bg-gray-50 p-3 text-sm leading-relaxed text-gray-600 dark:bg-gray-900/40 dark:text-gray-300">
+                    {{ Riasec::description($assessment->dominant_type) }}
+                </p>
+            </section>
+
+            {{-- Rincian dimensi --}}
+            <section>
+                <div class="flex flex-wrap items-baseline justify-between gap-2">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Rincian Dimensi</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Enam dimensi minat &amp; kepribadian menurut model Holland.</p>
+                </div>
+
+                <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    @foreach (Riasec::DIMENSIONS as $dimension)
+                        @php($color = Riasec::color($dimension))
+                        @php($isDominant = $dimension === $assessment->dominant_type)
+                        <div @class([
+                                'group relative flex flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-md dark:bg-gray-800 dark:ring-white/10',
+                                'ring-2' => $isDominant,
+                            ])
+                             @style(["--tw-ring-color: {$color}" => $isDominant])>
+                            <div class="relative overflow-hidden p-5 text-white"
+                                 style="background-color: {{ $color }}; background-image: linear-gradient(135deg, rgba(255,255,255,.20), rgba(0,0,0,.28));">
+                                <span class="pointer-events-none absolute -right-2 -top-8 select-none text-9xl font-black leading-none text-white/10">
+                                    {{ $dimension }}
+                                </span>
+
+                                <div class="relative">
+                                    <p class="text-xl font-bold">{{ Riasec::name($dimension) }}</p>
+                                    <p class="mt-0.5 text-xs font-medium uppercase tracking-wide text-white/75">
+                                        {{ Riasec::label($dimension) }}
+                                    </p>
+
+                                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                                        <span class="rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold backdrop-blur-sm">
+                                            {{ number_format($percentages[$dimension], 1) }}%
+                                        </span>
+                                        @if ($isDominant)
+                                            <span class="rounded-full bg-white px-2.5 py-1 text-xs font-semibold" style="color: {{ $color }}">
+                                                Tipe Dominan
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-1 flex-col p-5">
+                                <p class="flex-1 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
+                                    {{ Riasec::description($dimension) }}
+                                </p>
+
+                                <div class="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+                                    <div class="h-full rounded-full transition-all"
+                                         style="width: {{ $percentages[$dimension] }}%; background-color: {{ $color }}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
 
             {{-- Tabel peringkat --}}
             <section class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
@@ -238,14 +271,14 @@
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @foreach ($assessment->results as $result)
                                 @php $isRecommended = $result->study_program_id === $assessment->recommended_program_id; @endphp
-                                <tr class="{{ $isRecommended ? 'bg-indigo-50 dark:bg-indigo-900/20' : '' }} text-gray-700 dark:text-gray-300">
+                                <tr class="{{ $isRecommended ? 'bg-brand-50 dark:bg-brand-900/20' : '' }} text-gray-700 dark:text-gray-300">
                                     <td class="px-6 py-3 font-semibold">{{ $result->ranking }}</td>
                                     <td class="px-6 py-3">
                                         <span class="font-medium text-gray-900 dark:text-gray-100">
                                             {{ $result->studyProgram->full_name }}
                                         </span>
                                         @if ($isRecommended)
-                                            <span class="ms-2 rounded-full bg-indigo-600 px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
+                                            <span class="ms-2 rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
                                                 Rekomendasi
                                             </span>
                                         @endif
@@ -275,7 +308,7 @@
                     Cetak / Simpan PDF
                 </a>
                 <a href="{{ route('assessments.create') }}"
-                   class="rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                   class="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
                     Ikuti Tes Lagi
                 </a>
             </div>

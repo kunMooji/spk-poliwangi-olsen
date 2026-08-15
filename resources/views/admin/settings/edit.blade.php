@@ -29,7 +29,7 @@
                             <div>
                                 @if (isset($choices[$setting->key]))
                                     <select id="{{ $setting->key }}" name="settings[{{ $setting->key }}]"
-                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                                         @foreach ($choices[$setting->key] as $value => $label)
                                             <option value="{{ $value }}" @selected(old($field, $values[$setting->key]) === $value)>{{ $label }}</option>
                                         @endforeach
@@ -49,7 +49,7 @@
 
                 <div class="flex items-center justify-end">
                     <button type="submit"
-                            class="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                            class="rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
                         Simpan Pengaturan
                     </button>
                 </div>

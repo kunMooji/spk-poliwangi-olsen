@@ -9,7 +9,9 @@
     </x-slot>
 
     <div class="py-8">
-        <div class="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8"
+             x-data="{ view: localStorage.getItem('spk-list-view') || 'table' }"
+             x-init="$watch('view', v => localStorage.setItem('spk-list-view', v))">
             <x-flash />
 
             <x-alert type="info">
@@ -28,7 +30,7 @@
                 <div>
                     <x-input-label for="role" value="Peran" />
                     <select id="role" name="role"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                         <option value="">Semua</option>
                         <option value="mahasiswa" @selected(request('role') === 'mahasiswa')>Calon mahasiswa</option>
                         <option value="admin" @selected(request('role') === 'admin')>Administrator</option>
@@ -38,7 +40,7 @@
                 <div>
                     <x-input-label for="status" value="Status" />
                     <select id="status" name="status"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                         <option value="">Semua</option>
                         <option value="aktif" @selected(request('status') === 'aktif')>Aktif</option>
                         <option value="nonaktif" @selected(request('status') === 'nonaktif')>Nonaktif</option>
@@ -59,7 +61,13 @@
                 </div>
             </form>
 
-            <div class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
+            @if (! $users->isEmpty())
+                <div class="flex justify-end">
+                    <x-list-view-toggle />
+                </div>
+            @endif
+
+            <div x-show="view === 'table'" class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
                 @if ($users->isEmpty())
                     <p class="p-10 text-center text-gray-500 dark:text-gray-400">Tidak ada akun yang cocok dengan filter.</p>
                 @else
@@ -106,30 +114,37 @@
                                             @if ($user->isAdmin() || $user->id === auth()->id())
                                                 <span class="text-xs text-gray-400">Tidak dapat diubah</span>
                                             @else
-                                                <form action="{{ route('admin.users.password', $user) }}" method="POST" class="inline"
-                                                      onsubmit="return confirm('Setel ulang kata sandi {{ $user->name }}? Kata sandi lama akan langsung tidak berlaku.')">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <button type="submit" class="font-medium text-indigo-600 hover:underline dark:text-indigo-400">Reset Sandi</button>
-                                                </form>
-
-                                                <form action="{{ route('admin.users.status', $user) }}" method="POST" class="ms-3 inline"
-                                                      onsubmit="return confirm('{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan kembali' }} akun {{ $user->name }}?')">
-                                                    @csrf
-                                                    @method('PUT')
-                                                    <button type="submit" class="font-medium {{ $user->is_active ? 'text-amber-600 dark:text-amber-400' : 'text-emerald-600 dark:text-emerald-400' }} hover:underline">
-                                                        {{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}
-                                                    </button>
-                                                </form>
-
-                                                @if ($user->assessments_count === 0)
-                                                    <form action="{{ route('admin.users.destroy', $user) }}" method="POST" class="ms-3 inline"
-                                                          onsubmit="return confirm('Hapus akun {{ $user->name }}? Tindakan ini tidak dapat dibatalkan.')">
+                                                <div class="inline-flex items-center gap-1">
+                                                    <form action="{{ route('admin.users.password', $user) }}" method="POST"
+                                                          onsubmit="return confirm('Setel ulang kata sandi {{ $user->name }}? Kata sandi lama akan langsung tidak berlaku.')">
                                                         @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="font-medium text-rose-600 hover:underline dark:text-rose-400">Hapus</button>
+                                                        @method('PUT')
+                                                        <x-icon-button type="submit" color="brand" title="Reset Sandi">
+                                                            <x-icon.key />
+                                                        </x-icon-button>
                                                     </form>
-                                                @endif
+
+                                                    <form action="{{ route('admin.users.status', $user) }}" method="POST"
+                                                          onsubmit="return confirm('{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan kembali' }} akun {{ $user->name }}?')">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <x-icon-button type="submit" :color="$user->is_active ? 'amber' : 'emerald'"
+                                                                       :title="$user->is_active ? 'Nonaktifkan' : 'Aktifkan'">
+                                                            <x-icon.power />
+                                                        </x-icon-button>
+                                                    </form>
+
+                                                    @if ($user->assessments_count === 0)
+                                                        <form action="{{ route('admin.users.destroy', $user) }}" method="POST"
+                                                              onsubmit="return confirm('Hapus akun {{ $user->name }}? Tindakan ini tidak dapat dibatalkan.')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <x-icon-button type="submit" color="rose" title="Hapus">
+                                                                <x-icon.trash />
+                                                            </x-icon-button>
+                                                        </form>
+                                                    @endif
+                                                </div>
                                             @endif
                                         </td>
                                     </tr>
@@ -143,6 +158,110 @@
                     </div>
                 @endif
             </div>
+
+            @if (! $users->isEmpty())
+                <div x-show="view === 'card'" x-cloak>
+                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        @foreach ($users as $user)
+                            @php($roleColor = $user->isAdmin() ? '#7c3aed' : '#0284c7')
+                            <div class="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-gray-800">
+                                <div class="relative overflow-hidden p-5 text-white"
+                                     style="background-color: {{ $roleColor }}; background-image: linear-gradient(135deg, rgba(255,255,255,.20), rgba(0,0,0,.28));">
+                                    <svg class="pointer-events-none absolute -right-4 -top-4 h-24 w-24 text-white/10" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
+                                        @if ($user->isAdmin())
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+                                        @else
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                                        @endif
+                                    </svg>
+
+                                    <div class="relative flex items-start gap-2.5">
+                                        <span class="mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-white/20 text-sm font-semibold backdrop-blur-sm">
+                                            {{ \Illuminate\Support\Str::of($user->name)->substr(0, 1)->upper() }}
+                                        </span>
+                                        <div class="min-w-0">
+                                            <p class="truncate text-base font-semibold">{{ $user->name }}</p>
+                                            <p class="mt-0.5 flex items-center gap-1 truncate text-xs text-white/80">
+                                                <svg class="h-3.5 w-3.5 flex-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                                                </svg>
+                                                {{ $user->email }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <dl class="grid grid-cols-2 gap-x-3 gap-y-2 p-5 pb-3 text-sm">
+                                    <div>
+                                        <dt class="text-xs text-gray-500 dark:text-gray-400">Riwayat Tes</dt>
+                                        <dd class="font-semibold tabular-nums text-gray-900 dark:text-gray-100">{{ $user->assessments_count }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-xs text-gray-500 dark:text-gray-400">Terdaftar</dt>
+                                        <dd class="text-gray-700 dark:text-gray-300">{{ $user->created_at?->translatedFormat('d M Y') ?? '-' }}</dd>
+                                    </div>
+                                </dl>
+
+                                <div class="flex flex-wrap items-center gap-2 px-5 pb-3">
+                                    @if ($user->isAdmin())
+                                        <span class="rounded-full bg-violet-100 px-2.5 py-1 text-xs font-medium text-violet-700 dark:bg-violet-900/40 dark:text-violet-300">Administrator</span>
+                                    @else
+                                        <span class="rounded-full bg-sky-100 px-2.5 py-1 text-xs font-medium text-sky-700 dark:bg-sky-900/40 dark:text-sky-300">Calon mahasiswa</span>
+                                    @endif
+
+                                    @if ($user->is_active)
+                                        <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">Aktif</span>
+                                    @else
+                                        <span class="rounded-full bg-rose-100 px-2.5 py-1 text-xs font-medium text-rose-700 dark:bg-rose-900/40 dark:text-rose-300">Nonaktif</span>
+                                    @endif
+                                </div>
+
+                                <div class="flex flex-wrap gap-x-3 gap-y-1 border-t border-gray-100 px-5 py-3 text-sm dark:border-gray-700">
+                                    @if ($user->isAdmin() || $user->id === auth()->id())
+                                        <span class="text-xs text-gray-400">Tidak dapat diubah</span>
+                                    @else
+                                        <div class="inline-flex items-center gap-1">
+                                            <form action="{{ route('admin.users.password', $user) }}" method="POST"
+                                                  onsubmit="return confirm('Setel ulang kata sandi {{ $user->name }}? Kata sandi lama akan langsung tidak berlaku.')">
+                                                @csrf
+                                                @method('PUT')
+                                                <x-icon-button type="submit" color="brand" title="Reset Sandi">
+                                                    <x-icon.key />
+                                                </x-icon-button>
+                                            </form>
+
+                                            <form action="{{ route('admin.users.status', $user) }}" method="POST"
+                                                  onsubmit="return confirm('{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan kembali' }} akun {{ $user->name }}?')">
+                                                @csrf
+                                                @method('PUT')
+                                                <x-icon-button type="submit" :color="$user->is_active ? 'amber' : 'emerald'"
+                                                               :title="$user->is_active ? 'Nonaktifkan' : 'Aktifkan'">
+                                                    <x-icon.power />
+                                                </x-icon-button>
+                                            </form>
+
+                                            @if ($user->assessments_count === 0)
+                                                <form action="{{ route('admin.users.destroy', $user) }}" method="POST"
+                                                      onsubmit="return confirm('Hapus akun {{ $user->name }}? Tindakan ini tidak dapat dibatalkan.')">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <x-icon-button type="submit" color="rose" title="Hapus">
+                                                        <x-icon.trash />
+                                                    </x-icon-button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="mt-4">
+                        {{ $users->links() }}
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </x-app-layout>

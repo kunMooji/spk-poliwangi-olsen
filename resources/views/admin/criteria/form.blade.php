@@ -26,7 +26,7 @@
             <div>
                 <x-input-label for="source" value="Sumber Nilai" />
                 <select id="source" name="source"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                     @foreach ($sources as $value => $label)
                         <option value="{{ $value }}" @selected(old('source', $criterion->source) === $value)>{{ $label }}</option>
                     @endforeach
@@ -40,7 +40,7 @@
             <div>
                 <x-input-label for="subject" value="Mata Pelajaran" />
                 <select id="subject" name="subject"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                     <option value="">— Tidak dipakai —</option>
                     @foreach ($subjects as $value => $label)
                         <option value="{{ $value }}" @selected(old('subject', $criterion->subject) === $value)>{{ $label }}</option>
@@ -60,7 +60,7 @@
             <div>
                 <x-input-label for="type" value="Jenis Kriteria" />
                 <select id="type" name="type"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                     <option value="benefit" @selected(old('type', $criterion->type) === 'benefit')>Benefit (semakin besar semakin baik)</option>
                     <option value="cost" @selected(old('type', $criterion->type) === 'cost')>Cost (semakin kecil semakin baik)</option>
                 </select>
@@ -77,7 +77,7 @@
             <div class="sm:col-span-2">
                 <x-input-label for="description" value="Keterangan" />
                 <textarea id="description" name="description" rows="3"
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">{{ old('description', $criterion->description) }}</textarea>
+                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">{{ old('description', $criterion->description) }}</textarea>
                 <x-input-error :messages="$errors->get('description')" class="mt-2" />
             </div>
 
@@ -85,7 +85,7 @@
                 <label class="inline-flex items-center gap-2">
                     <input type="hidden" name="is_active" value="0">
                     <input type="checkbox" name="is_active" value="1" @checked(old('is_active', $criterion->is_active))
-                           class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900">
+                           class="rounded border-gray-300 text-brand-600 shadow-sm focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900">
                     <span class="text-sm text-gray-700 dark:text-gray-300">Aktif &mdash; ikut diperhitungkan pada tes baru</span>
                 </label>
             </div>
@@ -98,7 +98,7 @@
             Batal
         </a>
         <button type="submit"
-                class="rounded-lg bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                class="rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
             Simpan
         </button>
     </div>

@@ -28,7 +28,7 @@
         </div>
 
         <button type="submit"
-                class="w-full rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700">
+                class="w-full rounded-lg bg-brand-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-700">
             Simpan Kata Sandi Baru
         </button>
     </form>
