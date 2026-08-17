@@ -46,17 +46,24 @@ sudah ada sebelum `php artisan test` dijalankan.
 
 | Berkas | Isi |
 |---|---|
-| `Riasec.php` | Sumber kebenaran konstanta: `DIMENSIONS` (R,I,A,S,E,C), `NAMES`, `LABELS`, `DESCRIPTIONS`, `COLORS`, `SUBJECTS`, `LIKERT_LABELS`. Dipakai bersama model, service, seeder, dan view supaya urutan dimensi konsisten di seluruh sistem |
+| `Riasec.php` | Sumber kebenaran konstanta RIASEC: `DIMENSIONS` (R,I,A,S,E,C), `NAMES`, `LABELS`, `DESCRIPTIONS`, `COLORS`, `LIKERT_LABELS`. Dipakai bersama model, service, seeder, dan view supaya urutan dimensi konsisten di seluruh sistem |
+| `Rapor.php` | Aturan nilai rapor SNBP: `SEMESTERS` (1–5, semester terakhir dikecualikan), `MAX_SUPPORT_SUBJECTS` (2), dan `supportSubjects()` yang mengumpulkan gabungan mapel pendukung seluruh prodi aktif |
 
-`Riasec::SUBJECTS` adalah kunci yang mengikat tiga tempat sekaligus:
-`criteria.subject`, kolom `{key}_score` pada `assessments`, dan kolom
-`{key}_relevance` pada `study_programs`.
+Daftar mata pelajaran **tidak lagi dikunci di kode**. Ia berada di tabel
+`subjects` dan dikelola admin, karena kurikulum SMA dan SMK berbeda: mapel
+produktif SMK berbeda per konsentrasi keahlian dan penamaannya tidak seragam
+antar sekolah.
+
+`Rapor::supportSubjects()` mengumpulkan mapel pendukung dari **seluruh prodi
+aktif**, bukan hanya prodi pilihan responden. CoCoSo memeringkat semua alternatif
+sekaligus, sehingga prodi di luar daftar prioritas pun harus punya nilai — justru
+prodi itulah yang berpotensi menjadi rekomendasi baru.
 
 ### `app/Services/`
 
 | Berkas | Tanggung jawab | Menyentuh DB |
 |---|---|---|
-| `RiasecService.php` | Skor Likert → persentase → kode Holland; cosine similarity untuk C7 | ❌ |
+| `RiasecService.php` | Skor Likert → persentase → kode Holland; cosine similarity untuk C3 | ❌ |
 | `CocosoService.php` | Seluruh tahapan CoCoSo, mengembalikan setiap langkah antara | ❌ |
 | `ExplanationService.php` | Kontribusi per kriteria, perbandingan antar prodi, sorotan kuat/lemah | ❌ |
 | `SensitivityService.php` | Sweep λ dan pergeseran bobot | ❌ |
@@ -196,15 +203,17 @@ Lewat antarmuka: **Admin → Program Studi → Tambah Prodi**.
 
 Yang wajib diisi dengan sadar:
 
-- **Bobot relevansi 6 mapel** (0–1). Inilah yang membedakan prodi satu dengan
-  lainnya pada C1–C6. Dua prodi dengan profil relevansi identik akan selalu seri.
-- **Profil RIASEC 6 dimensi** (0–100). Menjadi pembanding cosine similarity C7.
+- **Mata pelajaran pendukung** (paling banyak 2, sesuai SNBP). Inilah yang
+  membedakan prodi satu dengan lainnya pada C2 — C1 bernilai sama untuk semua
+  prodi. Dua prodi dengan mapel pendukung identik akan selalu seri pada blok
+  nilai rapor. Prodi yang dikosongkan mapel pendukungnya memakai rerata rapor.
+- **Profil RIASEC 6 dimensi** (0–100). Menjadi pembanding cosine similarity C3.
 - **Data tracer**. `employment_rate` dihitung otomatis dari
   `employed_count / alumni_count`, tidak pernah diisi manual.
 
 ### Menambah kriteria baru
 
-Selama `source`-nya salah satu dari empat yang sudah ada, **tidak ada kode yang
+Selama `source`-nya salah satu dari lima yang sudah ada, **tidak ada kode yang
 perlu diubah**. Cukup tambah lewat menu Kriteria, lalu sesuaikan bobot kriteria
 lain supaya totalnya kembali 1.
 
@@ -243,7 +252,7 @@ menonaktifkan pernyataan tidak merusak persentase tes yang sudah selesai.
 | `threshold_mode` | `normal` \| `raw` | Pembanding: K ternormalisasi atau K mentah |
 | `lambda` | 0–1 | Keseimbangan S_i dan P_i pada K_ic |
 | `epsilon` | 1e-7 – 0.01 | Batas bawah nilai ternormalisasi |
-| `unselected_priority_score` | 0–100 | Skor C8 untuk prodi di luar daftar prioritas |
+| `unselected_priority_score` | 0–100 | Skor C4 untuk prodi di luar daftar prioritas |
 | `likert_min`, `likert_max` | 0–5, 2–10 | Skala kuesioner |
 | `min_priorities` | 1–10 | Jumlah prodi minimal yang wajib diurutkan |
 
@@ -291,7 +300,10 @@ Perhatikan bila salah satunya gagal:
 | `test_prodi_yang_dipakai_pada_tes_tidak_dapat_dihapus` | Keutuhan arsip |
 | `test_pernyataan_yang_sudah_dijawab_tidak_dapat_dihapus` | Keutuhan arsip |
 | `test_riwayat_hanya_menampilkan_tes_milik_sendiri` | Kerahasiaan data |
-| `test_nilai_rapor_dikalikan_relevansi_mapel_sehingga_kolom_bervariasi` | Koreksi kolom konstan |
+| `test_kolom_mapel_pendukung_bervariasi_antar_prodi` | C2 benar-benar membedakan alternatif |
+| `test_rerata_rapor_konstan_tetap_ternormalisasi_pada_skala_aslinya` | Batas normalisasi tetap pada kolom konstan C1 |
+| `test_mapel_yang_tidak_ditempuh_memakai_rerata_rapor` | Mapel kosong tidak dihukum sebagai nilai nol |
+| `test_mapel_pendukung_dibatasi_dua_sesuai_aturan_snbp` | Batas dua mapel pendukung ditegakkan |
 | `test_mengganti_gelombang_aktif_tidak_memindahkan_tes_lama` | Penandaan gelombang bersifat snapshot |
 | `test_hanya_satu_gelombang_boleh_aktif` | `Period::current()` tidak ambigu |
 | `test_kata_sandi_tidak_pernah_ikut_tersimpan_di_catatan_perubahan` | Log tidak menyimpan kredensial |

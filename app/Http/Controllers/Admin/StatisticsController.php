@@ -11,6 +11,7 @@ use App\Support\Riasec;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
@@ -48,7 +49,7 @@ class StatisticsController extends Controller
             'interestGap' => $this->interestGap(),
             'dominantDistribution' => $this->distribution('dominant_type'),
             'dimensionLabels' => Riasec::LABELS,
-            'subjects' => Riasec::SUBJECTS,
+            'raporAverage' => round((float) $this->base()->avg('rapor_average'), 2),
             'averageFit' => round((float) $this->base()->avg('recommended_k_normal'), 2),
             'matchRatio' => $totalCompleted > 0
                 ? round($this->base()->where('matches_preference', true)->count() / $totalCompleted * 100, 1)
@@ -115,18 +116,26 @@ class StatisticsController extends Controller
     }
 
     /**
-     * Rata-rata nilai rapor seluruh pendaftar per mata pelajaran.
+     * Rata-rata nilai pendaftar pada tiap mata pelajaran pendukung.
+     *
+     * Baris bernilai null — mapel yang tidak ditempuh responden — tidak ikut
+     * dirata-ratakan, sehingga angkanya mencerminkan pendaftar yang benar-benar
+     * menempuh mapel tersebut, bukan tercampur nilai nol semu.
      *
      * @return array<string, float>
      */
     private function subjectAverages(): array
     {
-        $averages = [];
-        foreach (array_keys(Riasec::SUBJECTS) as $subject) {
-            $averages[$subject] = round((float) $this->base()->avg($subject.'_score'), 2);
-        }
-
-        return $averages;
+        return Assessment::query()
+            ->whereIn('assessments.id', $this->base()->select('assessments.id'))
+            ->join('assessment_subject_scores', 'assessment_subject_scores.assessment_id', '=', 'assessments.id')
+            ->join('subjects', 'subjects.id', '=', 'assessment_subject_scores.subject_id')
+            ->whereNotNull('assessment_subject_scores.score')
+            ->groupBy('subjects.id', 'subjects.name', 'subjects.sort_order')
+            ->orderBy('subjects.sort_order')
+            ->pluck(DB::raw('ROUND(AVG(assessment_subject_scores.score), 2) as average'), 'subjects.name')
+            ->map(fn ($average) => (float) $average)
+            ->all();
     }
 
     /**

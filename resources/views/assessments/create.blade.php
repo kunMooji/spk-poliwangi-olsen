@@ -73,60 +73,161 @@
                     </div>
                 </section>
 
-                {{-- Nilai rapor --}}
+                {{-- Komponen pertama SNBP: rerata rapor seluruh mapel per semester --}}
                 <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Nilai Rapor</h3>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Rerata Rapor per Semester</h3>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Masukkan nilai rata-rata rapor pada skala 0&ndash;100. Setiap nilai akan dikalikan bobot
-                        relevansi mata pelajaran pada masing-masing program studi.
+                        Masukkan nilai rata-rata <strong>seluruh mata pelajaran</strong> pada setiap semester, skala
+                        0&ndash;100. Semester terakhir memang tidak diminta &mdash; SNBP memeringkat berdasarkan semua
+                        semester kecuali yang terakhir.
                     </p>
 
-                    <div class="mt-5 grid gap-5 sm:grid-cols-3">
-                        @foreach ($subjects as $key => $label)
+                    <div class="mt-5 grid gap-5 sm:grid-cols-5">
+                        @foreach ($semesters as $semester)
                             <div>
-                                <x-input-label :for="$key.'_score'" :value="$label" />
-                                <x-text-input :id="$key.'_score'" :name="$key.'_score'" type="number" step="0.01" min="0" max="100"
-                                              class="mt-1 block w-full" :value="old($key.'_score')" required />
-                                <x-input-error :messages="$errors->get($key.'_score')" class="mt-2" />
+                                <x-input-label :for="'rapor_semesters_'.$semester" :value="'Semester '.$semester" />
+                                <x-text-input :id="'rapor_semesters_'.$semester" :name="'rapor_semesters['.$semester.']'"
+                                              type="number" step="0.01" min="0" max="100"
+                                              class="mt-1 block w-full" :value="old('rapor_semesters.'.$semester)" required />
+                                <x-input-error :messages="$errors->get('rapor_semesters.'.$semester)" class="mt-2" />
                             </div>
                         @endforeach
                     </div>
                 </section>
 
-                {{-- Prioritas prodi --}}
-                <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Urutan Prioritas Program Studi</h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Pilih minimal {{ $minPriorities }} program studi sesuai urutan minat Anda. Prioritas pertama
-                        memperoleh skor minat tertinggi. Program studi tidak boleh dipilih dua kali.
-                    </p>
+                {{--
+                    Prioritas prodi dan mapel pendukung berbagi satu lingkup Alpine:
+                    mapel yang disorot mengikuti prodi yang sedang dipilih.
+                --}}
+                <div x-data="raporSubjects({
+                        programSubjects: @js($programSubjectMap),
+                        programNames: @js($programs->pluck('full_name', 'id')),
+                        priorities: @js(array_values((array) old('priorities', []))),
+                        added: @js($addedSubjects),
+                     })"
+                     class="space-y-6">
 
-                    <div class="mt-5 space-y-4">
-                        @for ($i = 0; $i < $maxPriorities; $i++)
-                            <div>
-                                <x-input-label :for="'priority_'.$i">
-                                    Prioritas ke-{{ $i + 1 }}
-                                    @if ($i < $minPriorities)
-                                        <span class="text-rose-500">*</span>
-                                    @else
-                                        <span class="text-xs font-normal text-gray-400">(opsional)</span>
-                                    @endif
-                                </x-input-label>
-                                <select id="priority_{{ $i }}" name="priorities[{{ $i }}]"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                        @if ($i < $minPriorities) required @endif>
-                                    <option value="">— Pilih program studi —</option>
-                                    @foreach ($programs as $program)
-                                        <option value="{{ $program->id }}" @selected(old('priorities.'.$i) == $program->id)>
-                                            {{ $program->full_name }} ({{ $program->department }})
-                                        </option>
+                    {{-- Prioritas prodi --}}
+                    <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Urutan Prioritas Program Studi</h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            Pilih minimal {{ $minPriorities }} program studi sesuai urutan minat Anda. Prioritas pertama
+                            memperoleh skor minat tertinggi. Program studi tidak boleh dipilih dua kali.
+                        </p>
+
+                        <div class="mt-5 space-y-4">
+                            @for ($i = 0; $i < $maxPriorities; $i++)
+                                <div>
+                                    <x-input-label :for="'priority_'.$i">
+                                        Prioritas ke-{{ $i + 1 }}
+                                        @if ($i < $minPriorities)
+                                            <span class="text-rose-500">*</span>
+                                        @else
+                                            <span class="text-xs font-normal text-gray-400">(opsional)</span>
+                                        @endif
+                                    </x-input-label>
+                                    <select id="priority_{{ $i }}" name="priorities[{{ $i }}]"
+                                            x-model="priorities[{{ $i }}]"
+                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
+                                            @if ($i < $minPriorities) required @endif>
+                                        <option value="">— Pilih program studi —</option>
+                                        @foreach ($programs as $program)
+                                            <option value="{{ $program->id }}">
+                                                {{ $program->full_name }} ({{ $program->department }})
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <x-input-error :messages="$errors->get('priorities.'.$i)" class="mt-2" />
+                                </div>
+                            @endfor
+                        </div>
+                    </section>
+
+                    {{-- Komponen kedua SNBP: nilai mapel pendukung prodi --}}
+                    <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Nilai Mata Pelajaran Pendukung</h3>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            Mata pelajaran bertanda <span class="font-semibold text-brand-600 dark:text-brand-400">biru</span>
+                            adalah penentu kesesuaian Anda dengan program studi yang baru saja Anda pilih.
+                            <strong>Kosongkan</strong> mata pelajaran yang tidak ada di rapor Anda &mdash; nilainya akan
+                            digantikan rerata rapor Anda, bukan dianggap nol.
+                        </p>
+
+                        <div class="mt-5 grid gap-5 sm:grid-cols-3">
+                            @foreach ($supportSubjects as $subject)
+                                {{--
+                                    Seluruh mapel tetap ditanyakan, bukan hanya milik prodi pilihan.
+                                    CoCoSo memeringkat semua prodi sekaligus, sehingga prodi di luar
+                                    daftar prioritas pun perlu nilai — justru prodi itulah yang
+                                    berpotensi menjadi rekomendasi baru. Yang berubah mengikuti
+                                    pilihan hanyalah urutan dan penandaannya.
+                                --}}
+                                <div x-show="isRelevant({{ $subject->id }}) || showOthers"
+                                     :style="isRelevant({{ $subject->id }}) ? 'order: 0' : 'order: 1'">
+                                    <x-input-label :for="'subject_scores_'.$subject->id" :value="$subject->display_name" />
+
+                                    <template x-if="isRelevant({{ $subject->id }})">
+                                        <p class="mt-0.5 text-xs font-medium text-brand-600 dark:text-brand-400"
+                                           x-text="'Pendukung ' + relevantLabel({{ $subject->id }})"></p>
+                                    </template>
+
+                                    <x-text-input :id="'subject_scores_'.$subject->id" :name="'subject_scores['.$subject->id.']'"
+                                                  type="number" step="0.01" min="0" max="100"
+                                                  class="mt-1 block w-full" :value="old('subject_scores.'.$subject->id)" />
+                                    <x-input-error :messages="$errors->get('subject_scores.'.$subject->id)" class="mt-2" />
+                                </div>
+                            @endforeach
+
+                            {{-- Mapel yang ditambahkan sendiri oleh responden. --}}
+                            <template x-for="subject in added" :key="subject.id">
+                                <div style="order: 2">
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                                           :for="'subject_scores_' + subject.id" x-text="subject.name"></label>
+                                    <p class="mt-0.5 text-xs text-gray-400">ditambahkan sendiri</p>
+                                    <div class="mt-1 flex gap-2">
+                                        <input type="number" step="0.01" min="0" max="100"
+                                               :id="'subject_scores_' + subject.id"
+                                               :name="'subject_scores[' + subject.id + ']'"
+                                               :value="subject.score"
+                                               class="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                                        <button type="button" @click="remove(subject.id)"
+                                                class="rounded-md border border-gray-300 px-3 text-sm text-gray-500 transition hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700"
+                                                title="Hapus mata pelajaran ini">&times;</button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="mt-5 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-5 dark:border-gray-700">
+                            <button type="button" @click="showOthers = ! showOthers"
+                                    class="text-sm font-semibold text-brand-600 hover:underline dark:text-brand-400"
+                                    x-text="showOthers ? 'Sembunyikan mata pelajaran lain' : 'Tampilkan mata pelajaran lain'"></button>
+
+                            @if ($extraSubjects->isNotEmpty())
+                                <span class="text-gray-300 dark:text-gray-600">|</span>
+
+                                <label class="text-sm text-gray-500 dark:text-gray-400" for="add_subject">
+                                    Mata pelajaran Anda tidak ada di daftar?
+                                </label>
+                                <select id="add_subject" @change="add($event)"
+                                        class="rounded-md border-gray-300 text-sm shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                                    <option value="">— Tambahkan mata pelajaran —</option>
+                                    @foreach ($extraSubjects->groupBy('group') as $group => $rows)
+                                        <optgroup label="{{ $group ?: 'Lainnya' }}">
+                                            @foreach ($rows as $subject)
+                                                <option value="{{ $subject->id }}" data-name="{{ $subject->display_name }}">
+                                                    {{ $subject->name }}
+                                                </option>
+                                            @endforeach
+                                        </optgroup>
                                     @endforeach
                                 </select>
-                                <x-input-error :messages="$errors->get('priorities.'.$i)" class="mt-2" />
-                            </div>
-                        @endfor
-                    </div>
-                </section>
+                            @endif
+                        </div>
+
+                        <x-input-error :messages="$errors->get('subject_scores')" class="mt-3" />
+                    </section>
+                </div>
 
                 <div class="flex items-center justify-end gap-3">
                     <a href="{{ route('dashboard') }}"
@@ -141,4 +242,64 @@
             </form>
         </div>
     </div>
+
+    @push('scripts')
+        <script>
+            /**
+             * Menyorot mata pelajaran pendukung milik prodi yang sedang dipilih,
+             * dan menampung mata pelajaran yang ditambahkan sendiri responden.
+             *
+             * Seluruh mapel tetap terkirim apa adanya — penyorotan hanya mengubah
+             * urutan dan penandaan, bukan data yang tersimpan.
+             */
+            function raporSubjects({ programSubjects, programNames, priorities, added }) {
+                return {
+                    programSubjects,
+                    programNames,
+                    priorities: priorities ?? [],
+                    added: added ?? [],
+                    showOthers: false,
+
+                    /** Prodi terpilih, urut mengikuti nomor prioritas, tanpa slot kosong. */
+                    get selectedPrograms() {
+                        return this.priorities.filter((id) => id !== '' && id !== null);
+                    },
+
+                    /** Nomor prioritas prodi yang memakai mapel ini. */
+                    usedBy(subjectId) {
+                        return this.selectedPrograms
+                            .map((programId, index) => ({ programId, order: index + 1 }))
+                            .filter(({ programId }) => (this.programSubjects[programId] ?? []).includes(subjectId));
+                    },
+
+                    isRelevant(subjectId) {
+                        return this.usedBy(subjectId).length > 0;
+                    },
+
+                    relevantLabel(subjectId) {
+                        return this.usedBy(subjectId)
+                            .map(({ programId, order }) => `pilihan ${order} — ${this.programNames[programId]}`)
+                            .join(', ');
+                    },
+
+                    add(event) {
+                        const option = event.target.selectedOptions[0];
+                        const id = Number(event.target.value);
+
+                        event.target.value = '';
+
+                        if (! id || this.added.some((subject) => subject.id === id)) {
+                            return;
+                        }
+
+                        this.added.push({ id, name: option.dataset.name, score: '' });
+                    },
+
+                    remove(id) {
+                        this.added = this.added.filter((subject) => subject.id !== id);
+                    },
+                };
+            }
+        </script>
+    @endpush
 </x-app-layout>

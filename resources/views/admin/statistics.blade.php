@@ -144,12 +144,12 @@
                     <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
                         <h3 class="font-semibold text-gray-900 dark:text-gray-100">Rata-rata Nilai Rapor Pendaftar</h3>
                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                            Berguna untuk menakar tingkat kesiapan akademik pendaftar per mata pelajaran.
+                            Berguna untuk menakar tingkat kesiapan akademik pendaftar. Mata pelajaran pendukung
+                            hanya dirata-ratakan dari pendaftar yang benar-benar menempuhnya.
                         </p>
 
                         <div class="mt-5 space-y-3">
-                            @foreach ($subjects as $key => $label)
-                                @php($value = $subjectAverages[$key] ?? 0)
+                            @foreach (['Rerata seluruh mapel' => $raporAverage] + $subjectAverages as $label => $value)
                                 <div>
                                     <div class="flex items-center justify-between text-sm">
                                         <span class="text-gray-600 dark:text-gray-300">{{ $label }}</span>

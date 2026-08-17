@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CriteriaRequest;
 use App\Models\Criteria;
-use App\Support\Riasec;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -22,6 +21,7 @@ class CriteriaController extends Controller
         return view('admin.criteria.index', [
             'criteria' => Criteria::query()->ordered()->get(),
             'totalWeight' => Criteria::totalActiveWeight(),
+            'raporShare' => Criteria::raporComponentShare(),
         ]);
     }
 
@@ -30,13 +30,12 @@ class CriteriaController extends Controller
         return view('admin.criteria.create', [
             'criterion' => new Criteria([
                 'type' => 'benefit',
-                'source' => 'subject_score',
+                'source' => 'rapor_average',
                 'is_active' => true,
                 'weight' => 0,
                 'sort_order' => (int) Criteria::query()->max('sort_order') + 1,
             ]),
             'sources' => Criteria::SOURCES,
-            'subjects' => Riasec::SUBJECTS,
         ]);
     }
 
@@ -54,7 +53,6 @@ class CriteriaController extends Controller
         return view('admin.criteria.edit', [
             'criterion' => $criteria,
             'sources' => Criteria::SOURCES,
-            'subjects' => Riasec::SUBJECTS,
         ]);
     }
 

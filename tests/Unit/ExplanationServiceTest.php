@@ -22,7 +22,7 @@ class ExplanationServiceTest extends TestCase
     private function snapshot(): array
     {
         return [
-            'C1' => ['name' => 'Nilai Matematika', 'weight' => 0.2, 'type' => 'benefit', 'source' => 'subject_score'],
+            'C1' => ['name' => 'Rerata Rapor Seluruh Mapel', 'weight' => 0.2, 'type' => 'benefit', 'source' => 'rapor_average'],
             'C7' => ['name' => 'Kesesuaian RIASEC', 'weight' => 0.5, 'type' => 'benefit', 'source' => 'riasec'],
             'C9' => ['name' => 'Serapan Kerja', 'weight' => 0.3, 'type' => 'benefit', 'source' => 'tracer'],
         ];
@@ -93,7 +93,7 @@ class ExplanationServiceTest extends TestCase
 
         $highlights = $this->service->highlights($contributions);
 
-        $this->assertSame(['Kesesuaian RIASEC', 'Nilai Matematika'], $highlights['strengths']);
+        $this->assertSame(['Kesesuaian RIASEC', 'Rerata Rapor Seluruh Mapel'], $highlights['strengths']);
         $this->assertSame(['Serapan Kerja'], $highlights['weaknesses']);
     }
 

@@ -46,17 +46,42 @@
             </section>
 
             <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Nilai Rapor</h3>
-                <dl class="mt-4 grid gap-4 text-sm sm:grid-cols-6">
-                    @foreach ($subjects as $key => $label)
+                <div class="flex flex-wrap items-baseline justify-between gap-2">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Nilai Rapor</h3>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Rerata seluruh mapel
+                        <span class="font-semibold text-gray-900 dark:text-gray-100">{{ number_format($assessment->rapor_average, 2) }}</span>
+                    </p>
+                </div>
+
+                <dl class="mt-4 grid gap-4 text-sm sm:grid-cols-5">
+                    @foreach ($assessment->raporSemesters as $semester)
                         <div>
-                            <dt class="text-gray-500 dark:text-gray-400">{{ $label }}</dt>
+                            <dt class="text-gray-500 dark:text-gray-400">Semester {{ $semester->semester }}</dt>
                             <dd class="mt-0.5 text-xl font-bold text-gray-900 dark:text-gray-100">
-                                {{ number_format($assessment->{$key.'_score'}, 2) }}
+                                {{ number_format($semester->average_score, 2) }}
                             </dd>
                         </div>
                     @endforeach
                 </dl>
+
+                @if ($assessment->subjectScores->isNotEmpty())
+                    <h4 class="mt-6 text-sm font-semibold text-gray-900 dark:text-gray-100">Mata Pelajaran Pendukung</h4>
+                    <dl class="mt-3 grid gap-4 text-sm sm:grid-cols-4">
+                        @foreach ($assessment->subjectScores as $row)
+                            <div>
+                                <dt class="text-gray-500 dark:text-gray-400">{{ $row->subject?->name ?? '—' }}</dt>
+                                <dd class="mt-0.5 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                    @if ($row->score === null)
+                                        <span class="text-sm font-normal text-gray-400">tidak ditempuh</span>
+                                    @else
+                                        {{ number_format($row->score, 2) }}
+                                    @endif
+                                </dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                @endif
             </section>
 
             <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">

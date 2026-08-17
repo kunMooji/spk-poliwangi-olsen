@@ -7,6 +7,7 @@ use App\Support\Riasec;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -20,8 +21,6 @@ class StudyProgram extends Model
 
     protected $fillable = [
         'code', 'name', 'level', 'department', 'description',
-        'math_relevance', 'physics_relevance', 'chemistry_relevance',
-        'biology_relevance', 'indonesian_relevance', 'english_relevance',
         'riasec_r', 'riasec_i', 'riasec_a', 'riasec_s', 'riasec_e', 'riasec_c',
         'employment_rate', 'alumni_count', 'employed_count', 'tracer_year', 'tracer_updated_at',
         'is_active',
@@ -30,12 +29,6 @@ class StudyProgram extends Model
     protected function casts(): array
     {
         return [
-            'math_relevance' => 'float',
-            'physics_relevance' => 'float',
-            'chemistry_relevance' => 'float',
-            'biology_relevance' => 'float',
-            'indonesian_relevance' => 'float',
-            'english_relevance' => 'float',
             'riasec_r' => 'integer',
             'riasec_i' => 'integer',
             'riasec_a' => 'integer',
@@ -63,6 +56,19 @@ class StudyProgram extends Model
         return $this->hasMany(AssessmentPriority::class);
     }
 
+    /**
+     * Mata pelajaran pendukung prodi — paling banyak dua, sesuai aturan SNBP.
+     *
+     * @return BelongsToMany<Subject>
+     */
+    public function supportSubjects(): BelongsToMany
+    {
+        return $this->belongsToMany(Subject::class, 'study_program_subjects')
+            ->withPivot('position')
+            ->withTimestamps()
+            ->orderBy('study_program_subjects.position');
+    }
+
     /** @param  Builder<StudyProgram>  $query */
     public function scopeActive(Builder $query): void
     {
@@ -82,21 +88,6 @@ class StudyProgram extends Model
         }
 
         return $vector;
-    }
-
-    /**
-     * Bobot relevansi mata pelajaran, dikunci dengan `criteria.subject`.
-     *
-     * @return array<string, float>
-     */
-    public function subjectRelevance(): array
-    {
-        $relevance = [];
-        foreach (array_keys(Riasec::SUBJECTS) as $subject) {
-            $relevance[$subject] = (float) $this->{$subject.'_relevance'};
-        }
-
-        return $relevance;
     }
 
     /** Tiga dimensi RIASEC tertinggi, mis. "ICR". */

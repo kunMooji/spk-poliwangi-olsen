@@ -7,7 +7,9 @@ use App\Models\Criteria;
 use App\Models\RiasecQuestion;
 use App\Models\Setting;
 use App\Models\StudyProgram;
+use App\Models\Subject;
 use App\Models\User;
+use App\Support\Rapor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -41,12 +43,10 @@ class AssessmentFlowTest extends TestCase
             'school_major' => 'IPA',
             'graduation_year' => (int) date('Y'),
             'phone' => '081234567890',
-            'math_score' => 88,
-            'physics_score' => 82,
-            'chemistry_score' => 75,
-            'biology_score' => 70,
-            'indonesian_score' => 85,
-            'english_score' => 90,
+            'rapor_semesters' => array_fill_keys(Rapor::SEMESTERS, 85),
+            'subject_scores' => Rapor::supportSubjects()
+                ->mapWithKeys(fn ($subject) => [$subject->id => 85])
+                ->all(),
             'priorities' => $programIds,
         ];
     }
@@ -203,9 +203,106 @@ class AssessmentFlowTest extends TestCase
         $this->actingAs($this->student);
 
         $payload = $this->biodataPayload();
-        $payload['math_score'] = 150;
+        $payload['rapor_semesters'][1] = 150;
 
-        $this->post(route('assessments.store'), $payload)->assertSessionHasErrors('math_score');
+        $this->post(route('assessments.store'), $payload)->assertSessionHasErrors('rapor_semesters.1');
+    }
+
+    public function test_nilai_mapel_pendukung_di_luar_rentang_ditolak(): void
+    {
+        $this->actingAs($this->student);
+
+        $subjectId = Rapor::supportSubjects()->firstOrFail()->id;
+
+        $payload = $this->biodataPayload();
+        $payload['subject_scores'][$subjectId] = 150;
+
+        $this->post(route('assessments.store'), $payload)
+            ->assertSessionHasErrors("subject_scores.{$subjectId}");
+    }
+
+    public function test_mapel_pendukung_boleh_dikosongkan(): void
+    {
+        $this->actingAs($this->student);
+
+        $subjectId = Rapor::supportSubjects()->firstOrFail()->id;
+
+        $payload = $this->biodataPayload();
+        $payload['subject_scores'][$subjectId] = '';
+
+        $this->post(route('assessments.store'), $payload)->assertSessionHasNoErrors();
+
+        // Barisnya tetap dibuat bernilai null, sebagai catatan bahwa responden
+        // memang tidak menempuh mapel tersebut.
+        $this->assertDatabaseHas('assessment_subject_scores', [
+            'subject_id' => $subjectId,
+            'score' => null,
+        ]);
+    }
+
+    public function test_mapel_pendukung_ditanyakan_setelah_pemilihan_prodi(): void
+    {
+        $html = $this->actingAs($this->student)
+            ->get(route('assessments.create'))
+            ->assertOk()
+            ->getContent();
+
+        // Responden baru paham kenapa sebuah mapel ditanyakan setelah ia melihat
+        // prodi pilihannya, sehingga urutannya tidak boleh terbalik.
+        $this->assertLessThan(
+            strpos($html, 'Nilai Mata Pelajaran Pendukung'),
+            strpos($html, 'Urutan Prioritas Program Studi'),
+        );
+
+        // Seluruh mapel pendukung tetap dikirim ke halaman, bukan hanya milik prodi
+        // pilihan — tanpa itu prodi lain kehilangan nilai C2.
+        foreach (Rapor::supportSubjects() as $subject) {
+            $this->assertStringContainsString("subject_scores[{$subject->id}]", $html);
+        }
+
+        // Penanda mapel milik prodi pilihan dikerjakan di peramban.
+        $this->assertStringContainsString('raporSubjects(', $html);
+    }
+
+    public function test_responden_dapat_menambahkan_mata_pelajaran_miliknya_sendiri(): void
+    {
+        $this->actingAs($this->student);
+
+        // Mapel konsentrasi keahlian SMK yang belum dipakai prodi mana pun.
+        $tambahan = Subject::query()->whereDoesntHave('studyPrograms')->firstOrFail();
+
+        $payload = $this->biodataPayload();
+        $payload['subject_scores'][$tambahan->id] = 91;
+
+        $this->post(route('assessments.store'), $payload)->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('assessment_subject_scores', [
+            'subject_id' => $tambahan->id,
+            'score' => 91,
+        ]);
+    }
+
+    public function test_mata_pelajaran_yang_tidak_dikenali_ditolak(): void
+    {
+        $this->actingAs($this->student);
+
+        $payload = $this->biodataPayload();
+        $payload['subject_scores'][999999] = 90;
+
+        $this->post(route('assessments.store'), $payload)->assertSessionHasErrors('subject_scores');
+    }
+
+    public function test_rerata_rapor_dihitung_dari_seluruh_semester(): void
+    {
+        $this->actingAs($this->student);
+
+        $payload = $this->biodataPayload();
+        $payload['rapor_semesters'] = [1 => 70, 2 => 75, 3 => 80, 4 => 85, 5 => 90];
+
+        $this->post(route('assessments.store'), $payload)->assertSessionHasNoErrors();
+
+        $this->assertSame(80.0, (float) Assessment::query()->firstOrFail()->rapor_average);
+        $this->assertDatabaseCount('assessment_rapor_semesters', 5);
     }
 
     public function test_kuesioner_yang_belum_lengkap_ditolak(): void

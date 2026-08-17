@@ -9,6 +9,7 @@ use App\Models\Setting;
 use App\Models\StudyProgram;
 use App\Services\DecisionMatrixBuilder;
 use App\Services\SensitivityService;
+use App\Support\Rapor;
 use App\Support\Riasec;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
@@ -51,11 +52,15 @@ class AssessmentRecapController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $query = $this->filtered($request)
-            ->with(['user', 'period', 'recommendedProgram', 'primaryProgram']);
+            ->with(['user', 'period', 'recommendedProgram', 'primaryProgram', 'raporSemesters', 'subjectScores']);
 
         $filename = 'rekap-tes-'.now()->format('Ymd-His').'.csv';
 
-        return response()->streamDownload(function () use ($query) {
+        // Kolom mapel pendukung mengikuti mapel yang benar-benar dipakai prodi,
+        // sehingga rekap tidak menyimpan judul mapel yang sudah tidak relevan.
+        $supportSubjects = Rapor::supportSubjects();
+
+        return response()->streamDownload(function () use ($query, $supportSubjects) {
             $handle = fopen('php://output', 'wb');
 
             // BOM UTF-8 supaya Excel di Windows tidak salah membaca huruf beraksen.
@@ -64,14 +69,19 @@ class AssessmentRecapController extends Controller
             fputcsv($handle, [
                 'Kode Tes', 'Gelombang', 'Tahun Akademik', 'Nama Lengkap', 'Surel Akun',
                 'Jenis Kelamin', 'Asal Sekolah', 'Jurusan Sekolah', 'Tahun Lulus',
-                'Matematika', 'Fisika', 'Kimia', 'Biologi', 'B. Indonesia', 'B. Inggris',
+                'Rerata Rapor',
+                ...array_map(fn (int $semester) => 'Semester '.$semester, Rapor::SEMESTERS),
+                ...$supportSubjects->pluck('name')->all(),
                 'Kode Holland', 'Tipe Dominan',
                 'Pilihan Pertama', 'Prodi Rekomendasi', 'Nilai K', 'Nilai K Ternormalisasi',
                 'Sesuai Pilihan', 'Ambang Batas', 'Status', 'Tanggal Selesai',
             ]);
 
-            $query->chunk(200, function ($rows) use ($handle) {
+            $query->chunk(200, function ($rows) use ($handle, $supportSubjects) {
                 foreach ($rows as $assessment) {
+                    $semesterScores = $assessment->raporSemesters->pluck('average_score', 'semester');
+                    $subjectScores = $assessment->subjectScoreMap();
+
                     fputcsv($handle, [
                         $assessment->code,
                         $assessment->period?->name ?? '-',
@@ -86,12 +96,16 @@ class AssessmentRecapController extends Controller
                         $assessment->school_name ?? '-',
                         $assessment->school_major ?? '-',
                         $assessment->graduation_year ?? '-',
-                        $assessment->math_score,
-                        $assessment->physics_score,
-                        $assessment->chemistry_score,
-                        $assessment->biology_score,
-                        $assessment->indonesian_score,
-                        $assessment->english_score,
+                        $assessment->rapor_average,
+                        ...array_map(
+                            fn (int $semester) => $semesterScores[$semester] ?? '-',
+                            Rapor::SEMESTERS,
+                        ),
+                        // Mapel yang tidak ditempuh responden ditandai "-", bukan 0,
+                        // supaya tidak terbaca sebagai nilai nol yang sebenarnya.
+                        ...$supportSubjects
+                            ->map(fn ($subject) => $subjectScores[$subject->id] ?? '-')
+                            ->all(),
                         $assessment->holland_code ?? '-',
                         $assessment->dominant_type ? Riasec::name($assessment->dominant_type) : '-',
                         $assessment->primaryProgram?->full_name ?? '-',
@@ -148,11 +162,12 @@ class AssessmentRecapController extends Controller
             'results.studyProgram',
             'recommendedProgram',
             'primaryProgram',
+            'raporSemesters',
+            'subjectScores.subject',
         ]);
 
         return view('admin.recap.show', [
             'assessment' => $assessment,
-            'subjects' => Riasec::SUBJECTS,
             'percentages' => $assessment->riasecPercentages(),
             'topResults' => $assessment->results->take(5),
         ]);

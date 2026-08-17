@@ -12,7 +12,9 @@ use App\Models\Period;
 use App\Models\RiasecQuestion;
 use App\Models\Setting;
 use App\Models\StudyProgram;
+use App\Models\Subject;
 use App\Services\RecommendationService;
+use App\Support\Rapor;
 use App\Support\Riasec;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -49,12 +51,54 @@ class AssessmentController extends Controller
                 ->with('info', 'Anda masih memiliki tes yang belum selesai. Silakan lanjutkan pengisian kuesioner.');
         }
 
+        $programs = StudyProgram::query()->active()->with('supportSubjects')->orderBy('name')->get();
+        $supportSubjects = Rapor::supportSubjects();
+
         return view('assessments.create', [
-            'programs' => StudyProgram::query()->active()->orderBy('name')->get(),
-            'subjects' => Riasec::SUBJECTS,
+            'programs' => $programs,
+            'semesters' => Rapor::SEMESTERS,
+            'supportSubjects' => $supportSubjects,
+            // Dipakai halaman untuk menyorot mapel milik prodi yang sedang dipilih.
+            'programSubjectMap' => $programs
+                ->mapWithKeys(fn (StudyProgram $program) => [
+                    $program->id => $program->supportSubjects->pluck('id'),
+                ]),
+            'extraSubjects' => Rapor::selectableExtraSubjects(),
+            'addedSubjects' => $this->previouslyAddedSubjects($supportSubjects),
             'minPriorities' => (int) Setting::get('min_priorities'),
             'maxPriorities' => 5,
         ]);
+    }
+
+    /**
+     * Mata pelajaran yang ditambahkan sendiri responden pada percobaan sebelumnya.
+     *
+     * Tanpa ini, kiriman yang gagal validasi akan menghapus mapel tambahan dari
+     * layar sementara nilai lainnya tetap terisi — responden harus menambahkannya
+     * ulang tanpa tahu sebabnya.
+     *
+     * @param  \Illuminate\Support\Collection<int, \App\Models\Subject>  $supportSubjects
+     * @return array<int, array{id: int, name: string, score: string}>
+     */
+    private function previouslyAddedSubjects($supportSubjects): array
+    {
+        $submitted = array_keys((array) old('subject_scores', []));
+        $extraIds = array_diff(array_map('intval', $submitted), $supportSubjects->pluck('id')->all());
+
+        if ($extraIds === []) {
+            return [];
+        }
+
+        return Subject::query()
+            ->whereIn('id', $extraIds)
+            ->ordered()
+            ->get()
+            ->map(fn (Subject $subject) => [
+                'id' => $subject->id,
+                'name' => $subject->display_name,
+                'score' => (string) old("subject_scores.{$subject->id}", ''),
+            ])
+            ->all();
     }
 
     public function store(StoreAssessmentRequest $request): RedirectResponse
@@ -65,11 +109,26 @@ class AssessmentController extends Controller
 
         $assessment = DB::transaction(function () use ($request, $period) {
             $assessment = $request->user()->assessments()->create(
-                $request->safe()->except('priorities') + [
+                $request->safe()->except('priorities', 'rapor_semesters', 'subject_scores') + [
+                    'rapor_average' => $request->raporAverage(),
                     'status' => 'questionnaire',
                     'period_id' => $period?->id,
                 ]
             );
+
+            foreach ($request->raporSemesters() as $semester => $average) {
+                $assessment->raporSemesters()->create([
+                    'semester' => $semester,
+                    'average_score' => $average,
+                ]);
+            }
+
+            foreach ($request->subjectScores() as $subjectId => $score) {
+                $assessment->subjectScores()->create([
+                    'subject_id' => $subjectId,
+                    'score' => $score,
+                ]);
+            }
 
             foreach ($request->priorityIds() as $index => $programId) {
                 $assessment->priorities()->create([

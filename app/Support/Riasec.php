@@ -49,21 +49,6 @@ final class Riasec
         'C' => '#65a30d',
     ];
 
-    /**
-     * Mata pelajaran rapor yang dinilai (C1..C6), berurutan.
-     *
-     * Kunci dipakai sebagai `criteria.subject`, dan menjadi awalan kolom
-     * `{key}_score` pada tabel assessments serta `{key}_relevance` pada study_programs.
-     */
-    public const SUBJECTS = [
-        'math' => 'Matematika',
-        'physics' => 'Fisika',
-        'chemistry' => 'Kimia',
-        'biology' => 'Biologi',
-        'indonesian' => 'Bahasa Indonesia',
-        'english' => 'Bahasa Inggris',
-    ];
-
     /** Label skala Likert 1-5 pada kuesioner. */
     public const LIKERT_LABELS = [
         1 => 'Sangat Tidak Sesuai',
@@ -100,11 +85,6 @@ final class Riasec
     public static function color(string $dimension): string
     {
         return self::COLORS[strtoupper($dimension)] ?? '#64748b';
-    }
-
-    public static function subjectLabel(string $subject): string
-    {
-        return self::SUBJECTS[$subject] ?? $subject;
     }
 
     /**

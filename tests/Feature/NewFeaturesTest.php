@@ -11,6 +11,7 @@ use App\Models\RiasecQuestion;
 use App\Models\Setting;
 use App\Models\StudyProgram;
 use App\Models\User;
+use App\Support\Rapor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -49,12 +50,8 @@ class NewFeaturesTest extends TestCase
             'school_major' => 'IPA',
             'graduation_year' => (int) date('Y'),
             'phone' => '081234567890',
-            'math_score' => 88,
-            'physics_score' => 82,
-            'chemistry_score' => 75,
-            'biology_score' => 70,
-            'indonesian_score' => 85,
-            'english_score' => 90,
+            'rapor_semesters' => array_fill_keys(Rapor::SEMESTERS, 85),
+            'subject_scores' => Rapor::supportSubjects()->mapWithKeys(fn ($subject) => [$subject->id => 85])->all(),
             'priorities' => StudyProgram::query()->active()->orderBy('code')->take(3)->pluck('id')->all(),
         ];
     }
@@ -242,7 +239,6 @@ class NewFeaturesTest extends TestCase
             'weight' => 0.42,
             'type' => $criterion->type,
             'source' => $criterion->source,
-            'subject' => $criterion->subject,
             'sort_order' => $criterion->sort_order,
             'is_active' => '1',
         ]);

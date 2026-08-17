@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Assessment;
+use App\Support\Rapor;
 use App\Support\Riasec;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -26,7 +27,7 @@ class AssessmentComparisonController extends Controller
         /** @var Collection<int, Assessment> $sessions */
         $sessions = $request->user()->assessments()
             ->completed()
-            ->with(['recommendedProgram', 'primaryProgram', 'period'])
+            ->with(['recommendedProgram', 'primaryProgram', 'period', 'subjectScores'])
             ->orderByDesc('completed_at')
             ->get();
 
@@ -85,16 +86,32 @@ class AssessmentComparisonController extends Controller
      */
     private function subjectDiff(Assessment $left, Assessment $right): array
     {
-        $before = $left->subjectScores();
-        $after = $right->subjectScores();
+        $before = $left->subjectScoreMap();
+        $after = $right->subjectScoreMap();
 
-        $rows = [];
-        foreach (Riasec::SUBJECTS as $key => $label) {
+        $rows = [[
+            'label' => 'Rerata seluruh mapel',
+            'left' => (float) $left->rapor_average,
+            'right' => (float) $right->rapor_average,
+            'delta' => round((float) $right->rapor_average - (float) $left->rapor_average, 2),
+        ]];
+
+        // Hanya mapel yang tercatat di kedua sesi yang dapat dibandingkan. Daftar
+        // mapel pendukung dapat berubah di antara dua sesi, dan nilainya boleh
+        // kosong bila responden tidak menempuh mapel tersebut.
+        foreach (Rapor::supportSubjects() as $subject) {
+            $leftScore = $before[$subject->id] ?? null;
+            $rightScore = $after[$subject->id] ?? null;
+
+            if ($leftScore === null || $rightScore === null) {
+                continue;
+            }
+
             $rows[] = [
-                'label' => $label,
-                'left' => $before[$key],
-                'right' => $after[$key],
-                'delta' => round($after[$key] - $before[$key], 2),
+                'label' => $subject->name,
+                'left' => $leftScore,
+                'right' => $rightScore,
+                'delta' => round($rightScore - $leftScore, 2),
             ];
         }
 

@@ -38,19 +38,6 @@
             </div>
 
             <div>
-                <x-input-label for="subject" value="Mata Pelajaran" />
-                <select id="subject" name="subject"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                    <option value="">— Tidak dipakai —</option>
-                    @foreach ($subjects as $value => $label)
-                        <option value="{{ $value }}" @selected(old('subject', $criterion->subject) === $value)>{{ $label }}</option>
-                    @endforeach
-                </select>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Wajib diisi bila sumber nilai berupa nilai rapor.</p>
-                <x-input-error :messages="$errors->get('subject')" class="mt-2" />
-            </div>
-
-            <div>
                 <x-input-label for="weight" value="Bobot (0 – 1)" />
                 <x-text-input id="weight" name="weight" type="number" step="0.01" min="0" max="1" class="mt-1 block w-full"
                               :value="old('weight', $criterion->weight ?? 0)" required />

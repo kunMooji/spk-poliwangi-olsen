@@ -7,7 +7,9 @@ use App\Models\Criteria;
 use App\Models\RiasecQuestion;
 use App\Models\Setting;
 use App\Models\StudyProgram;
+use App\Models\Subject;
 use App\Models\User;
+use App\Support\Rapor;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -44,12 +46,8 @@ class AdminPanelTest extends TestCase
             'school_major' => 'IPA',
             'graduation_year' => (int) date('Y'),
             'phone' => '081234567890',
-            'math_score' => 88,
-            'physics_score' => 82,
-            'chemistry_score' => 75,
-            'biology_score' => 70,
-            'indonesian_score' => 85,
-            'english_score' => 90,
+            'rapor_semesters' => array_fill_keys(Rapor::SEMESTERS, 85),
+            'subject_scores' => Rapor::supportSubjects()->mapWithKeys(fn ($subject) => [$subject->id => 85])->all(),
             'priorities' => StudyProgram::query()->active()->orderBy('code')->take(3)->pluck('id')->all(),
         ]);
 
@@ -115,11 +113,15 @@ class AdminPanelTest extends TestCase
         $program = StudyProgram::query()->firstOrFail();
         $criterion = Criteria::query()->firstOrFail();
         $question = RiasecQuestion::query()->firstOrFail();
+        $subject = Subject::query()->firstOrFail();
 
         $pages = [
             route('admin.study-programs.index') => 'Program Studi',
-            route('admin.study-programs.create') => 'Bobot Relevansi Mata Pelajaran',
+            route('admin.study-programs.create') => 'Mata Pelajaran Pendukung',
             route('admin.study-programs.edit', $program) => 'Profil Kepribadian RIASEC Prodi',
+            route('admin.subjects.index') => 'Mata Pelajaran',
+            route('admin.subjects.create') => 'Tambah Mata Pelajaran',
+            route('admin.subjects.edit', $subject) => 'Ubah Mata Pelajaran',
             route('admin.criteria.index') => 'Total bobot kriteria aktif',
             route('admin.criteria.create') => 'Sumber Nilai',
             route('admin.criteria.edit', $criterion) => 'Jenis Kriteria',
@@ -207,8 +209,7 @@ class AdminPanelTest extends TestCase
     {
         $this->actingAs($this->student)->post(route('assessments.store'), [
             'full_name' => 'Belum Selesai',
-            'math_score' => 80, 'physics_score' => 80, 'chemistry_score' => 80,
-            'biology_score' => 80, 'indonesian_score' => 80, 'english_score' => 80,
+            'rapor_semesters' => array_fill_keys(Rapor::SEMESTERS, 80),
             'priorities' => StudyProgram::query()->active()->take(3)->pluck('id')->all(),
         ]);
 
@@ -270,12 +271,7 @@ class AdminPanelTest extends TestCase
             'name' => 'Teknologi Rekayasa Perangkat Lunak',
             'level' => 'D4',
             'department' => 'Teknologi Informasi',
-            'math_relevance' => 0.9,
-            'physics_relevance' => 0.6,
-            'chemistry_relevance' => 0.2,
-            'biology_relevance' => 0.1,
-            'indonesian_relevance' => 0.5,
-            'english_relevance' => 0.8,
+            'support_subjects' => Subject::query()->whereIn('code', ['matematika', 'fisika'])->pluck('id')->all(),
             'riasec_r' => 60, 'riasec_i' => 85, 'riasec_a' => 40,
             'riasec_s' => 30, 'riasec_e' => 45, 'riasec_c' => 70,
             'alumni_count' => 200,
@@ -309,8 +305,6 @@ class AdminPanelTest extends TestCase
                 'code' => $program->code,
                 'name' => $program->name,
                 'level' => $program->level,
-                'math_relevance' => 0.5, 'physics_relevance' => 0.5, 'chemistry_relevance' => 0.5,
-                'biology_relevance' => 0.5, 'indonesian_relevance' => 0.5, 'english_relevance' => 0.5,
                 'riasec_r' => 10, 'riasec_i' => 10, 'riasec_a' => 10,
                 'riasec_s' => 10, 'riasec_e' => 10, 'riasec_c' => 10,
                 'alumni_count' => 100,
@@ -350,7 +344,7 @@ class AdminPanelTest extends TestCase
 
     public function test_admin_mengubah_bobot_kriteria(): void
     {
-        $criterion = Criteria::query()->where('code', 'C7')->firstOrFail();
+        $criterion = Criteria::query()->where('code', 'C3')->firstOrFail();
 
         $this->actingAs($this->admin)
             ->put(route('admin.criteria.update', $criterion), [
@@ -367,21 +361,64 @@ class AdminPanelTest extends TestCase
         $this->assertSame(0.3, $criterion->refresh()->weight);
     }
 
-    public function test_kriteria_nilai_rapor_wajib_menunjuk_mata_pelajaran(): void
+    public function test_mapel_pendukung_dibatasi_dua_sesuai_aturan_snbp(): void
     {
-        $criterion = Criteria::query()->where('code', 'C1')->firstOrFail();
+        $program = StudyProgram::query()->firstOrFail();
 
         $this->actingAs($this->admin)
-            ->put(route('admin.criteria.update', $criterion), [
-                'code' => $criterion->code,
-                'name' => $criterion->name,
-                'weight' => 0.1,
-                'type' => 'benefit',
-                'source' => 'subject_score',
-                'subject' => null,
-                'sort_order' => $criterion->sort_order,
+            ->put(route('admin.study-programs.update', $program), [
+                'code' => $program->code,
+                'name' => $program->name,
+                'level' => $program->level,
+                'support_subjects' => Subject::query()->take(3)->pluck('id')->all(),
+                'riasec_r' => 50, 'riasec_i' => 50, 'riasec_a' => 50,
+                'riasec_s' => 50, 'riasec_e' => 50, 'riasec_c' => 50,
+                'alumni_count' => 100,
+                'employed_count' => 80,
             ])
-            ->assertSessionHasErrors('subject');
+            ->assertSessionHasErrors('support_subjects');
+    }
+
+    public function test_admin_mengelola_master_mata_pelajaran(): void
+    {
+        $this->actingAs($this->admin)
+            ->post(route('admin.subjects.store'), [
+                'name' => 'Teknik Pengelasan Kapal',
+                'education_level' => 'SMK',
+                'group' => 'Teknologi Manufaktur dan Rekayasa',
+                'sort_order' => 99,
+                'is_active' => 1,
+            ])
+            ->assertRedirect(route('admin.subjects.index'));
+
+        // Kode diturunkan dari nama bila admin mengosongkannya.
+        $this->assertDatabaseHas('subjects', [
+            'code' => 'teknik-pengelasan-kapal',
+            'education_level' => 'SMK',
+        ]);
+    }
+
+    public function test_mata_pelajaran_dengan_nama_yang_sudah_ada_ditolak(): void
+    {
+        $this->actingAs($this->admin)
+            ->post(route('admin.subjects.store'), [
+                'name' => Subject::query()->firstOrFail()->name,
+                'education_level' => 'SMK',
+                'sort_order' => 99,
+            ])
+            ->assertSessionHasErrors('code');
+    }
+
+    public function test_mata_pelajaran_yang_dipakai_prodi_tidak_dapat_dihapus(): void
+    {
+        $subject = Subject::query()->whereHas('studyPrograms')->firstOrFail();
+
+        $this->actingAs($this->admin)
+            ->from(route('admin.subjects.index'))
+            ->delete(route('admin.subjects.destroy', $subject))
+            ->assertRedirect(route('admin.subjects.index'));
+
+        $this->assertDatabaseHas('subjects', ['id' => $subject->id]);
     }
 
     public function test_pernyataan_yang_sudah_dijawab_tidak_dapat_dihapus(): void
@@ -464,7 +501,7 @@ class AdminPanelTest extends TestCase
         $oldK = $old->recommended_k_value;
         $oldThreshold = $old->threshold_used;
 
-        $criterion = Criteria::query()->where('code', 'C7')->firstOrFail();
+        $criterion = Criteria::query()->where('code', 'C3')->firstOrFail();
 
         $this->actingAs($this->admin)->put(route('admin.criteria.update', $criterion), [
             'code' => $criterion->code,
@@ -491,7 +528,7 @@ class AdminPanelTest extends TestCase
         // Tes baru wajib memakai parameter yang sudah diperbarui.
         $new = $this->completeAssessment(User::factory()->create(['role' => User::ROLE_MAHASISWA]));
 
-        $this->assertSame(0.35, (float) $new->weights_snapshot['C7']['weight']);
+        $this->assertSame(0.35, (float) $new->weights_snapshot['C3']['weight']);
         $this->assertSame(85.0, (float) $new->threshold_used);
     }
 }

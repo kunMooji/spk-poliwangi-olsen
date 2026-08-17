@@ -19,6 +19,9 @@
                         <x-nav-link :href="route('admin.study-programs.index')" :active="request()->routeIs('admin.study-programs.*')">
                             Program Studi
                         </x-nav-link>
+                        <x-nav-link :href="route('admin.subjects.index')" :active="request()->routeIs('admin.subjects.*')">
+                            Mata Pelajaran
+                        </x-nav-link>
                         <x-nav-link :href="route('admin.criteria.index')" :active="request()->routeIs('admin.criteria.*')">
                             Kriteria
                         </x-nav-link>
@@ -136,6 +139,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.study-programs.index')" :active="request()->routeIs('admin.study-programs.*')">
                     Program Studi
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('admin.subjects.index')" :active="request()->routeIs('admin.subjects.*')">
+                    Mata Pelajaran
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('admin.criteria.index')" :active="request()->routeIs('admin.criteria.*')">
                     Kriteria

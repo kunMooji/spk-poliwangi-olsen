@@ -9,6 +9,7 @@ use App\Models\Setting;
 use App\Models\StudyProgram;
 use App\Models\User;
 use App\Services\RecommendationService;
+use App\Support\Rapor;
 use App\Support\Riasec;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -49,7 +50,12 @@ class SpkDemoCommand extends Command
             }
 
             $calculation = $recommendation->calculate($assessment);
-            $assessment->refresh()->load(['priorities.studyProgram', 'recommendedProgram', 'primaryProgram']);
+            $assessment->refresh()->load([
+                'priorities.studyProgram',
+                'recommendedProgram',
+                'primaryProgram',
+                'subjectScores.subject',
+            ]);
 
             $this->printProfile($assessment, $synthetic);
             $this->printRiasec($assessment);
@@ -100,14 +106,25 @@ class SpkDemoCommand extends Command
             'school_name' => 'SMA Negeri 1 Banyuwangi',
             'school_major' => 'IPA',
             'graduation_year' => 2026,
-            'math_score' => 88,
-            'physics_score' => 82,
-            'chemistry_score' => 75,
-            'biology_score' => 70,
-            'indonesian_score' => 85,
-            'english_score' => 90,
+            'rapor_average' => 81.60,
             'status' => 'questionnaire',
         ]);
+
+        foreach ([1 => 79, 2 => 80, 3 => 82, 4 => 83, 5 => 84] as $semester => $average) {
+            $assessment->raporSemesters()->create([
+                'semester' => $semester,
+                'average_score' => $average,
+            ]);
+        }
+
+        // Mapel pendukung apa pun yang dipakai prodi aktif diisi, dengan sedikit
+        // ragam di sekitar rerata supaya C2 benar-benar bervariasi antar prodi.
+        foreach (Rapor::supportSubjects() as $subject) {
+            $assessment->subjectScores()->create([
+                'subject_id' => $subject->id,
+                'score' => max(0, min(100, 82 + mt_rand(-12, 12))),
+            ]);
+        }
 
         $programs = StudyProgram::query()->active()->orderBy('code')->take(3)->get();
 
@@ -142,9 +159,14 @@ class SpkDemoCommand extends Command
             ['Kode', $assessment->code.($synthetic ? '  (contoh otomatis)' : '')],
             ['Nama', $assessment->full_name],
             ['Asal sekolah', $assessment->school_name ?? '-'],
-            ['Nilai rapor', collect($assessment->subjectScores())
-                ->map(fn ($score, $subject) => Riasec::subjectLabel($subject).' '.rtrim(rtrim(number_format($score, 2), '0'), '.'))
-                ->implode(' | ')],
+            ['Rerata rapor', rtrim(rtrim(number_format($assessment->rapor_average, 2), '0'), '.')],
+            ['Mapel pendukung', $assessment->subjectScores->isEmpty()
+                ? '-'
+                : $assessment->subjectScores
+                    ->map(fn ($row) => $row->subject->name.' '.($row->score === null
+                        ? '(tidak ditempuh)'
+                        : rtrim(rtrim(number_format($row->score, 2), '0'), '.')))
+                    ->implode(' | ')],
             ['Prioritas prodi', $assessment->priorities
                 ->map(fn ($priority) => $priority->priority_order.'. '.$priority->studyProgram->full_name)
                 ->implode(PHP_EOL)],

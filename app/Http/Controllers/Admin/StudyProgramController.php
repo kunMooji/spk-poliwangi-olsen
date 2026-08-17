@@ -5,14 +5,16 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StudyProgramRequest;
 use App\Models\StudyProgram;
+use App\Models\Subject;
+use App\Support\Rapor;
 use App\Support\Riasec;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Pengelolaan alternatif keputusan: identitas prodi, bobot relevansi mata
- * pelajaran (C1..C6), dan profil RIASEC prodi (C7).
+ * Pengelolaan alternatif keputusan: identitas prodi, mata pelajaran pendukung
+ * (C2), dan profil RIASEC prodi (C3).
  */
 class StudyProgramController extends Controller
 {
@@ -42,14 +44,10 @@ class StudyProgramController extends Controller
             'program' => new StudyProgram([
                 'level' => 'D4',
                 'is_active' => true,
-                'math_relevance' => 0.5,
-                'physics_relevance' => 0.5,
-                'chemistry_relevance' => 0.5,
-                'biology_relevance' => 0.5,
-                'indonesian_relevance' => 0.5,
-                'english_relevance' => 0.5,
             ]),
-            'subjects' => Riasec::SUBJECTS,
+            'subjects' => Subject::query()->active()->ordered()->get(),
+            'selectedSubjects' => [],
+            'maxSupportSubjects' => Rapor::MAX_SUPPORT_SUBJECTS,
             'dimensions' => Riasec::LABELS,
         ]);
     }
@@ -57,6 +55,7 @@ class StudyProgramController extends Controller
     public function store(StudyProgramRequest $request): RedirectResponse
     {
         $program = StudyProgram::query()->create($request->payload());
+        $program->supportSubjects()->sync($request->supportSubjectSync());
 
         return redirect()
             ->route('admin.study-programs.index')
@@ -67,7 +66,9 @@ class StudyProgramController extends Controller
     {
         return view('admin.study-programs.edit', [
             'program' => $studyProgram,
-            'subjects' => Riasec::SUBJECTS,
+            'subjects' => Subject::query()->active()->ordered()->get(),
+            'selectedSubjects' => $studyProgram->supportSubjects->pluck('id')->all(),
+            'maxSupportSubjects' => Rapor::MAX_SUPPORT_SUBJECTS,
             'dimensions' => Riasec::LABELS,
         ]);
     }
@@ -75,6 +76,7 @@ class StudyProgramController extends Controller
     public function update(StudyProgramRequest $request, StudyProgram $studyProgram): RedirectResponse
     {
         $studyProgram->update($request->payload());
+        $studyProgram->supportSubjects()->sync($request->supportSubjectSync());
 
         return redirect()
             ->route('admin.study-programs.index')

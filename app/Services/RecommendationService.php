@@ -34,7 +34,9 @@ final class RecommendationService
     public function calculate(Assessment $assessment): array
     {
         $criteria = Criteria::query()->active()->ordered()->get();
-        $programs = StudyProgram::query()->active()->orderBy('code')->get();
+        // Mapel pendukung dimuat di muka: DecisionMatrixBuilder membacanya untuk
+        // setiap prodi pada setiap kriteria.
+        $programs = StudyProgram::query()->active()->with('supportSubjects')->orderBy('code')->get();
 
         if ($criteria->isEmpty()) {
             throw CalculationException::noActiveCriteria();
@@ -61,7 +63,7 @@ final class RecommendationService
         return DB::transaction(function () use ($assessment, $criteria, $programs, $weights, $types, $bounds, $lambda, $epsilon) {
             $this->applyRiasecProfile($assessment);
 
-            $assessment->load('priorities');
+            $assessment->load('priorities', 'subjectScores');
 
             $matrix = $this->matrixBuilder->build($assessment, $programs, $criteria);
             $calculation = $this->cocoso->calculate($matrix, $weights, $types, $lambda, $epsilon, $bounds);

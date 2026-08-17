@@ -58,7 +58,7 @@ users ──< assessments ──< assessment_priorities >── study_programs
            ▲
 periods ───┘  (gelombang PMB — penanda sesi tes)
 
-criteria       (mandiri — definisi kriteria C1..C9)
+criteria       (mandiri — definisi kriteria C1..C5)
 settings       (mandiri — parameter algoritma)
 activity_logs  (mandiri — jejak perubahan data master)
 ```
@@ -69,8 +69,10 @@ activity_logs  (mandiri — jejak perubahan data master)
 
 | Tabel | Isi |
 |---|---|
-| `study_programs` | Alternatif keputusan. Identitas prodi, bobot relevansi 6 mapel, profil RIASEC 6 dimensi, data tracer study |
-| `criteria` | Definisi C1..C9: kode, nama, bobot, jenis benefit/cost, sumber nilai |
+| `study_programs` | Alternatif keputusan. Identitas prodi, profil RIASEC 6 dimensi, data tracer study |
+| `study_program_subjects` | Mata pelajaran pendukung tiap prodi — paling banyak dua, sesuai aturan SNBP |
+| `subjects` | Master mata pelajaran rapor: nama, jenjang SMA/SMK, kelompok peminatan atau rumpun keahlian |
+| `criteria` | Definisi C1..C5: kode, nama, bobot, jenis benefit/cost, sumber nilai |
 | `riasec_questions` | Butir pernyataan kuesioner beserta dimensinya |
 | `settings` | Parameter algoritma: threshold, lambda, epsilon, skala Likert, jumlah minimal prioritas |
 | `periods` | Gelombang PMB: nama, tahun akademik, rentang tanggal, penanda aktif |
@@ -79,7 +81,9 @@ activity_logs  (mandiri — jejak perubahan data master)
 
 | Tabel | Isi |
 |---|---|
-| `assessments` | Biodata, nilai rapor, hasil profil RIASEC, rekomendasi, **snapshot parameter**, penanda gelombang |
+| `assessments` | Biodata, rerata rapor, hasil profil RIASEC, rekomendasi, **snapshot parameter**, penanda gelombang |
+| `assessment_rapor_semesters` | Rerata nilai seluruh mapel per semester (1–5) — komponen pertama SNBP |
+| `assessment_subject_scores` | Nilai pada mapel pendukung; `null` berarti mapel tidak ditempuh — komponen kedua SNBP |
 | `assessment_priorities` | Urutan pilihan prodi calon mahasiswa |
 | `assessment_answers` | Jawaban Likert per butir — ditulis bertahap oleh simpan otomatis |
 | `assessment_results` | Satu baris per prodi: `matrix`, `normalized`, S, P, K_a, K_b, K_c, K, K ternormalisasi, peringkat |
@@ -124,13 +128,20 @@ keduanya membaca angka tersimpan, tidak pernah menghitung ulang dari data master
 
 | `source` | Nilai x_ij | Kriteria bawaan |
 |---|---|---|
-| `subject_score` | `nilai_rapor[subject] × relevansi_prodi[subject]` | C1–C6 |
-| `riasec` | Cosine similarity vektor RIASEC siswa vs prodi, × 100 | C7 |
-| `priority` | Konversi urutan prioritas menjadi skor 0–100 | C8 |
-| `tracer` | `study_programs.employment_rate` (0.00–1.00) | C9 |
+| `rapor_average` | `assessments.rapor_average` — sama untuk seluruh prodi | C1 |
+| `support_subject` | Rerata nilai siswa pada mapel pendukung prodi terkait | C2 |
+| `riasec` | Cosine similarity vektor RIASEC siswa vs prodi, × 100 | C3 |
+| `priority` | Konversi urutan prioritas menjadi skor 0–100 | C4 |
+| `tracer` | `study_programs.employment_rate` (0.00–1.00) | C5 |
 
 Admin dapat menambah, menonaktifkan, atau mengubah bobot kriteria **tanpa
-menyentuh kode perhitungan**, selama `source`-nya salah satu dari empat di atas.
+menyentuh kode perhitungan**, selama `source`-nya salah satu dari lima di atas.
+
+Mapel pendukung yang nilainya tidak dimiliki siswa — misalnya peserta didik IPS
+yang tidak menempuh Fisika — jatuh ke `rapor_average`, bukan ke nol. Nol akan
+menjatuhkan peringkat prodi seolah siswa benar-benar gagal di mapel itu,
+padahal ia hanya tidak mengambilnya. Prodi yang belum ditetapkan mapel
+pendukungnya diperlakukan sama.
 
 ### 3.3 Data yang sudah terpakai tidak dihapus
 
@@ -197,7 +208,7 @@ kode Holland    per kriteria             peringkat
 Rekomendasi adalah prodi dengan **K tertinggi**, tanpa pengecualian.
 
 Urutan prioritas calon mahasiswa **tidak** dipakai untuk menimpa hasil. Minat
-sudah diperhitungkan sebagai kriteria C8 di dalam matriks keputusan; memakainya
+sudah diperhitungkan sebagai kriteria C4 di dalam matriks keputusan; memakainya
 sekali lagi sebagai aturan penimpa berarti menghitung minat dua kali, dan
 membuat prodi pilihan pertama nyaris selalu terpilih terlepas dari nilai rapor
 maupun kesesuaian kepribadiannya.
@@ -212,18 +223,26 @@ ditampilkan pada lembar hasil, bukan penentu prodi mana yang direkomendasikan.
 
 Nilai rapor **0.45** · RIASEC **0.35** · tracer study **0.15** · minat **0.05**.
 
-C8 (urutan prioritas) sengaja memegang bobot terkecil. Berbeda dari delapan
+Blok nilai rapor 0.45 dibagi mengikuti aturan SNBP: komponen pertama (C1, rerata
+seluruh mapel) **0.25** atau 55,6% dari blok — memenuhi syarat paling sedikit
+50% — dan komponen kedua (C2, mapel pendukung) **0.20** atau 44,4%, di bawah
+batas 50%. Rasio itu dihitung terhadap **blok rapor saja**, bukan terhadap total
+seluruh kriteria: RIASEC, prioritas minat, dan tracer study adalah tambahan
+sistem ini yang tidak dikenal SNBP. Halaman Kriteria menampilkan peringatan bila
+rasio tersebut jatuh di bawah 50%.
+
+C4 (urutan prioritas) sengaja memegang bobot terkecil. Berbeda dari empat
 kriteria lain, nilainya bukan atribut yang melekat pada program studi melainkan
 pernyataan keinginan responden itu sendiri. Bobot besar membuat sistem
 mengembalikan pilihan yang sudah disebutkan calon mahasiswa alih-alih memberi
 informasi baru — dan itu meniadakan gunanya sebagai alat bantu keputusan. Pada
-0.05, C8 hanya sanggup membalikkan keputusan yang sudah nyaris seri: berperan
+0.05, C4 hanya sanggup membalikkan keputusan yang sudah nyaris seri: berperan
 sebagai pemecah seri, bukan penggerak hasil.
 
-Minat tetap tertimbang besar, tetapi lewat C7 yang mengukurnya dengan instrumen
+Minat tetap tertimbang besar, tetapi lewat C3 yang mengukurnya dengan instrumen
 RIASEC alih-alih menanyakan preferensi secara langsung.
 
-C7 ditahan di 0.35 dan tidak dinaikkan lebih jauh: menaruh 0.40–0.45 pada satu
+C3 ditahan di 0.35 dan tidak dinaikkan lebih jauh: menaruh 0.40–0.45 pada satu
 kuesioner laporan-diri membuat hampir separuh keputusan bertumpu pada satu
 instrumen. Dengan pembagian ini tidak ada kriteria tunggal yang melewati 0.35.
 
@@ -233,44 +252,53 @@ instrumen. Dengan pembagian ini tidak ada kriteria tunggal yang melewati 0.35.
 
 Ketiganya bukan hiasan: tanpa salah satunya perhitungan gagal atau menyesatkan.
 
-### 5.1 Kolom konstan dan tercoretnya nilai rapor
+### 5.1 Kolom konstan pada nilai rapor
 
-**Masalah pertama.** Nilai rapor calon mahasiswa sama untuk semua prodi. Kolom
-C1–C6 menjadi konstan, `max − min = 0`, normalisasi membagi nol.
+Skema penilaian rapor mengikuti SNBP: **komponen pertama** berupa rerata nilai
+seluruh mata pelajaran pada semua semester kecuali semester terakhir (C1), dan
+**komponen kedua** berupa nilai pada paling banyak dua mata pelajaran pendukung
+program studi yang dituju (C2).
 
-**Penyelesaian.** Bobot relevansi mapel per prodi: `x_ij = nilai_rapor_j ×
-relevansi_ij`. Informatika memberi bobot besar pada Matematika, Teknik Sipil pada
-Fisika — kolomnya jadi bervariasi dan normalisasi bermakna.
+**Sifat C1 yang perlu disadari.** Rerata rapor adalah atribut calon mahasiswa,
+bukan atribut program studi. Nilainya karena itu **sama persis untuk seluruh
+alternatif** dalam satu sesi tes: kolomnya konstan dan `max − min = 0`.
 
-**Masalah kedua — yang tidak selesai oleh penyelesaian di atas.** Kolomnya memang
-jadi bervariasi, tetapi seluruh variasinya berasal dari relevansi prodi, bukan
-dari nilai rapor. Nilai rapor kini berlaku sebagai konstanta pengali `c` yang
-sama di seluruh baris, dan normalisasi min–max berbasis sampel mencoretnya:
+Konsekuensinya pada CoCoSo: C1 menambah konstanta yang sama ke `S_i` dan `P_i`
+setiap alternatif, sehingga **tidak mengubah urutan peringkat**. Ini bukan cacat
+yang perlu diperbaiki, melainkan konsekuensi logis dari perbedaan arah
+pemeringkatan — SNBP memeringkat *siswa* untuk satu prodi, sedangkan sistem ini
+memeringkat *prodi* untuk satu siswa. Yang membedakan alternatif adalah C2,
+karena tiap prodi menetapkan mapel pendukung yang berbeda.
+
+Upaya "memperbaiki" C1 dengan mengalikannya dengan faktor relevansi per prodi
+justru keliru dua kali: SNBP tidak mengenal konsep relevansi kontinu, dan
+variasi yang dihasilkannya seluruhnya berasal dari faktor relevansi, bukan dari
+nilai rapor. Di bawah normalisasi min–max berbasis sampel, nilai rapor sebagai
+konstanta pengali `c` bahkan tercoret secara aljabar:
 
 ```
 (c·v_i − c·v_min) / (c·v_max − c·v_min) = (v_i − v_min) / (v_max − v_min)
 ```
 
-Akibatnya calon mahasiswa bernilai 95 di seluruh mapel eksakta memperoleh
-peringkat yang **persis sama** dengan yang bernilai 40 — separuh bobot model
-(C1–C6) tidak berpengaruh sama sekali.
-
-**Penyelesaian.** Kriteria yang besarannya bermakna absolut dinormalisasi
-terhadap **skala bakunya**, bukan terhadap batas sampel:
+**Yang tetap wajib: batas normalisasi tetap.** Karena C1 konstan, normalisasi
+berbasis sampel akan memberi `1.0` kepada seluruh alternatif — rapor 90 tak
+terbedakan dari rapor 55, dan bobot 0.25 terbuang percuma. Kriteria yang
+besarannya bermakna absolut karena itu dinormalisasi terhadap **skala bakunya**:
 
 | Kriteria | Batas | Alasan |
 |---|---|---|
-| C1–C6 `subject_score` | 0 – 100 | rapor 0–100 × relevansi 0–1; batas tetap mengembalikan pengaruh nilai rapor |
-| C9 `tracer` | 0.00 – 1.00 | rasio keterserapan bermakna apa adanya — 0.80 berarti 80% alumni terserap |
+| C1 `rapor_average` | 0 – 100 | kolom konstan; tanpa batas tetap seluruh alternatif bernilai 1.0 dan rapor tidak terbaca sama sekali |
+| C2 `support_subject` | 0 – 100 | rerata nilai mapel, berskala sama dengan rapor aslinya |
+| C5 `tracer` | 0.00 – 1.00 | rasio keterserapan bermakna apa adanya — 0.80 berarti 80% alumni terserap |
 
-C7 (`riasec`) dan C8 (`priority`) tetap memakai min–max sampel. Cosine similarity
+C3 (`riasec`) dan C4 (`priority`) tetap memakai min–max sampel. Cosine similarity
 tidak punya tafsir absolut — 69 bukan berarti "69% cocok" — dan urutan prioritas
 hanya bermakna relatif terhadap pilihan lain pada sesi yang sama; untuk keduanya
 perbandingan antar alternatif justru tafsir yang benar.
 
-Tanpa batas tetap pada C9, selisih nyata yang kecil (mis. 0.78–0.89) direntangkan
+Tanpa batas tetap pada C5, selisih nyata yang kecil (mis. 0.78–0.89) direntangkan
 menjadi 0–1 penuh, sehingga beda 11 poin diperlakukan seolah beda terburuk lawan
-terbaik dan C9 mendominasi hasil jauh melebihi bobotnya.
+terbaik dan C5 mendominasi hasil jauh melebihi bobotnya.
 
 **Pengaman tetap ada.** Bila `max == min`, seluruh `r_ij` diberi nilai `1.0`
 karena kriteria tersebut memang tidak membedakan apa pun. Nilai ternormalisasi
@@ -487,7 +515,7 @@ diminati namun jarang cocok — kesenjangan antara persepsi calon mahasiswa dan
 profil yang sesungguhnya dituntut prodi tersebut.
 
 Selebihnya: asal sekolah teratas beserta rata-rata kecocokannya, rata-rata nilai
-rapor per mata pelajaran, sebaran tipe RIASEC, jurusan sekolah, jenis kelamin,
+rapor beserta rata-rata tiap mapel pendukung, sebaran tipe RIASEC, jurusan sekolah, jenis kelamin,
 dan tren tes per bulan.
 
 > **Ketergantungan.** Tren bulanan memakai `DATE_FORMAT` sehingga terikat MySQL.
@@ -496,11 +524,14 @@ dan tren tes per bulan.
 
 ## 11. Penetapan Bobot
 
-Bobot bawaan C1–C9:
+Bobot bawaan C1–C5:
 
-| C1 | C2 | C3 | C4 | C5 | C6 | C7 | C8 | C9 | Σ |
-|---|---|---|---|---|---|---|---|---|---|
-| .10 | .08 | .08 | .08 | .07 | .09 | .20 | .15 | .15 | **1.00** |
+| C1 rerata rapor | C2 mapel pendukung | C3 RIASEC | C4 minat | C5 tracer | Σ |
+|---|---|---|---|---|---|
+| .25 | .20 | .35 | .05 | .15 | **1.00** |
+
+C1 dan C2 bersama membentuk blok nilai rapor 0.45, dengan pembagian 55,6% : 44,4%
+sesuai batas SNBP (komponen pertama ≥ 50%, komponen kedua ≤ 50%).
 
 Angka ini **bukan** hasil metode pembobotan formal seperti AHP atau Entropy.
 Penetapannya dilakukan melalui **wawancara dengan pihak akademik Politeknik
@@ -533,7 +564,7 @@ penandaannya tidak dapat dipulihkan.
 ## 13. Catatan Perubahan
 
 `activity_logs` menjawab pertanyaan yang selalu muncul saat hasil dipersoalkan:
-*siapa mengubah bobot C7, kapan, dari berapa ke berapa.*
+*siapa mengubah bobot C3, kapan, dari berapa ke berapa.*
 
 Pencatatan dipasang di **tingkat model** lewat trait `RecordsActivity`, bukan di
 controller, supaya perubahan lewat jalur mana pun ikut terekam — termasuk
@@ -601,7 +632,7 @@ Perhitungan **tidak pernah** dijalankan dari jawaban sebagian — hanya
 
 Calon mahasiswa yang mengulang tes ingin tahu apa yang berubah. Halaman
 `/tes/bandingkan` menyandingkan dua sesi: pergeseran persentase RIASEC per
-dimensi, perubahan nilai rapor per mata pelajaran, dan apakah rekomendasinya
+dimensi, perubahan rerata rapor dan nilai mapel pendukung, dan apakah rekomendasinya
 berpindah.
 
 Seluruh angka dibaca dari sesi tes masing-masing, tidak ada yang dihitung ulang,

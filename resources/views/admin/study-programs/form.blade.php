@@ -55,26 +55,37 @@
     </section>
 
     <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Bobot Relevansi Mata Pelajaran (C1&ndash;C6)</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Mata Pelajaran Pendukung (C2)</h3>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            Rentang 0&ndash;1. Nilai rapor calon mahasiswa dikalikan bobot ini, sehingga kolom nilai rapor
-            tidak lagi konstan antar prodi dan normalisasi CoCoSo dapat dihitung.
+            SNBP membatasi paling banyak {{ $maxSupportSubjects }} mata pelajaran pendukung per program studi.
+            Nilai calon mahasiswa pada mata pelajaran ini dirata-ratakan menjadi C2 &mdash; satu-satunya kriteria
+            nilai rapor yang membedakan antar prodi. Boleh dikosongkan; bila kosong, C2 memakai rerata rapor umum.
         </p>
 
-        <div class="mt-5 grid gap-5 sm:grid-cols-3">
-            @foreach ($subjects as $key => $label)
+        <div class="mt-5 grid gap-5 sm:grid-cols-2">
+            @for ($i = 0; $i < $maxSupportSubjects; $i++)
                 <div>
-                    <x-input-label :for="$key.'_relevance'" :value="$label" />
-                    <x-text-input :id="$key.'_relevance'" :name="$key.'_relevance'" type="number" step="0.05" min="0" max="1"
-                                  class="mt-1 block w-full" :value="old($key.'_relevance', $program->{$key.'_relevance'})" required />
-                    <x-input-error :messages="$errors->get($key.'_relevance')" class="mt-2" />
+                    <x-input-label :for="'support_subjects_'.$i" :value="'Mata Pelajaran Pendukung '.($i + 1)" />
+                    <select id="support_subjects_{{ $i }}" name="support_subjects[{{ $i }}]"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                        <option value="">— Tidak dipakai —</option>
+                        @foreach ($subjects as $subject)
+                            <option value="{{ $subject->id }}"
+                                    @selected(old('support_subjects.'.$i, $selectedSubjects[$i] ?? null) == $subject->id)>
+                                {{ $subject->display_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('support_subjects.'.$i)" class="mt-2" />
                 </div>
-            @endforeach
+            @endfor
         </div>
+
+        <x-input-error :messages="$errors->get('support_subjects')" class="mt-2" />
     </section>
 
     <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Profil Kepribadian RIASEC Prodi (C7)</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Profil Kepribadian RIASEC Prodi (C3)</h3>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Rentang 0&ndash;100 per dimensi. Vektor ini dibandingkan dengan profil calon mahasiswa
             menggunakan cosine similarity.
@@ -94,7 +105,7 @@
     </section>
 
     <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Tracer Study (C9)</h3>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Tracer Study (C5)</h3>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Persentase serapan kerja dihitung otomatis dari jumlah alumni dan alumni yang terserap.
         </p>

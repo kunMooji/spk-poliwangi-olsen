@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\RiasecQuestionController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\StatisticsController;
 use App\Http\Controllers\Admin\StudyProgramController;
+use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TracerStudyController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\AssessmentComparisonController;
@@ -69,6 +70,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('kriteria', CriteriaController::class)
         ->parameters(['kriteria' => 'criteria'])
         ->names('criteria')
+        ->except('show');
+
+    Route::resource('mata-pelajaran', SubjectController::class)
+        ->parameters(['mata-pelajaran' => 'subject'])
+        ->names('subjects')
         ->except('show');
 
     Route::resource('pernyataan', RiasecQuestionController::class)

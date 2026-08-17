@@ -32,6 +32,28 @@
                 </x-alert>
             @endif
 
+            {{-- SNBP: rerata seluruh mapel paling sedikit 50% dari blok rapor,
+                 mapel pendukung paling banyak 50%. Rasio dihitung terhadap blok
+                 rapor saja karena RIASEC, prioritas, dan tracer tidak dikenal SNBP. --}}
+            @if ($raporShare === null)
+                <x-alert type="warning">
+                    Belum ada kriteria bersumber nilai rapor yang aktif. Skema SNBP mensyaratkan rerata rapor
+                    seluruh mata pelajaran ikut diperhitungkan.
+                </x-alert>
+            @elseif ($raporShare < 50)
+                <x-alert type="warning">
+                    Komponen <span class="font-semibold">Rerata Rapor Seluruh Mapel</span> hanya memegang
+                    <span class="font-semibold">{{ number_format($raporShare, 1) }}%</span> dari blok nilai rapor.
+                    SNBP mensyaratkan paling sedikit 50%, dengan mapel pendukung paling banyak 50%.
+                </x-alert>
+            @else
+                <x-alert type="success">
+                    Komposisi blok nilai rapor sesuai SNBP &mdash; rerata seluruh mapel
+                    <span class="font-semibold">{{ number_format($raporShare, 1) }}%</span>, mapel pendukung
+                    <span class="font-semibold">{{ number_format(100 - $raporShare, 1) }}%</span>.
+                </x-alert>
+            @endif
+
             <div class="flex justify-end">
                 <x-list-view-toggle />
             </div>
@@ -55,12 +77,7 @@
                                 <tr class="text-gray-700 dark:text-gray-300">
                                     <td class="whitespace-nowrap px-6 py-4 font-mono text-xs">{{ $criterion->code }}</td>
                                     <td class="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">{{ $criterion->name }}</td>
-                                    <td class="px-6 py-4">
-                                        {{ $criterion->source_label }}
-                                        @if ($criterion->subject)
-                                            <span class="text-gray-400">&middot; {{ \App\Support\Riasec::subjectLabel($criterion->subject) }}</span>
-                                        @endif
-                                    </td>
+                                    <td class="px-6 py-4">{{ $criterion->source_label }}</td>
                                     <td class="px-6 py-4">{{ $criterion->isBenefit() ? 'Benefit' : 'Cost' }}</td>
                                     <td class="whitespace-nowrap px-6 py-4 text-right font-semibold">{{ number_format($criterion->weight, 4) }}</td>
                                     <td class="px-6 py-4">
@@ -107,18 +124,20 @@
                     @foreach ($criteria as $criterion)
                         @php
                             $criterionColor = match ($criterion->source) {
-                                'subject_score' => '#0284c7',
+                                'rapor_average' => '#0284c7',
+                                'support_subject' => '#4f46e5',
                                 'riasec' => '#c026d3',
                                 'priority' => '#d97706',
                                 'tracer' => '#059669',
                                 default => '#6b7280',
                             };
+                            $isRaporSource = in_array($criterion->source, \App\Models\Criteria::RAPOR_SOURCES, true);
                         @endphp
                         <div class="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-gray-800">
                             <div class="relative overflow-hidden p-5 text-white"
                                  style="background-color: {{ $criterionColor }}; background-image: linear-gradient(135deg, rgba(255,255,255,.20), rgba(0,0,0,.28));">
                                 <svg class="pointer-events-none absolute -right-4 -top-4 h-24 w-24 text-white/10" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true">
-                                    @if ($criterion->source === 'subject_score')
+                                    @if ($isRaporSource)
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                                     @elseif ($criterion->source === 'riasec')
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
@@ -133,7 +152,7 @@
                                     <div class="flex min-w-0 items-start gap-2.5">
                                         <span class="mt-0.5 flex h-9 w-9 flex-none items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
                                             <svg class="h-4.5 w-4.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                                                @if ($criterion->source === 'subject_score')
+                                                @if ($isRaporSource)
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
                                                 @elseif ($criterion->source === 'riasec')
                                                     <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z" />
@@ -146,12 +165,7 @@
                                         </span>
                                         <div class="min-w-0">
                                             <p class="truncate text-base font-semibold">{{ $criterion->name }}</p>
-                                            <p class="mt-0.5 truncate text-xs text-white/80">
-                                                {{ $criterion->source_label }}
-                                                @if ($criterion->subject)
-                                                    &middot; {{ \App\Support\Riasec::subjectLabel($criterion->subject) }}
-                                                @endif
-                                            </p>
+                                            <p class="mt-0.5 truncate text-xs text-white/80">{{ $criterion->source_label }}</p>
                                         </div>
                                     </div>
                                     <span class="whitespace-nowrap rounded-full bg-white/20 px-2.5 py-1 font-mono text-[11px] font-medium backdrop-blur-sm">

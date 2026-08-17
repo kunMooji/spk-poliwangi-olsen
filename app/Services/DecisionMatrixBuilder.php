@@ -24,28 +24,36 @@ final class DecisionMatrixBuilder
      * terhadap skala bakunya, sedangkan kriteria yang maknanya relatif terhadap
      * alternatif lain tetap memakai min-max sampel seperti CoCoSo bawaan.
      *
-     * `subject_score` (C1..C6) — nilainya berbentuk `nilai_rapor × relevansi`,
-     * dengan nilai rapor sama untuk seluruh prodi pada satu sesi tes. Batas dari
-     * sampel mencoret nilai rapor tersebut secara aljabar (lihat
-     * CocosoService::calculate), sehingga rapor bagus dan rapor jelek
-     * menghasilkan peringkat yang persis sama. Batas tetap 0..100 — rapor 0..100
-     * dikali relevansi 0..1 — mengembalikan pengaruh nilai rapor, sekaligus
-     * menghilangkan risiko `max - min = 0` pada kolom ini.
+     * `rapor_average` (C1) — rerata rapor bernilai persis sama untuk seluruh
+     * prodi pada satu sesi tes, sehingga kolomnya konstan dan `max - min = 0`.
+     * Dengan batas sampel, CocosoService::normalize memberi 1.0 kepada semua
+     * alternatif dan nilai rapor 95 tak terbedakan dari 55. Batas tetap 0..100
+     * membuat rapor terbaca pada skala aslinya. Perlu dicatat: kriteria ini
+     * memang tidak mengubah urutan peringkat — ia menambah konstanta yang sama
+     * ke S_i dan P_i setiap alternatif. Itu konsekuensi wajar karena SNBP
+     * memeringkat siswa untuk satu prodi, sedangkan sistem ini memeringkat prodi
+     * untuk satu siswa. Pembeda nilai rapor antar prodi ada pada C2.
      *
-     * `tracer` (C9) — rasio keterserapan kerja bermakna apa adanya: 0.80 berarti
+     * `support_subject` (C2) — rerata nilai pada mapel pendukung prodi, berskala
+     * 0..100 sama seperti rapor aslinya. Batas sampel akan merentangkan selisih
+     * kecil antar prodi menjadi 0..1 penuh, sehingga beda beberapa poin terbaca
+     * seolah beda terburuk lawan terbaik.
+     *
+     * `tracer` (C5) — rasio keterserapan kerja bermakna apa adanya: 0.80 berarti
      * 80% alumni terserap, bukan "terburuk di antara prodi lain". Batas sampel
      * merentangkan selisih nyata yang kecil (mis. 0.78..0.89) menjadi 0..1 penuh,
      * sehingga beda 11 poin diperlakukan seolah beda terburuk lawan terbaik dan
-     * C9 mendominasi hasil jauh melebihi bobotnya.
+     * C5 mendominasi hasil jauh melebihi bobotnya.
      *
-     * `riasec` (C7) dan `priority` (C8) sengaja tidak masuk daftar ini. Cosine
+     * `riasec` (C3) dan `priority` (C4) sengaja tidak masuk daftar ini. Cosine
      * similarity tidak punya tafsir absolut — 69 bukan berarti "69% cocok" —
      * dan urutan prioritas hanya bermakna relatif terhadap pilihan lain pada
      * sesi tes yang sama. Untuk keduanya, perbandingan antar alternatif justru
      * tafsir yang benar, sehingga min-max sampel dipertahankan.
      */
     private const FIXED_BOUNDS = [
-        'subject_score' => ['min' => 0.0, 'max' => 100.0],
+        'rapor_average' => ['min' => 0.0, 'max' => 100.0],
+        'support_subject' => ['min' => 0.0, 'max' => 100.0],
         'tracer' => ['min' => 0.0, 'max' => 1.0],
     ];
 
@@ -81,7 +89,8 @@ final class DecisionMatrixBuilder
      */
     public function build(Assessment $assessment, Collection $programs, Collection $criteria): array
     {
-        $subjectScores = $assessment->subjectScores();
+        $raporAverage = (float) $assessment->rapor_average;
+        $subjectScores = $assessment->subjectScoreMap();
         $studentVector = $assessment->riasecPercentages();
         $priorityRanks = $this->priorityRanks($assessment);
         $priorityCount = count($priorityRanks);
@@ -96,6 +105,7 @@ final class DecisionMatrixBuilder
                 $row[$criterion->code] = $this->resolve(
                     $criterion,
                     $program,
+                    $raporAverage,
                     $subjectScores,
                     $studentVector,
                     $priorityRanks,
@@ -111,13 +121,14 @@ final class DecisionMatrixBuilder
     }
 
     /**
-     * @param  array<string, float>  $subjectScores
+     * @param  array<int, float|null>  $subjectScores
      * @param  array<string, float>  $studentVector
      * @param  array<int, int>  $priorityRanks
      */
     private function resolve(
         Criteria $criterion,
         StudyProgram $program,
+        float $raporAverage,
         array $subjectScores,
         array $studentVector,
         array $priorityRanks,
@@ -125,18 +136,21 @@ final class DecisionMatrixBuilder
         float $unselectedScore,
     ): float {
         return match ($criterion->source) {
-            // C1..C6 — nilai rapor dikalikan bobot relevansi mapel pada prodi terkait.
-            // Perkalian inilah yang membuat kolom nilai rapor berbeda antar alternatif;
-            // tanpa itu seluruh baris bernilai sama dan normalisasi min-max gagal.
-            'subject_score' => $this->subjectValue($criterion, $program, $subjectScores),
+            // C1 — rerata rapor seluruh mapel. Sama untuk setiap prodi, karena ini
+            // atribut calon mahasiswa dan bukan atribut alternatif.
+            'rapor_average' => $raporAverage,
 
-            // C7 — cosine similarity vektor RIASEC.
+            // C2 — rerata nilai pada mapel pendukung prodi terkait. Inilah kolom yang
+            // membedakan nilai rapor antar alternatif.
+            'support_subject' => $this->supportSubjectValue($program, $raporAverage, $subjectScores),
+
+            // C3 — cosine similarity vektor RIASEC.
             'riasec' => $this->riasec->compatibility($studentVector, $program->riasecVector()),
 
-            // C8 — konversi urutan prioritas menjadi skor 0-100.
+            // C4 — konversi urutan prioritas menjadi skor 0-100.
             'priority' => $this->priorityValue($program, $priorityRanks, $priorityCount, $unselectedScore),
 
-            // C9 — rasio alumni terserap kerja (0.00 - 1.00).
+            // C5 — rasio alumni terserap kerja (0.00 - 1.00).
             'tracer' => (float) $program->employment_rate,
 
             default => 0.0,
@@ -144,16 +158,35 @@ final class DecisionMatrixBuilder
     }
 
     /**
-     * @param  array<string, float>  $subjectScores
+     * Rerata nilai responden pada mata pelajaran pendukung prodi.
+     *
+     * Mapel yang tidak ditempuh responden — nilainya null, misalnya peserta didik
+     * IPS yang tidak menempuh Fisika — jatuh ke rerata rapor umum, bukan ke nol.
+     * Nol akan menjatuhkan peringkat prodi seolah responden benar-benar gagal di
+     * mapel itu, padahal ia hanya tidak mengambilnya; rerata umum memperlakukannya
+     * secara netral sebagai cerminan kemampuan rata-rata responden.
+     *
+     * Prodi yang belum ditetapkan mapel pendukungnya juga jatuh ke rerata umum,
+     * sehingga admin yang belum selesai mengonfigurasi tidak membuat prodi itu
+     * hilang dari rekomendasi.
+     *
+     * @param  array<int, float|null>  $subjectScores
      */
-    private function subjectValue(Criteria $criterion, StudyProgram $program, array $subjectScores): float
+    private function supportSubjectValue(StudyProgram $program, float $raporAverage, array $subjectScores): float
     {
-        $subject = (string) $criterion->subject;
+        $subjectIds = $program->supportSubjects->pluck('id');
 
-        $score = (float) ($subjectScores[$subject] ?? 0.0);
-        $relevance = (float) ($program->subjectRelevance()[$subject] ?? 0.0);
+        if ($subjectIds->isEmpty()) {
+            return $raporAverage;
+        }
 
-        return $score * $relevance;
+        $total = 0.0;
+
+        foreach ($subjectIds as $subjectId) {
+            $total += $subjectScores[$subjectId] ?? $raporAverage;
+        }
+
+        return $total / $subjectIds->count();
     }
 
     /**

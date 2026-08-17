@@ -270,7 +270,7 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @foreach ($assessment->results as $result)
-                                @php $isRecommended = $result->study_program_id === $assessment->recommended_program_id; @endphp
+                                @php($isRecommended = $result->study_program_id === $assessment->recommended_program_id)
                                 <tr class="{{ $isRecommended ? 'bg-brand-50 dark:bg-brand-900/20' : '' }} text-gray-700 dark:text-gray-300">
                                     <td class="px-6 py-3 font-semibold">{{ $result->ranking }}</td>
                                     <td class="px-6 py-3">

@@ -12,6 +12,8 @@ class DatabaseSeeder extends Seeder
             SettingSeeder::class,
             CriteriaSeeder::class,
             RiasecQuestionSeeder::class,
+            // Mapel harus ada sebelum prodi, karena prodi merujuknya sebagai mapel pendukung.
+            SubjectSeeder::class,
             StudyProgramSeeder::class,
             PeriodSeeder::class,
             UserSeeder::class,

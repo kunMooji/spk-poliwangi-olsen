@@ -20,7 +20,7 @@ class Assessment extends Model
     protected $fillable = [
         'user_id', 'period_id', 'code',
         'full_name', 'gender', 'school_name', 'school_major', 'graduation_year', 'phone',
-        'math_score', 'physics_score', 'chemistry_score', 'biology_score', 'indonesian_score', 'english_score',
+        'rapor_average',
         'score_r', 'score_i', 'score_a', 'score_s', 'score_e', 'score_c',
         'percent_r', 'percent_i', 'percent_a', 'percent_s', 'percent_e', 'percent_c',
         'holland_code', 'dominant_type',
@@ -32,12 +32,7 @@ class Assessment extends Model
     protected function casts(): array
     {
         return [
-            'math_score' => 'float',
-            'physics_score' => 'float',
-            'chemistry_score' => 'float',
-            'biology_score' => 'float',
-            'indonesian_score' => 'float',
-            'english_score' => 'float',
+            'rapor_average' => 'float',
             'score_r' => 'integer',
             'score_i' => 'integer',
             'score_a' => 'integer',
@@ -91,6 +86,26 @@ class Assessment extends Model
         return $this->hasMany(AssessmentAnswer::class);
     }
 
+    /**
+     * Rerata rapor per semester — komponen pertama SNBP.
+     *
+     * @return HasMany<AssessmentRaporSemester>
+     */
+    public function raporSemesters(): HasMany
+    {
+        return $this->hasMany(AssessmentRaporSemester::class)->orderBy('semester');
+    }
+
+    /**
+     * Nilai pada mapel pendukung — komponen kedua SNBP.
+     *
+     * @return HasMany<AssessmentSubjectScore>
+     */
+    public function subjectScores(): HasMany
+    {
+        return $this->hasMany(AssessmentSubjectScore::class);
+    }
+
     /** @return HasMany<AssessmentResult> */
     public function results(): HasMany
     {
@@ -116,18 +131,21 @@ class Assessment extends Model
     }
 
     /**
-     * Nilai rapor dikunci dengan `criteria.subject`.
+     * Peta nilai mapel pendukung: [subject_id => nilai].
      *
-     * @return array<string, float>
+     * Mapel yang dikosongkan responden tetap muncul dengan nilai null, bukan
+     * dibuang, supaya pemanggil dapat membedakan "tidak menempuh mapel ini"
+     * dari "mapel tidak ditanyakan".
+     *
+     * @return array<int, float|null>
      */
-    public function subjectScores(): array
+    public function subjectScoreMap(): array
     {
-        $scores = [];
-        foreach (array_keys(Riasec::SUBJECTS) as $subject) {
-            $scores[$subject] = (float) $this->{$subject.'_score'};
-        }
-
-        return $scores;
+        return $this->subjectScores
+            ->mapWithKeys(fn (AssessmentSubjectScore $row) => [
+                $row->subject_id => $row->score === null ? null : (float) $row->score,
+            ])
+            ->all();
     }
 
     /**

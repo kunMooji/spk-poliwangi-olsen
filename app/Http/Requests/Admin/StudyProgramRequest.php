@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Admin;
 
+use App\Support\Rapor;
 use App\Support\Riasec;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -34,12 +35,17 @@ class StudyProgramRequest extends FormRequest
             'is_active' => ['boolean'],
         ];
 
-        // Bobot relevansi mata pelajaran (C1..C6): pengali nilai rapor per prodi.
-        foreach (array_keys(Riasec::SUBJECTS) as $subject) {
-            $rules[$subject.'_relevance'] = ['required', 'numeric', 'between:0,1'];
-        }
+        // Mata pelajaran pendukung (C2). SNBP membatasi paling banyak dua mapel
+        // per prodi; slot boleh dikosongkan sehingga prodi tanpa mapel pendukung
+        // tetap dapat disimpan.
+        $rules['support_subjects'] = ['nullable', 'array', 'max:'.Rapor::MAX_SUPPORT_SUBJECTS];
+        $rules['support_subjects.*'] = [
+            'nullable',
+            'distinct',
+            Rule::exists('subjects', 'id')->where('is_active', true),
+        ];
 
-        // Profil RIASEC prodi (C7): pembanding cosine similarity, skala 0-100.
+        // Profil RIASEC prodi (C3): pembanding cosine similarity, skala 0-100.
         foreach (Riasec::DIMENSIONS as $dimension) {
             $rules['riasec_'.strtolower($dimension)] = ['required', 'integer', 'between:0,100'];
         }
@@ -62,8 +68,8 @@ class StudyProgramRequest extends FormRequest
             'tracer_year' => 'tahun tracer study',
         ];
 
-        foreach (Riasec::SUBJECTS as $key => $label) {
-            $attributes[$key.'_relevance'] = 'relevansi '.$label;
+        foreach (range(0, Rapor::MAX_SUPPORT_SUBJECTS - 1) as $index) {
+            $attributes["support_subjects.{$index}"] = 'mata pelajaran pendukung '.($index + 1);
         }
 
         foreach (Riasec::DIMENSIONS as $dimension) {
@@ -80,6 +86,8 @@ class StudyProgramRequest extends FormRequest
     {
         return [
             'employed_count.lte' => 'Jumlah alumni terserap kerja tidak boleh melebihi jumlah alumni.',
+            'support_subjects.max' => 'Mata pelajaran pendukung paling banyak :max sesuai aturan SNBP.',
+            'support_subjects.*.distinct' => 'Mata pelajaran pendukung tidak boleh dipilih dua kali.',
         ];
     }
 
@@ -91,7 +99,7 @@ class StudyProgramRequest extends FormRequest
      */
     public function payload(): array
     {
-        $data = $this->safe()->all();
+        $data = $this->safe()->except('support_subjects');
 
         $alumni = (int) $data['alumni_count'];
         $data['employment_rate'] = $alumni > 0 ? round($data['employed_count'] / $alumni, 3) : 0;
@@ -99,5 +107,24 @@ class StudyProgramRequest extends FormRequest
         $data['tracer_updated_at'] = now();
 
         return $data;
+    }
+
+    /**
+     * Mapel pendukung siap dipakai `sync()`, dengan `position` mengikuti urutan
+     * slot pada form. Slot kosong dibuang sehingga admin boleh mengisi hanya
+     * satu mapel, atau melewati slot pertama.
+     *
+     * @return array<int, array{position: int}>
+     */
+    public function supportSubjectSync(): array
+    {
+        $ids = array_filter(array_map('intval', $this->validated('support_subjects') ?? []));
+
+        $sync = [];
+        foreach (array_values($ids) as $index => $subjectId) {
+            $sync[$subjectId] = ['position' => $index + 1];
+        }
+
+        return $sync;
     }
 }

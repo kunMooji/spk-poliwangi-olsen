@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Assessment;
 use App\Models\RiasecQuestion;
 use App\Models\StudyProgram;
+use App\Models\Subject;
 use App\Models\User;
 use App\Services\RecommendationService;
 use Illuminate\Database\Seeder;
@@ -49,16 +50,39 @@ class SaimoDemoSeeder extends Seeder
                 'school_major' => 'Bahasa',
                 'graduation_year' => 2026,
                 'phone' => '081234567890',
-                // Nilai rapor condong ke bahasa, lemah di sains/matematika.
-                'math_score' => 45,
-                'physics_score' => 42,
-                'chemistry_score' => 40,
-                'biology_score' => 48,
-                'indonesian_score' => 92,
-                'english_score' => 90,
+                // Rerata rapor sedang, tetapi profil mapelnya condong ke bahasa dan
+                // sosial serta lemah di sains — inilah yang menggerakkan C2.
+                'rapor_average' => 68.40,
                 'status' => 'questionnaire',
             ]
         );
+
+        $assessment->raporSemesters()->delete();
+        foreach ([1 => 66, 2 => 67, 3 => 68, 4 => 70, 5 => 71] as $semester => $average) {
+            $assessment->raporSemesters()->create([
+                'semester' => $semester,
+                'average_score' => $average,
+            ]);
+        }
+
+        $assessment->subjectScores()->delete();
+        $subjectScores = [
+            'matematika' => 45,
+            'fisika' => 42,
+            'kimia' => 40,
+            'biologi' => 48,
+            'informatika' => 52,
+            'bahasa-inggris' => 90,
+            'ekonomi-akuntansi' => 84,
+            'geografi' => 86,
+        ];
+
+        foreach (Subject::query()->whereIn('code', array_keys($subjectScores))->get() as $subject) {
+            $assessment->subjectScores()->create([
+                'subject_id' => $subject->id,
+                'score' => $subjectScores[$subject->code],
+            ]);
+        }
 
         $assessment->priorities()->delete();
         foreach (array_values($priorityCodes) as $index => $code) {
