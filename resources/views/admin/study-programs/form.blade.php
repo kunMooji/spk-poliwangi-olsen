@@ -57,28 +57,60 @@
     <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Mata Pelajaran Pendukung (C2)</h3>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-            SNBP membatasi paling banyak {{ $maxSupportSubjects }} mata pelajaran pendukung per program studi.
             Nilai calon mahasiswa pada mata pelajaran ini dirata-ratakan menjadi C2 &mdash; satu-satunya kriteria
             nilai rapor yang membedakan antar prodi. Boleh dikosongkan; bila kosong, C2 memakai rerata rapor umum.
         </p>
+        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Batas SNBP <strong>{{ $maxSupportSubjects }} mata pelajaran berlaku per asal sekolah pendaftar</strong>,
+            bukan per prodi. Prodi ini boleh memakai mapel SMA sekaligus mapel SMK dari beberapa rumpun keahlian,
+            asalkan untuk tiap jenjang dan jurusan yang cocok tidak lebih dari {{ $maxSupportSubjects }}. Mapel
+            berjenjang &ldquo;Umum&rdquo; ikut terhitung pada semua asal sekolah.
+        </p>
 
-        <div class="mt-5 grid gap-5 sm:grid-cols-2">
-            @for ($i = 0; $i < $maxSupportSubjects; $i++)
-                <div>
-                    <x-input-label :for="'support_subjects_'.$i" :value="'Mata Pelajaran Pendukung '.($i + 1)" />
-                    <select id="support_subjects_{{ $i }}" name="support_subjects[{{ $i }}]"
+        @php
+            $initialSupport = array_values(array_filter(
+                (array) old('support_subjects', $selectedSubjects),
+                fn ($id) => $id !== null && $id !== '',
+            ));
+
+            // Prodi baru dibuka dengan slot kosong sebanyak batas SNBP, sekadar
+            // titik mulai yang wajar — admin bebas menambah untuk jenjang lain.
+            $initialSupport = $initialSupport === []
+                ? array_fill(0, $maxSupportSubjects, '')
+                : $initialSupport;
+
+            $subjectGroups = $subjects->groupBy(fn ($subject) => trim(
+                ($subject->education_level === 'umum' ? 'Umum' : $subject->education_level)
+                .($subject->group && $subject->education_level !== 'umum' ? ' · '.$subject->group : '')
+            ));
+        @endphp
+
+        <div class="mt-5 space-y-3" x-data="{ rows: @js($initialSupport) }">
+            <template x-for="(row, index) in rows" :key="index">
+                <div class="flex items-start gap-3">
+                    <select name="support_subjects[]" x-model="rows[index]"
                             class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
                         <option value="">— Tidak dipakai —</option>
-                        @foreach ($subjects as $subject)
-                            <option value="{{ $subject->id }}"
-                                    @selected(old('support_subjects.'.$i, $selectedSubjects[$i] ?? null) == $subject->id)>
-                                {{ $subject->display_name }}
-                            </option>
+                        @foreach ($subjectGroups as $label => $groupSubjects)
+                            <optgroup label="{{ $label }}">
+                                @foreach ($groupSubjects as $subject)
+                                    <option value="{{ $subject->id }}">{{ $subject->name }}</option>
+                                @endforeach
+                            </optgroup>
                         @endforeach
                     </select>
-                    <x-input-error :messages="$errors->get('support_subjects.'.$i)" class="mt-2" />
+
+                    <button type="button" x-on:click="rows.splice(index, 1)"
+                            class="mt-1 shrink-0 rounded-md px-3 py-2 text-sm text-gray-500 hover:bg-gray-100 hover:text-red-600 dark:text-gray-400 dark:hover:bg-gray-700">
+                        Hapus
+                    </button>
                 </div>
-            @endfor
+            </template>
+
+            <button type="button" x-on:click="rows.push('')"
+                    class="rounded-md border border-dashed border-gray-300 px-4 py-2 text-sm font-medium text-gray-600 hover:border-brand-400 hover:text-brand-600 dark:border-gray-600 dark:text-gray-300">
+                + Tambah mata pelajaran pendukung
+            </button>
         </div>
 
         <x-input-error :messages="$errors->get('support_subjects')" class="mt-2" />

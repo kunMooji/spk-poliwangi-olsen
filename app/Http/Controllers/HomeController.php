@@ -18,8 +18,10 @@ class HomeController extends Controller
 {
     public function __invoke(): View
     {
+        $programs = StudyProgram::query()->active()->orderBy('name')->get();
+
         return view('welcome', [
-            'programs' => StudyProgram::query()->active()->orderBy('name')->get(),
+            'programs' => $programs,
             'criteria' => Criteria::query()->active()->ordered()->get(),
             'questionCount' => RiasecQuestion::query()->active()->count(),
             'dimensions' => Riasec::LABELS,

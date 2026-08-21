@@ -1,12 +1,15 @@
-<nav x-data="{ open: false }" class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
+<nav x-data="{ open: false }" class="sticky top-0 z-30 border-b border-black/5 bg-porcelain-50/90 backdrop-blur transition-shadow duration-500 ease-brand-out dark:border-white/10 dark:bg-ink-950/85">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200" />
+                    <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
+                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-ink-800 font-display text-[11px] font-bold tracking-tight text-brand-200 ring-1 ring-brand-300/40">SPK</span>
+                        <span class="hidden text-sm font-semibold leading-tight text-ink-900 dark:text-porcelain-50 lg:block">
+                            {{ config('app.name') }}
+                        </span>
                     </a>
                 </div>
 
@@ -45,10 +48,10 @@
                         <div class="flex items-center">
                             <x-dropdown align="left" width="w-56">
                                 <x-slot name="trigger">
-                                    <button class="inline-flex h-16 items-center gap-1 border-b-2 px-1 text-sm font-medium transition
+                                    <button class="inline-flex h-16 items-center gap-1 border-b-2 px-1 text-sm font-medium transition duration-150 ease-brand-out
                                                    {{ $kelolaAktif
-                                                       ? 'border-brand-400 text-gray-900 focus:border-brand-700 dark:border-brand-600 dark:text-gray-100'
-                                                       : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-700 dark:hover:text-gray-300' }}">
+                                                       ? 'border-brand-500 text-ink-900 focus:border-brand-700 dark:border-brand-300 dark:text-porcelain-50'
+                                                       : 'border-transparent text-ink-500 hover:border-black/15 hover:text-ink-700 dark:text-porcelain-300 dark:hover:border-white/15 dark:hover:text-porcelain-100' }}">
                                         Pengelolaan
                                         <svg class="h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
@@ -86,7 +89,7 @@
 
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150">
+                        <button class="inline-flex items-center gap-1 rounded-lg border border-transparent px-3 py-2 text-sm font-medium leading-4 text-ink-500 transition ease-brand-out duration-150 hover:bg-black/5 hover:text-ink-700 focus:outline-none dark:text-porcelain-300 dark:hover:bg-white/5 dark:hover:text-porcelain-100">
                             <div>{{ Auth::user()->name }}</div>
 
                             <div class="ms-1">
@@ -120,7 +123,7 @@
             <div class="-me-2 flex items-center gap-1 sm:hidden">
                 <x-theme-toggle />
 
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-900 focus:text-gray-500 dark:focus:text-gray-400 transition duration-150 ease-in-out">
+                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-lg text-ink-400 dark:text-porcelain-400 hover:text-ink-600 dark:hover:text-porcelain-200 hover:bg-black/5 dark:hover:bg-white/5 focus:outline-none focus:bg-black/5 dark:focus:bg-white/5 transition duration-150 ease-brand-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -184,10 +187,10 @@
         </div>
 
         <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
+        <div class="pt-4 pb-1 border-t border-black/10 dark:border-white/10">
             <div class="px-4">
-                <div class="font-medium text-base text-gray-800 dark:text-gray-200">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+                <div class="font-medium text-base text-ink-800 dark:text-porcelain-100">{{ Auth::user()->name }}</div>
+                <div class="font-medium text-sm text-ink-500 dark:text-porcelain-400">{{ Auth::user()->email }}</div>
             </div>
 
             <div class="mt-3 space-y-1">

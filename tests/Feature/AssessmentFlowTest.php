@@ -40,6 +40,7 @@ class AssessmentFlowTest extends TestCase
             'full_name' => 'Rizky Calon Mahasiswa',
             'gender' => 'L',
             'school_name' => 'SMA Negeri 1 Banyuwangi',
+            'education_level' => 'SMA',
             'school_major' => 'IPA',
             'graduation_year' => (int) date('Y'),
             'phone' => '081234567890',
@@ -260,8 +261,10 @@ class AssessmentFlowTest extends TestCase
             $this->assertStringContainsString("subject_scores[{$subject->id}]", $html);
         }
 
-        // Penanda mapel milik prodi pilihan dikerjakan di peramban.
-        $this->assertStringContainsString('raporSubjects(', $html);
+        // Penanda mapel milik prodi pilihan dan penyaringan menurut jenjang
+        // sekolah sama-sama dikerjakan di peramban.
+        $this->assertStringContainsString('raporForm(', $html);
+        $this->assertStringContainsString('matchesLevel(', $html);
     }
 
     public function test_responden_dapat_menambahkan_mata_pelajaran_miliknya_sendiri(): void

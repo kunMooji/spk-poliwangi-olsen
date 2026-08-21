@@ -1,15 +1,36 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-            Langkah 1 dari 2 &mdash; Biodata, Nilai Rapor &amp; Prioritas Prodi
-        </h2>
+        <div class="space-y-2">
+            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                Biodata, Nilai Rapor &amp; Prioritas Prodi
+            </h2>
+            <x-assessment-steps :current="1" />
+        </div>
     </x-slot>
 
     <div class="py-8">
         <div class="mx-auto max-w-4xl space-y-6 px-4 sm:px-6 lg:px-8">
             <x-flash />
 
-            <form method="POST" action="{{ route('assessments.store') }}" class="space-y-6">
+            {{--
+                Seluruh formulir berbagi satu lingkup Alpine: jenjang dan jurusan
+                yang dipilih pada biodata menentukan mapel mana yang ditanyakan di
+                bagian nilai pendukung, sementara prodi yang dipilih menentukan
+                mapel mana yang disorot.
+            --}}
+            <form method="POST" action="{{ route('assessments.store') }}" class="space-y-6"
+                  x-data="raporForm({
+                      programSubjects: @js($programSubjectMap),
+                      programNames: @js($programs->pluck('full_name', 'id')),
+                      priorities: @js(array_values((array) old('priorities', []))),
+                      added: @js($addedSubjects),
+                      subjectProfiles: @js($subjectProfiles),
+                      extraSubjects: @js($extraSubjects),
+                      majorOptions: @js($majorOptions),
+                      level: @js(old('education_level', '')),
+                      major: @js(old('school_major', '')),
+                      commonGroup: @js(\App\Support\Rapor::COMMON_GROUP),
+                  })">
                 @csrf
 
                 {{-- Biodata --}}
@@ -50,25 +71,41 @@
                             <x-input-error :messages="$errors->get('school_name')" class="mt-2" />
                         </div>
 
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <x-input-label for="school_major" value="Jurusan" />
-                                <select id="school_major" name="school_major"
-                                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                    <option value="">— Pilih —</option>
-                                    @foreach (['IPA', 'IPS', 'Bahasa', 'SMK', 'Lainnya'] as $major)
-                                        <option value="{{ $major }}" @selected(old('school_major') === $major)>{{ $major }}</option>
-                                    @endforeach
-                                </select>
-                                <x-input-error :messages="$errors->get('school_major')" class="mt-2" />
-                            </div>
+                        <div>
+                            <x-input-label for="graduation_year" value="Tahun Lulus" />
+                            <x-text-input id="graduation_year" name="graduation_year" type="number" class="mt-1 block w-full"
+                                          :value="old('graduation_year', date('Y'))" min="2000" max="{{ date('Y') + 1 }}" />
+                            <x-input-error :messages="$errors->get('graduation_year')" class="mt-2" />
+                        </div>
 
-                            <div>
-                                <x-input-label for="graduation_year" value="Tahun Lulus" />
-                                <x-text-input id="graduation_year" name="graduation_year" type="number" class="mt-1 block w-full"
-                                              :value="old('graduation_year', date('Y'))" min="2000" max="{{ date('Y') + 1 }}" />
-                                <x-input-error :messages="$errors->get('graduation_year')" class="mt-2" />
-                            </div>
+                        <div>
+                            <x-input-label for="education_level" value="Jenjang Sekolah" />
+                            {{-- Jurusan dikosongkan saat jenjang berganti: pilihan SMA tidak berlaku di SMK. --}}
+                            <select id="education_level" name="education_level" x-model="level" required
+                                    x-init="$watch('level', () => { major = '' })"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                                <option value="">— Pilih —</option>
+                                @foreach ($educationLevels as $value => $label)
+                                    <option value="{{ $value }}">{{ $label }}</option>
+                                @endforeach
+                            </select>
+                            <x-input-error :messages="$errors->get('education_level')" class="mt-2" />
+                        </div>
+
+                        <div>
+                            <x-input-label for="school_major"
+                                           x-text="level === 'SMK' ? 'Rumpun Keahlian' : 'Jurusan'">Jurusan</x-input-label>
+                            <select id="school_major" name="school_major" x-model="major" :disabled="! level"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 disabled:bg-gray-100 disabled:text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:disabled:bg-gray-800">
+                                <option value="" x-text="level ? '— Pilih —' : '— Pilih jenjang dulu —'">— Pilih jenjang dulu —</option>
+                                <template x-for="option in availableMajors" :key="option">
+                                    <option :value="option" x-text="option"></option>
+                                </template>
+                            </select>
+                            <p class="mt-1 text-xs text-gray-400" x-show="level === 'SMK'" x-cloak>
+                                Pilih rumpun sesuai konsentrasi keahlian yang tercantum di rapor Anda.
+                            </p>
+                            <x-input-error :messages="$errors->get('school_major')" class="mt-2" />
                         </div>
                     </div>
                 </section>
@@ -95,17 +132,7 @@
                     </div>
                 </section>
 
-                {{--
-                    Prioritas prodi dan mapel pendukung berbagi satu lingkup Alpine:
-                    mapel yang disorot mengikuti prodi yang sedang dipilih.
-                --}}
-                <div x-data="raporSubjects({
-                        programSubjects: @js($programSubjectMap),
-                        programNames: @js($programs->pluck('full_name', 'id')),
-                        priorities: @js(array_values((array) old('priorities', []))),
-                        added: @js($addedSubjects),
-                     })"
-                     class="space-y-6">
+                <div class="space-y-6">
 
                     {{-- Prioritas prodi --}}
                     <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
@@ -147,29 +174,41 @@
                     <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Nilai Mata Pelajaran Pendukung</h3>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Mata pelajaran bertanda <span class="font-semibold text-brand-600 dark:text-brand-400">biru</span>
-                            adalah penentu kesesuaian Anda dengan program studi yang baru saja Anda pilih.
+                            Daftar ini menyesuaikan jenjang dan jurusan yang Anda pilih di biodata, sehingga Anda tidak
+                            diminta mengisi mata pelajaran yang tidak pernah Anda tempuh. Yang ditanyakan hanya mata
+                            pelajaran pendukung dari <strong>program studi yang Anda jadikan prioritas</strong> di atas
+                            &mdash; program studi lain tidak memerlukan isian di sini.
                             <strong>Kosongkan</strong> mata pelajaran yang tidak ada di rapor Anda &mdash; nilainya akan
                             digantikan rerata rapor Anda, bukan dianggap nol.
+                        </p>
+
+                        <p class="mt-3 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300"
+                           x-show="! level" x-cloak>
+                            Pilih <strong>jenjang sekolah</strong> pada biodata di atas untuk menampilkan daftar mata
+                            pelajaran yang sesuai.
+                        </p>
+
+                        <p class="mt-3 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300"
+                           x-show="level && selectedPrograms.length === 0" x-cloak>
+                            Pilih <strong>program studi prioritas</strong> di atas untuk menampilkan mata pelajaran
+                            pendukungnya.
                         </p>
 
                         <div class="mt-5 grid gap-5 sm:grid-cols-3">
                             @foreach ($supportSubjects as $subject)
                                 {{--
-                                    Seluruh mapel tetap ditanyakan, bukan hanya milik prodi pilihan.
-                                    CoCoSo memeringkat semua prodi sekaligus, sehingga prodi di luar
-                                    daftar prioritas pun perlu nilai — justru prodi itulah yang
-                                    berpotensi menjadi rekomendasi baru. Yang berubah mengikuti
-                                    pilihan hanyalah urutan dan penandaannya.
+                                    Hanya mapel pendukung milik prodi prioritas yang ditanyakan.
+                                    Prodi lain tidak dirugikan karena tidak diisi: C2-nya diambil
+                                    dari nilai semester terendah responden (lihat
+                                    DecisionMatrixBuilder::supportSubjectValue), bukan rerata —
+                                    supaya prodi yang memang tidak dipertimbangkan responden tidak
+                                    diam-diam diuntungkan dan mengalahkan prodi prioritasnya sendiri.
                                 --}}
-                                <div x-show="isRelevant({{ $subject->id }}) || showOthers"
-                                     :style="isRelevant({{ $subject->id }}) ? 'order: 0' : 'order: 1'">
+                                <div x-show="matchesLevel({{ $subject->id }}) && isRelevant({{ $subject->id }})">
                                     <x-input-label :for="'subject_scores_'.$subject->id" :value="$subject->display_name" />
 
-                                    <template x-if="isRelevant({{ $subject->id }})">
-                                        <p class="mt-0.5 text-xs font-medium text-brand-600 dark:text-brand-400"
-                                           x-text="'Pendukung ' + relevantLabel({{ $subject->id }})"></p>
-                                    </template>
+                                    <p class="mt-0.5 text-xs font-medium text-brand-600 dark:text-brand-400"
+                                       x-text="'Pendukung ' + relevantLabel({{ $subject->id }})"></p>
 
                                     <x-text-input :id="'subject_scores_'.$subject->id" :name="'subject_scores['.$subject->id.']'"
                                                   type="number" step="0.01" min="0" max="100"
@@ -180,7 +219,7 @@
 
                             {{-- Mapel yang ditambahkan sendiri oleh responden. --}}
                             <template x-for="subject in added" :key="subject.id">
-                                <div style="order: 2">
+                                <div>
                                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300"
                                            :for="'subject_scores_' + subject.id" x-text="subject.name"></label>
                                     <p class="mt-0.5 text-xs text-gray-400">ditambahkan sendiri</p>
@@ -198,32 +237,22 @@
                             </template>
                         </div>
 
-                        <div class="mt-5 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-5 dark:border-gray-700">
-                            <button type="button" @click="showOthers = ! showOthers"
-                                    class="text-sm font-semibold text-brand-600 hover:underline dark:text-brand-400"
-                                    x-text="showOthers ? 'Sembunyikan mata pelajaran lain' : 'Tampilkan mata pelajaran lain'"></button>
-
-                            @if ($extraSubjects->isNotEmpty())
-                                <span class="text-gray-300 dark:text-gray-600">|</span>
-
-                                <label class="text-sm text-gray-500 dark:text-gray-400" for="add_subject">
-                                    Mata pelajaran Anda tidak ada di daftar?
-                                </label>
-                                <select id="add_subject" @change="add($event)"
-                                        class="rounded-md border-gray-300 text-sm shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                    <option value="">— Tambahkan mata pelajaran —</option>
-                                    @foreach ($extraSubjects->groupBy('group') as $group => $rows)
-                                        <optgroup label="{{ $group ?: 'Lainnya' }}">
-                                            @foreach ($rows as $subject)
-                                                <option value="{{ $subject->id }}" data-name="{{ $subject->display_name }}">
-                                                    {{ $subject->name }}
-                                                </option>
-                                            @endforeach
-                                        </optgroup>
-                                    @endforeach
-                                </select>
-                            @endif
-                        </div>
+                        @if ($extraSubjects->isNotEmpty())
+                            <template x-if="availableExtraSubjects.length > 0">
+                                <div class="mt-5 flex flex-wrap items-center gap-3 border-t border-gray-100 pt-5 dark:border-gray-700">
+                                    <label class="text-sm text-gray-500 dark:text-gray-400" for="add_subject">
+                                        Mata pelajaran Anda tidak ada di daftar?
+                                    </label>
+                                    <select id="add_subject" @change="add($event)"
+                                            class="rounded-md border-gray-300 text-sm shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                                        <option value="">— Tambahkan mata pelajaran —</option>
+                                        <template x-for="subject in availableExtraSubjects" :key="subject.id">
+                                            <option :value="subject.id" :data-name="subject.name" x-text="subject.name"></option>
+                                        </template>
+                                    </select>
+                                </div>
+                            </template>
+                        @endif
 
                         <x-input-error :messages="$errors->get('subject_scores')" class="mt-3" />
                     </section>
@@ -246,19 +275,79 @@
     @push('scripts')
         <script>
             /**
-             * Menyorot mata pelajaran pendukung milik prodi yang sedang dipilih,
-             * dan menampung mata pelajaran yang ditambahkan sendiri responden.
+             * Menyaring mata pelajaran menurut jenjang dan jurusan responden,
+             * menyorot mapel pendukung milik prodi yang sedang dipilih, serta
+             * menampung mapel yang ditambahkan sendiri responden.
              *
-             * Seluruh mapel tetap terkirim apa adanya — penyorotan hanya mengubah
-             * urutan dan penandaan, bukan data yang tersimpan.
+             * Penyorotan hanya mengubah urutan dan penandaan. Penyaringan jenjang
+             * benar-benar menyembunyikan isian: mapel yang tidak ditempuh tidak
+             * terkirim, sehingga tersimpan sebagai null dan diperlakukan sama
+             * dengan mapel yang sengaja dikosongkan.
              */
-            function raporSubjects({ programSubjects, programNames, priorities, added }) {
+            function raporForm({
+                programSubjects, programNames, priorities, added,
+                subjectProfiles, extraSubjects, majorOptions, level, major, commonGroup,
+            }) {
                 return {
                     programSubjects,
                     programNames,
                     priorities: priorities ?? [],
                     added: added ?? [],
-                    showOthers: false,
+                    subjectProfiles,
+                    extraSubjects,
+                    majorOptions,
+                    commonGroup,
+                    level: level ?? '',
+                    major: major ?? '',
+
+                    /** Jurusan atau rumpun keahlian yang tersedia pada jenjang terpilih. */
+                    get availableMajors() {
+                        return this.majorOptions[this.level] ?? [];
+                    },
+
+                    /**
+                     * Mapel berjenjang "umum" ditempuh siapa pun. Selebihnya harus
+                     * sejenjang, dan kelompoknya entah wajib pada jenjang itu atau
+                     * sama dengan jurusan responden. Selama jurusan belum dipilih,
+                     * seluruh mapel sejenjang ditampilkan agar daftarnya tidak kosong.
+                     */
+                    matchesLevel(subjectId) {
+                        const profile = this.subjectProfiles[subjectId];
+
+                        if (! profile) {
+                            return true;
+                        }
+
+                        if (profile.level === 'umum') {
+                            return true;
+                        }
+
+                        // Selama jenjang belum dipilih, hanya mapel umum yang tampil.
+                        if (profile.level !== this.level) {
+                            return false;
+                        }
+
+                        return ! this.major
+                            || profile.group === this.commonGroup
+                            || profile.group === this.major;
+                    },
+
+                    /** Mapel tambahan yang relevan dengan jenjang responden saja. */
+                    get availableExtraSubjects() {
+                        return this.extraSubjects.filter((subject) => {
+                            if (subject.level === 'umum') {
+                                return true;
+                            }
+
+                            if (subject.level !== this.level) {
+                                return false;
+                            }
+
+                            return ! this.major
+                                || subject.group === this.commonGroup
+                                || subject.group === this.major;
+                        });
+                    },
 
                     /** Prodi terpilih, urut mengikuti nomor prioritas, tanpa slot kosong. */
                     get selectedPrograms() {

@@ -63,7 +63,7 @@ final class RecommendationService
         return DB::transaction(function () use ($assessment, $criteria, $programs, $weights, $types, $bounds, $lambda, $epsilon) {
             $this->applyRiasecProfile($assessment);
 
-            $assessment->load('priorities', 'subjectScores');
+            $assessment->load('priorities', 'subjectScores', 'raporSemesters');
 
             $matrix = $this->matrixBuilder->build($assessment, $programs, $criteria);
             $calculation = $this->cocoso->calculate($matrix, $weights, $types, $lambda, $epsilon, $bounds);

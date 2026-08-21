@@ -32,12 +32,12 @@ final class Riasec
     ];
 
     public const DESCRIPTIONS = [
-        'R' => 'Menyukai pekerjaan konkret yang melibatkan mesin, alat, dan aktivitas fisik.',
-        'I' => 'Menyukai kegiatan meneliti, menganalisis data, dan memecahkan masalah abstrak.',
-        'A' => 'Menyukai kegiatan bebas dan ekspresif yang menuntut imajinasi serta estetika.',
-        'S' => 'Menyukai kegiatan membantu, mengajar, dan berinteraksi dengan orang lain.',
-        'E' => 'Menyukai kegiatan memimpin, memengaruhi, menjual, dan mengambil keputusan.',
-        'C' => 'Menyukai kegiatan yang tertib, sistematis, dan berhubungan dengan data serta administrasi.',
+        'R' => 'Menyukai pekerjaan konkret yang melibatkan mesin, alat, dan aktivitas fisik. Cenderung praktis dan menyukai hasil kerja yang bisa dilihat serta disentuh langsung, seperti di bidang teknik, otomotif, atau elektronika.',
+        'I' => 'Menyukai kegiatan meneliti, menganalisis data, dan memecahkan masalah abstrak. Berpikir sistematis dengan rasa ingin tahu tinggi, sehingga cocok pada bidang sains, riset, maupun teknologi informasi.',
+        'A' => 'Menyukai kegiatan bebas dan ekspresif yang menuntut imajinasi serta estetika. Lebih nyaman bekerja tanpa aturan kaku, dan sering unggul di bidang desain, seni, maupun penulisan kreatif.',
+        'S' => 'Menyukai kegiatan membantu, mengajar, dan berinteraksi dengan orang lain. Empati dan kemampuan komunikasi yang kuat membuat tipe ini menonjol di bidang pendidikan, kesehatan, maupun layanan masyarakat.',
+        'E' => 'Menyukai kegiatan memimpin, memengaruhi, menjual, dan mengambil keputusan. Percaya diri dan berorientasi target, sehingga sering tertarik pada bidang bisnis, kewirausahaan, maupun manajemen.',
+        'C' => 'Menyukai kegiatan yang tertib, sistematis, dan berhubungan dengan data serta administrasi. Teliti dan menyukai keteraturan, biasanya cocok pada bidang akuntansi, administrasi, maupun pengelolaan data.',
     ];
 
     public const COLORS = [

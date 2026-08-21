@@ -8,15 +8,22 @@
     Preferensi disimpan di localStorage supaya bertahan lintas halaman dan
     kunjungan; skrip anti-flash di <head> (lihat layouts/app.blade.php dan
     layouts/guest.blade.php) yang membaca nilainya sebelum halaman dicat.
+
+    Pakai `onclick` polos (bukan `@click` Alpine) dengan sengaja — Alpine
+    cuma mengikat direktif di dalam pohon elemen yang punya leluhur
+    `x-data`, dan komponen ini dipakai lepas di header tanpa leluhur
+    seperti itu (welcome.blade.php, guest.blade.php) sehingga `@click`
+    diam saja tanpa error terlihat. Logikanya sendiri JS vanilla murni,
+    jadi tidak butuh Alpine sama sekali.
 --}}
 <button
     type="button"
-    @click="
+    onclick="
         const next = document.documentElement.classList.contains('dark') ? 'light' : 'dark';
         document.documentElement.classList.toggle('dark', next === 'dark');
         localStorage.setItem('theme', next);
     "
-    class="{{ $class }} inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+    class="{{ $class }} inline-flex h-9 w-9 items-center justify-center rounded-lg text-ink-500 transition ease-brand-out duration-150 hover:bg-black/5 hover:text-ink-700 active:scale-[0.94] dark:text-porcelain-300 dark:hover:bg-white/10 dark:hover:text-porcelain-100"
     aria-label="Ganti tema terang/gelap"
 >
     {{-- Bulan: terlihat pada tema terang, mengajak pindah ke gelap --}}

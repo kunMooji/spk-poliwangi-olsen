@@ -2,7 +2,165 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS dasar yang direkomendasikan Lenis (lihat initSmoothScroll di app.js) —
+   mencegah scroll native & smooth-nya Lenis saling tabrakan. */
+html.lenis,
+html.lenis body {
+    height: auto;
+}
+
+.lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+    overflow: hidden;
+}
+
+.lenis.lenis-scrolling iframe {
+    pointer-events: none;
+}
+
 /* Menyembunyikan elemen Alpine sampai komponennya siap, agar tidak berkedip. */
 [x-cloak] {
     display: none !important;
+}
+
+/* Animasi masuk saat elemen menyentuh viewport (lihat initScrollReveal di app.js). */
+.reveal {
+    opacity: 0;
+    transform: translateY(28px);
+    filter: blur(6px);
+    transition: opacity 900ms cubic-bezier(0.32, 0.72, 0, 1),
+                transform 900ms cubic-bezier(0.32, 0.72, 0, 1),
+                filter 900ms cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: transform, opacity, filter;
+}
+
+.reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal {
+        transition: none;
+        opacity: 1;
+        transform: none;
+        filter: none;
+    }
+}
+
+/* Trek carousel horizontal (kriteria & program studi) — scrollbar disembunyikan,
+   pengguna tetap bisa menyusuri lewat drag mouse, sentuhan, atau tombol panah. */
+.no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+/* Tekstur butiran halus untuk latar gelap "mewah" — dibuat murni dari
+   gradient berulang, tanpa aset gambar, supaya tetap ringan. */
+.bg-grain {
+    background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+    background-size: 3px 3px;
+}
+
+/* Sapuan biru-teal berjalan pada badge/eyebrow — dipasangkan dengan
+   `animate-shimmer` di tailwind.config.js. Warna mengikuti token `brand`
+   (dipakai konsisten di seluruh situs, termasuk halaman login). */
+.brand-shimmer {
+    background-image: linear-gradient(110deg, #2390aa 0%, #d7f0f5 22%, #2390aa 44%);
+    background-size: 200% 100%;
+}
+
+/* Blok mosaik RIASEC — melesat masuk dari tepi kanan layar begitu deck
+   terlihat (lihat initRiasecReveal di app.js, yang menambahkan `.riasec-in`
+   dengan jeda beruntun lewat --riasec-delay), lalu tetap sigap merespons
+   hover/klik. flex-basis tetap ditransisikan halus saat sebuah blok dibuka. */
+.riasec-card {
+    opacity: 0;
+    transform: translate3d(70px, 0, 0) rotate3d(0, 0, 1, 8deg) scale(0.9);
+    transition: flex-basis 650ms cubic-bezier(0.32, 0.72, 0, 1),
+                margin-left 650ms cubic-bezier(0.32, 0.72, 0, 1),
+                transform 600ms cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 600ms ease-out,
+                filter 250ms ease-out;
+    transition-delay: var(--riasec-delay, 0ms);
+    will-change: transform, opacity;
+}
+
+.riasec-card.riasec-in {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate3d(0, 0, 1, 0deg) scale(1);
+}
+
+.riasec-card.riasec-in:hover,
+.riasec-card.riasec-in:focus-visible {
+    transform: translate3d(0, -6px, 0) scale(1.035);
+    filter: brightness(1.1) drop-shadow(0 14px 22px rgba(5, 14, 19, 0.35));
+    z-index: 2;
+}
+
+/* Pantulan kecil pada kode huruf blok yang baru dibuka — sensasi "wingg". */
+.riasec-card[aria-expanded="true"] .riasec-code {
+    animation: riasec-pop 550ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes riasec-pop {
+    0% { transform: scale(1) rotate(0deg); }
+    45% { transform: scale(1.26) rotate(-4deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Sapuan cahaya diagonal yang lewat cepat saat blok dibuka — jejak "siitt". */
+.riasec-card[aria-expanded="true"]::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, 0.4) 48%, transparent 66%);
+    background-size: 250% 250%;
+    background-position: 150% 0;
+    animation: riasec-shine 750ms ease-out;
+    pointer-events: none;
+}
+
+@keyframes riasec-shine {
+    from { background-position: 150% 0; opacity: 1; }
+    to { background-position: -50% 0; opacity: 0; }
+}
+
+/* Ken Burns halus pada foto latar panel deskripsi RIASEC — zoom & geser
+   lambat supaya latar terasa hidup tanpa menarik perhatian dari teks. */
+.riasec-bg {
+    animation: riasec-kenburns 20s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+}
+
+@keyframes riasec-kenburns {
+    0% { transform: scale(1.06) translate3d(0, 0, 0); }
+    100% { transform: scale(1.16) translate3d(-1.5%, -1.5%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .riasec-card,
+    .riasec-card.riasec-in,
+    .riasec-bg {
+        animation: none !important;
+        transition: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+    }
+
+    .riasec-card[aria-expanded="true"]::after {
+        display: none;
+    }
 }

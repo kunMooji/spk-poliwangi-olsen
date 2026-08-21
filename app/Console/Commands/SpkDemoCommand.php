@@ -104,6 +104,7 @@ class SpkDemoCommand extends Command
             'full_name' => 'Contoh Calon Mahasiswa',
             'gender' => 'L',
             'school_name' => 'SMA Negeri 1 Banyuwangi',
+            'education_level' => 'SMA',
             'school_major' => 'IPA',
             'graduation_year' => 2026,
             'rapor_average' => 81.60,

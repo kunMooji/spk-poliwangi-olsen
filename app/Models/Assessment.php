@@ -19,7 +19,7 @@ class Assessment extends Model
 
     protected $fillable = [
         'user_id', 'period_id', 'code',
-        'full_name', 'gender', 'school_name', 'school_major', 'graduation_year', 'phone',
+        'full_name', 'gender', 'school_name', 'education_level', 'school_major', 'graduation_year', 'phone',
         'rapor_average',
         'score_r', 'score_i', 'score_a', 'score_s', 'score_e', 'score_c',
         'percent_r', 'percent_i', 'percent_a', 'percent_s', 'percent_e', 'percent_c',

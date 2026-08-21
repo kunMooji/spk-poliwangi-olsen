@@ -34,6 +34,11 @@ class StoreAssessmentRequest extends FormRequest
             'full_name' => ['required', 'string', 'max:255'],
             'gender' => ['nullable', Rule::in(['L', 'P'])],
             'school_name' => ['nullable', 'string', 'max:255'],
+
+            // Wajib diisi, berbeda dari biodata lain yang sekadar melengkapi
+            // lembar hasil: jenjang menentukan mata pelajaran mana yang
+            // ditanyakan pada form nilai rapor.
+            'education_level' => ['required', Rule::in(array_keys(Rapor::STUDENT_LEVELS))],
             'school_major' => ['nullable', 'string', 'max:50'],
             'graduation_year' => ['nullable', 'integer', 'between:2000,'.(date('Y') + 1)],
             'phone' => ['nullable', 'string', 'max:25'],
@@ -99,6 +104,7 @@ class StoreAssessmentRequest extends FormRequest
             'full_name' => 'nama lengkap',
             'gender' => 'jenis kelamin',
             'school_name' => 'asal sekolah',
+            'education_level' => 'jenjang sekolah',
             'school_major' => 'jurusan sekolah',
             'graduation_year' => 'tahun lulus',
             'phone' => 'nomor HP',

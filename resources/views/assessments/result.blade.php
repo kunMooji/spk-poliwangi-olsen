@@ -17,12 +17,14 @@
             <x-flash />
 
             {{-- Kartu rekomendasi utama --}}
-            <section class="overflow-hidden rounded-xl bg-gradient-to-br from-brand-600 to-brand-900 p-6 text-white shadow-sm sm:p-8">
-                <p class="text-sm font-medium text-brand-100">Rekomendasi Utama</p>
-                <h3 class="mt-1 text-3xl font-bold">{{ $assessment->recommendedProgram?->full_name ?? '-' }}</h3>
-                <p class="mt-2 max-w-3xl text-sm leading-relaxed text-brand-100">
-                    {{ $assessment->recommendedProgram?->description }}
-                </p>
+            <section class="rounded-[2rem] bg-white p-2 shadow-sm ring-1 ring-gray-900/5 dark:bg-gray-800 dark:ring-white/10">
+                <div class="overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-brand-600 to-brand-900 p-6 text-white shadow-inner sm:p-8">
+                    <p class="text-sm font-medium text-brand-100">Rekomendasi Utama</p>
+                    <h3 class="mt-1 text-3xl font-bold">{{ $assessment->recommendedProgram?->full_name ?? '-' }}</h3>
+                    <p class="mt-2 max-w-3xl text-sm leading-relaxed text-brand-100">
+                        {{ $assessment->recommendedProgram?->description }}
+                    </p>
+                </div>
             </section>
 
             {{-- Penjelasan kesesuaian dengan pilihan --}}
@@ -86,6 +88,11 @@
                                     'lemah' => '#e11d48',
                                     default => '#6366f1',
                                 };
+                                $toneClasses = match ($row['level']) {
+                                    'kuat' => 'bg-emerald-50 text-emerald-700 dark:bg-emerald-400/10 dark:text-emerald-400',
+                                    'lemah' => 'bg-rose-50 text-rose-700 dark:bg-rose-400/10 dark:text-rose-400',
+                                    default => 'bg-indigo-50 text-indigo-700 dark:bg-indigo-400/10 dark:text-indigo-400',
+                                };
                             @endphp
                             <div>
                                 <div class="flex flex-wrap items-baseline justify-between gap-2 text-sm">
@@ -96,8 +103,7 @@
                                     </span>
                                     <span class="tabular-nums text-gray-500 dark:text-gray-400">
                                         {{ $row['share'] }}% dari nilai
-                                        <span class="ms-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase"
-                                              style="color: {{ $tone }}; background-color: {{ $tone }}1a">
+                                        <span class="ms-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase {{ $toneClasses }}">
                                             {{ $row['level'] }}
                                         </span>
                                     </span>

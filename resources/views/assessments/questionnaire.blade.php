@@ -1,8 +1,11 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-            Langkah 2 dari 2 &mdash; Kuesioner Minat Bakat RIASEC
-        </h2>
+        <div class="space-y-2">
+            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+                Kuesioner Minat Bakat RIASEC
+            </h2>
+            <x-assessment-steps :current="2" />
+        </div>
     </x-slot>
 
     @php

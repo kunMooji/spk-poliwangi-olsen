@@ -11,27 +11,28 @@
              tema terang lalu berganti gelap sesaat setelah dimuat. --}}
         <script>
             (function () {
+                // Default tema: krem/terang kecuali pengguna pernah memilih gelap
+                // secara eksplisit (bukan lagi mengikuti preferensi sistem).
                 var stored = localStorage.getItem('theme');
-                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                var isDark = stored ? stored === 'dark' : prefersDark;
+                var isDark = stored === 'dark';
                 document.documentElement.classList.toggle('dark', isDark);
             })();
         </script>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800|unbounded:600,700,800|space-mono:400,700&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
+        <div class="min-h-screen bg-porcelain-50 dark:bg-ink-950">
             @include('layouts.navigation')
 
             <!-- Page Heading -->
             @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow">
+                <header class="border-b border-black/5 bg-white/70 backdrop-blur dark:border-white/10 dark:bg-ink-900/60">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>

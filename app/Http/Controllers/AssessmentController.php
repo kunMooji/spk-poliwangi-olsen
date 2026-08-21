@@ -53,6 +53,7 @@ class AssessmentController extends Controller
 
         $programs = StudyProgram::query()->active()->with('supportSubjects')->orderBy('name')->get();
         $supportSubjects = Rapor::supportSubjects();
+        $extraSubjects = Rapor::selectableExtraSubjects();
 
         return view('assessments.create', [
             'programs' => $programs,
@@ -63,8 +64,20 @@ class AssessmentController extends Controller
                 ->mapWithKeys(fn (StudyProgram $program) => [
                     $program->id => $program->supportSubjects->pluck('id'),
                 ]),
-            'extraSubjects' => Rapor::selectableExtraSubjects(),
+            'extraSubjects' => $extraSubjects
+                ->map(fn (Subject $subject) => [
+                    'id' => $subject->id,
+                    'name' => $subject->display_name,
+                    'level' => $subject->education_level,
+                    'group' => $subject->group,
+                ])
+                ->values(),
             'addedSubjects' => $this->previouslyAddedSubjects($supportSubjects),
+            'educationLevels' => Rapor::STUDENT_LEVELS,
+            'majorOptions' => Rapor::majorOptions(),
+            // Menentukan mapel mana yang ditanyakan kepada responden, mengikuti
+            // jenjang dan jurusan yang dipilihnya pada biodata.
+            'subjectProfiles' => Rapor::profiles($supportSubjects),
             'minPriorities' => (int) Setting::get('min_priorities'),
             'maxPriorities' => 5,
         ]);

@@ -84,6 +84,20 @@ class RecommendationServiceTest extends TestCase
         return $assessment->fresh(['priorities', 'answers', 'subjectScores']);
     }
 
+    /**
+     * Menjadikan satu prodi sebagai satu-satunya prioritas — dipakai saat uji
+     * perlu memastikan C2 dihitung lewat jalur prioritas (nilai asli), bukan
+     * jalur non-prioritas (nilai semester terendah).
+     */
+    private function setPriority(Assessment $assessment, StudyProgram $program): void
+    {
+        $assessment->priorities()->delete();
+        $assessment->priorities()->create([
+            'study_program_id' => $program->id,
+            'priority_order' => 1,
+        ]);
+    }
+
     public function test_menyimpan_hasil_untuk_setiap_program_studi_aktif(): void
     {
         $assessment = $this->makeAssessment();
@@ -359,7 +373,10 @@ class RecommendationServiceTest extends TestCase
 
     public function test_mapel_yang_tidak_ditempuh_memakai_rerata_rapor(): void
     {
+        $mesin = StudyProgram::query()->where('code', 'TRM-D4')->firstOrFail();
+
         $assessment = $this->makeAssessment(raporAverage: 70.0);
+        $this->setPriority($assessment, $mesin);
 
         // Peserta didik IPS yang tidak menempuh Fisika: nilainya kosong, bukan nol.
         $fisika = Subject::query()->where('code', 'fisika')->firstOrFail();
@@ -367,25 +384,109 @@ class RecommendationServiceTest extends TestCase
 
         $this->recommendation->calculate($assessment->fresh(['priorities', 'answers', 'subjectScores']));
 
-        // Teknik Mesin memakai Matematika + Fisika. Matematika bernilai rerata dan
-        // Fisika jatuh ke rerata pula, sehingga C2-nya tepat sama dengan rerata.
-        $mesin = StudyProgram::query()->where('code', 'TM-D4')->firstOrFail();
+        // Teknologi Rekayasa Manufaktur memakai Matematika + Fisika. Matematika
+        // bernilai rerata dan Fisika jatuh ke rerata pula, sehingga C2-nya tepat
+        // sama dengan rerata.
         $result = $assessment->results()->where('study_program_id', $mesin->id)->firstOrFail();
 
         $this->assertEqualsWithDelta(70.0, $result->matrix['C2'], 0.0001);
     }
 
-    public function test_prodi_tanpa_mapel_pendukung_memakai_rerata_rapor(): void
+    public function test_mapel_pendukung_disaring_menurut_jenjang_responden(): void
+    {
+        // Teknologi Rekayasa Perangkat Lunak menautkan tiga mapel sekaligus:
+        // Matematika (umum), Informatika (SMA), dan Rekayasa Perangkat Lunak
+        // (SMK · Teknologi Informasi). Yang berlaku bagi satu responden harus
+        // tetap dua — sesuai batas SNBP — dan dipilih menurut asal sekolahnya.
+        $trpl = StudyProgram::query()->where('code', 'TRPL-D4')->firstOrFail();
+
+        $kodeNilai = [
+            'matematika' => 90.0,
+            'informatika' => 60.0,
+            'rekayasa-perangkat-lunak' => 50.0,
+        ];
+
+        // Harus jadi prioritas: C2 non-prioritas kini memakai nilai semester
+        // terendah, bukan nilai mapel — subjek uji ini justru diuji lewat
+        // jalur prioritas.
+        $smk = $this->makeAssessment(raporAverage: 70.0, subjectScores: $kodeNilai);
+        $smk->update(['education_level' => 'SMK', 'school_major' => 'Teknologi Informasi']);
+        $this->setPriority($smk, $trpl);
+        $this->recommendation->calculate($smk->fresh(['priorities', 'answers', 'subjectScores']));
+
+        $sma = $this->makeAssessment(raporAverage: 70.0, subjectScores: $kodeNilai);
+        $sma->update(['education_level' => 'SMA', 'school_major' => 'Umum']);
+        $this->setPriority($sma, $trpl);
+        $this->recommendation->calculate($sma->fresh(['priorities', 'answers', 'subjectScores']));
+
+        $c2Smk = $smk->results()->where('study_program_id', $trpl->id)->firstOrFail()->matrix['C2'];
+        $c2Sma = $sma->results()->where('study_program_id', $trpl->id)->firstOrFail()->matrix['C2'];
+
+        // SMK: Matematika + Rekayasa Perangkat Lunak — Informatika tidak ditempuh.
+        $this->assertEqualsWithDelta((90.0 + 50.0) / 2, $c2Smk, 0.0001);
+
+        // SMA: Matematika + Informatika — mapel konsentrasi keahlian diabaikan.
+        $this->assertEqualsWithDelta((90.0 + 60.0) / 2, $c2Sma, 0.0001);
+    }
+
+    public function test_prodi_tanpa_mapel_pendukung_yang_cocok_memakai_rerata_rapor(): void
+    {
+        // Teknologi Rekayasa Otomotif tidak menautkan satu pun mapel Pariwisata,
+        // tapi tetap sebagai prioritas: Matematika (berjenjang umum) berlaku
+        // untuk siapa pun, sehingga C2-nya tetap dari nilai asli, bukan rerata.
+        $otomotif = StudyProgram::query()->where('code', 'TRO-D4')->firstOrFail();
+
+        $assessment = $this->makeAssessment(raporAverage: 73.0, subjectScores: ['matematika' => 95.0]);
+        $assessment->update(['education_level' => 'SMK', 'school_major' => 'Pariwisata']);
+        $this->setPriority($assessment, $otomotif);
+
+        $this->recommendation->calculate($assessment->fresh(['priorities', 'answers', 'subjectScores']));
+
+        // Matematika tetap berlaku karena berjenjang umum, jadi C2 mengikutinya.
+        $result = $assessment->results()->where('study_program_id', $otomotif->id)->firstOrFail();
+        $this->assertEqualsWithDelta(95.0, $result->matrix['C2'], 0.0001);
+    }
+
+    public function test_prodi_prioritas_tanpa_mapel_pendukung_memakai_rerata_rapor(): void
     {
         $program = StudyProgram::query()->where('code', 'TRPL-D4')->firstOrFail();
         $program->supportSubjects()->detach();
 
         $assessment = $this->makeAssessment(raporAverage: 77.0);
+        $this->setPriority($assessment, $program);
+        // Semester terendah dibuat sengaja berbeda dari rerata, supaya tes ini
+        // benar-benar menguji jalur prioritas (rerata) dan bukan kebetulan sama
+        // dengan jalur non-prioritas (semester terendah).
+        $assessment->raporSemesters()->where('semester', 1)->update(['average_score' => 40.0]);
 
-        $this->recommendation->calculate($assessment);
+        $this->recommendation->calculate($assessment->fresh(['priorities', 'answers', 'subjectScores', 'raporSemesters']));
 
         $result = $assessment->results()->where('study_program_id', $program->id)->firstOrFail();
 
         $this->assertEqualsWithDelta(77.0, $result->matrix['C2'], 0.0001);
+    }
+
+    public function test_prodi_non_prioritas_memakai_nilai_semester_terendah(): void
+    {
+        // Prodi yang tidak dijadikan prioritas tidak pernah ditanyakan mapel
+        // pendukungnya, sehingga C2-nya diganti nilai semester terendah —
+        // bukan rerata — supaya prodi prioritas tidak kalah bersaing hanya
+        // karena lemah di satu mapel spesifik.
+        $program = StudyProgram::query()->where('code', 'TRPL-D4')->firstOrFail();
+
+        $assessment = $this->makeAssessment(raporAverage: 85.0);
+
+        // Prasyarat tes: TRPL-D4 memang bukan salah satu prioritas bawaan
+        // makeAssessment() (tiga prodi pertama menurut kode).
+        $this->assertFalse($assessment->priorities->contains('study_program_id', $program->id));
+
+        $assessment->raporSemesters()->where('semester', 1)->update(['average_score' => 55.0]);
+
+        $this->recommendation->calculate($assessment->fresh(['priorities', 'answers', 'subjectScores', 'raporSemesters']));
+
+        $result = $assessment->results()->where('study_program_id', $program->id)->firstOrFail();
+
+        // Semester terendah (55.0), bukan rerata (85.0).
+        $this->assertEqualsWithDelta(55.0, $result->matrix['C2'], 0.0001);
     }
 }

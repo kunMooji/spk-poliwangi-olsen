@@ -208,7 +208,8 @@
                     <tr><td>Asal Sekolah</td><td>{{ $assessment->school_name ?? '-' }}</td></tr>
                 </table>
                 <table class="biodata">
-                    <tr><td>Jurusan</td><td>{{ $assessment->school_major ?? '-' }}</td></tr>
+                    <tr><td>Jenjang</td><td>{{ $assessment->education_level ?? '-' }}</td></tr>
+                    <tr><td>{{ $assessment->education_level === 'SMK' ? 'Rumpun Keahlian' : 'Jurusan' }}</td><td>{{ $assessment->school_major ?? '-' }}</td></tr>
                     <tr><td>Tahun Lulus</td><td>{{ $assessment->graduation_year ?? '-' }}</td></tr>
                     <tr><td>Tanggal Tes</td><td>{{ $assessment->completed_at?->translatedFormat('d F Y, H:i') ?? '-' }}</td></tr>
                 </table>

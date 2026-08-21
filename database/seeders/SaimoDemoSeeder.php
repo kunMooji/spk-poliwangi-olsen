@@ -32,7 +32,7 @@ class SaimoDemoSeeder extends Seeder
             ]
         );
 
-        $priorityCodes = ['TRPL-D4', 'TI-D3', 'BD-D4'];
+        $priorityCodes = ['TRPL-D4', 'TRK-D4', 'BD-D4'];
         $programs = StudyProgram::query()->whereIn('code', $priorityCodes)->get()->keyBy('code');
 
         foreach ($priorityCodes as $code) {
@@ -47,6 +47,7 @@ class SaimoDemoSeeder extends Seeder
                 'full_name' => 'Saimo',
                 'gender' => 'P',
                 'school_name' => 'SMA Negeri 1 Banyuwangi',
+                'education_level' => 'SMA',
                 'school_major' => 'Bahasa',
                 'graduation_year' => 2026,
                 'phone' => '081234567890',

@@ -40,7 +40,7 @@ class SubjectRequest extends FormRequest
 
         return [
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:40', Rule::unique('subjects', 'code')->ignore($id)],
+            'code' => ['required', 'string', 'max:80', Rule::unique('subjects', 'code')->ignore($id)],
             'education_level' => ['required', Rule::in(array_keys(Subject::EDUCATION_LEVELS))],
             'group' => ['nullable', 'string', 'max:60'],
             'sort_order' => ['required', 'integer', 'between:0,65535'],

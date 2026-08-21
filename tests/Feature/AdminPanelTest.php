@@ -43,6 +43,7 @@ class AdminPanelTest extends TestCase
             'full_name' => $user->name,
             'gender' => 'L',
             'school_name' => 'SMA Negeri 1 Banyuwangi',
+            'education_level' => 'SMA',
             'school_major' => 'IPA',
             'graduation_year' => (int) date('Y'),
             'phone' => '081234567890',
@@ -209,6 +210,7 @@ class AdminPanelTest extends TestCase
     {
         $this->actingAs($this->student)->post(route('assessments.store'), [
             'full_name' => 'Belum Selesai',
+            'education_level' => 'SMA',
             'rapor_semesters' => array_fill_keys(Rapor::SEMESTERS, 80),
             'priorities' => StudyProgram::query()->active()->take(3)->pluck('id')->all(),
         ]);

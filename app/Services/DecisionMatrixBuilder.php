@@ -6,6 +6,8 @@ use App\Models\Assessment;
 use App\Models\Criteria;
 use App\Models\Setting;
 use App\Models\StudyProgram;
+use App\Models\Subject;
+use App\Support\Rapor;
 use Illuminate\Support\Collection;
 
 /**
@@ -90,6 +92,7 @@ final class DecisionMatrixBuilder
     public function build(Assessment $assessment, Collection $programs, Collection $criteria): array
     {
         $raporAverage = (float) $assessment->rapor_average;
+        $lowestSemesterAverage = (float) $assessment->raporSemesters->min('average_score');
         $subjectScores = $assessment->subjectScoreMap();
         $studentVector = $assessment->riasecPercentages();
         $priorityRanks = $this->priorityRanks($assessment);
@@ -100,17 +103,22 @@ final class DecisionMatrixBuilder
 
         foreach ($programs as $program) {
             $row = [];
+            $isPriority = isset($priorityRanks[$program->id]);
 
             foreach ($criteria as $criterion) {
                 $row[$criterion->code] = $this->resolve(
                     $criterion,
                     $program,
                     $raporAverage,
+                    $lowestSemesterAverage,
+                    $isPriority,
                     $subjectScores,
                     $studentVector,
                     $priorityRanks,
                     $priorityCount,
                     $unselectedScore,
+                    $assessment->education_level,
+                    $assessment->school_major,
                 );
             }
 
@@ -129,11 +137,15 @@ final class DecisionMatrixBuilder
         Criteria $criterion,
         StudyProgram $program,
         float $raporAverage,
+        float $lowestSemesterAverage,
+        bool $isPriority,
         array $subjectScores,
         array $studentVector,
         array $priorityRanks,
         int $priorityCount,
         float $unselectedScore,
+        ?string $educationLevel,
+        ?string $schoolMajor,
     ): float {
         return match ($criterion->source) {
             // C1 — rerata rapor seluruh mapel. Sama untuk setiap prodi, karena ini
@@ -142,7 +154,15 @@ final class DecisionMatrixBuilder
 
             // C2 — rerata nilai pada mapel pendukung prodi terkait. Inilah kolom yang
             // membedakan nilai rapor antar alternatif.
-            'support_subject' => $this->supportSubjectValue($program, $raporAverage, $subjectScores),
+            'support_subject' => $this->supportSubjectValue(
+                $program,
+                $raporAverage,
+                $lowestSemesterAverage,
+                $isPriority,
+                $subjectScores,
+                $educationLevel,
+                $schoolMajor,
+            ),
 
             // C3 — cosine similarity vektor RIASEC.
             'riasec' => $this->riasec->compatibility($studentVector, $program->riasecVector()),
@@ -160,33 +180,58 @@ final class DecisionMatrixBuilder
     /**
      * Rerata nilai responden pada mata pelajaran pendukung prodi.
      *
-     * Mapel yang tidak ditempuh responden — nilainya null, misalnya peserta didik
-     * IPS yang tidak menempuh Fisika — jatuh ke rerata rapor umum, bukan ke nol.
-     * Nol akan menjatuhkan peringkat prodi seolah responden benar-benar gagal di
-     * mapel itu, padahal ia hanya tidak mengambilnya; rerata umum memperlakukannya
-     * secara netral sebagai cerminan kemampuan rata-rata responden.
+     * Formulir hanya menanyakan mapel pendukung milik prodi yang responden
+     * jadikan prioritas — bukan gabungan seluruh prodi aktif seperti dulu.
+     * Konsekuensinya, C2 punya dua jalur nilai yang sengaja berbeda:
      *
-     * Prodi yang belum ditetapkan mapel pendukungnya juga jatuh ke rerata umum,
-     * sehingga admin yang belum selesai mengonfigurasi tidak membuat prodi itu
-     * hilang dari rekomendasi.
+     * **Prodi prioritas** — dihitung dari nilai asli, dengan mapel yang
+     * relevan tetapi kosong (responden melewatkan isiannya) jatuh ke rerata
+     * rapor. Ini "data hilang secara tidak sengaja": responden memang ditanya,
+     * hanya lupa mengisi, sehingga wajar diperlakukan netral.
+     *
+     * **Prodi non-prioritas** — nilainya diganti nilai semester terendah
+     * responden, bukan rerata. Ini bukan "data hilang", tapi "memang tidak
+     * dievaluasi": responden tidak pernah ditanya mapel pendukung prodi ini
+     * sama sekali. Menerapkan kriteria maximin (Wald) — mengambil skenario
+     * paling konservatif saat tidak ada informasi — mencegah prodi yang tidak
+     * dipertimbangkan responden diam-diam diuntungkan rerata yang belum tentu
+     * benar, sehingga prodi prioritas tidak kalah bersaing hanya karena
+     * lemah di satu mapel spesifik. Penaltinya otomatis proporsional: kalau
+     * nilai responden stabil antarsemester, semester terendah hampir sama
+     * dengan reratanya; kalau timpang, penaltinya lebih terasa.
+     *
+     * Yang dirata-ratakan untuk prodi prioritas hanya mapel yang benar-benar
+     * ditempuh oleh jenjang dan jurusan responden — lihat Rapor::appliesTo().
      *
      * @param  array<int, float|null>  $subjectScores
      */
-    private function supportSubjectValue(StudyProgram $program, float $raporAverage, array $subjectScores): float
-    {
-        $subjectIds = $program->supportSubjects->pluck('id');
+    private function supportSubjectValue(
+        StudyProgram $program,
+        float $raporAverage,
+        float $lowestSemesterAverage,
+        bool $isPriority,
+        array $subjectScores,
+        ?string $educationLevel,
+        ?string $schoolMajor,
+    ): float {
+        if (! $isPriority) {
+            return $lowestSemesterAverage;
+        }
 
-        if ($subjectIds->isEmpty()) {
+        $subjects = $program->supportSubjects
+            ->filter(fn (Subject $subject) => Rapor::appliesTo($subject, $educationLevel, $schoolMajor));
+
+        if ($subjects->isEmpty()) {
             return $raporAverage;
         }
 
         $total = 0.0;
 
-        foreach ($subjectIds as $subjectId) {
-            $total += $subjectScores[$subjectId] ?? $raporAverage;
+        foreach ($subjects as $subject) {
+            $total += $subjectScores[$subject->id] ?? $raporAverage;
         }
 
-        return $total / $subjectIds->count();
+        return $total / $subjects->count();
     }
 
     /**

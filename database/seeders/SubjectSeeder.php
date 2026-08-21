@@ -9,8 +9,8 @@ use Illuminate\Database\Seeder;
  * Master mata pelajaran mengikuti struktur Kurikulum Merdeka.
  *
  * SMA berisi mapel umum yang diterima seluruh peserta didik, ditambah kelompok
- * pilihan IPA dan IPS. "IPA" dan "IPS" sendiri bukan mata pelajaran melainkan
- * nama kelompok, sehingga muncul sebagai `group` dan bukan sebagai baris.
+ * pilihan IPA, IPS, dan Bahasa. Ketiganya bukan mata pelajaran melainkan nama
+ * kelompok, sehingga muncul sebagai `group` dan bukan sebagai baris.
  *
  * SMK diisi pada tingkat konsentrasi keahlian, bukan rumpun. Di Kurikulum
  * Merdeka nama konsentrasi itulah yang tercantum di rapor sebagai Mata Pelajaran
@@ -88,11 +88,28 @@ class SubjectSeeder extends Seeder
                 'Sejarah',
                 'Sosiologi',
             ]),
+            ...$this->map('SMA', 'Bahasa', [
+                'Antropologi',
+                'Bahasa Arab',
+                'Bahasa Indonesia Tingkat Lanjut',
+                'Bahasa Inggris Tingkat Lanjut',
+                'Bahasa Jepang',
+                'Bahasa Jerman',
+                'Bahasa Korea',
+                'Bahasa Mandarin',
+                'Bahasa Prancis',
+            ]),
         ];
     }
 
     /**
      * Konsentrasi keahlian SMK, dikelompokkan menurut rumpunnya.
+     *
+     * Struktur resminya tiga tingkat: rumpun -> program keahlian -> konsentrasi
+     * keahlian. Yang disimpan sebagai mata pelajaran adalah tingkat terdalam,
+     * karena itulah yang tercantum di rapor. Tingkat program keahlian sengaja
+     * tidak disimpan: ia hanya perantara, dan rumpun sudah cukup untuk menyaring
+     * pilihan pada form maupun panel admin.
      *
      * @return array<int, array{code: string, name: string, education_level: string, group: string}>
      */
@@ -100,29 +117,70 @@ class SubjectSeeder extends Seeder
     {
         $byGroup = [
             'Agribisnis dan Agriteknologi' => [
-                'Agribisnis Perikanan',
-                'Agribisnis Tanaman',
-                'Agribisnis Ternak',
-                'Agriteknologi Pengolahan Hasil Pertanian',
+                'Agribisnis Ikan Hias',
+                'Agribisnis Perikanan Air Tawar',
+                'Agribisnis Perikanan Payau dan Laut',
+                'Agribisnis Rumput Laut',
+                'Agribisnis Perbenihan Tanaman',
+                'Agribisnis Tanaman Pangan dan Hortikultura',
+                'Agribisnis Tanaman Perkebunan',
+                'Agribisnis Ternak Ruminansia',
+                'Agribisnis Ternak Unggas',
+                'Kesehatan Hewan',
+                'Agribisnis Pengolahan Hasil Perikanan',
+                'Agribisnis Pengolahan Hasil Pertanian',
                 'Usaha Pertanian Terpadu',
             ],
             'Bisnis dan Manajemen' => [
-                'Akuntansi dan Keuangan Lembaga',
-                'Manajemen Perkantoran dan Layanan Bisnis',
-                'Pemasaran',
+                'Akuntansi',
+                'Layanan Perbankan',
+                'Layanan Perbankan Syariah',
+                'Manajemen Perkantoran',
+                'Bisnis Digital',
+                'Bisnis Retail',
             ],
             'Energi dan Pertambangan' => [
-                'Teknik Energi Terbarukan',
-                'Teknik Geologi Pertambangan',
-                'Teknik Geospasial',
+                'Teknik Energi Surya, Hidro, dan Angin',
+                'Geologi Pertambangan',
+                'Informasi Geospasial',
+                'Teknik Instalasi Tenaga Listrik',
+                'Teknik Kelistrikan Pesawat Udara',
+                'Teknik Pemanasan, Tata Udara, dan Pendinginan',
+                'Teknik Pembangkit Tenaga Listrik',
+            ],
+            'Kemaritiman' => [
+                'Nautika Kapal Penangkapan Ikan',
+                'Teknika Kapal Penangkapan Ikan',
+            ],
+            'Kesehatan dan Pekerjaan Sosial' => [
+                'Layanan Penunjang Keperawatan dan Caregiving',
+                'Layanan Penunjang Laboratorium Medik',
+                'Layanan Penunjang Kefarmasian Klinis dan Komunitas',
+            ],
+            'Pariwisata' => [
+                'Spa dan Beauty Therapy',
+                'Tata Kecantikan Kulit dan Rambut',
+                'Kuliner',
+                'Perhotelan',
+                'Usaha Layanan Wisata',
             ],
             'Seni dan Ekonomi Kreatif' => [
                 'Animasi',
-                'Broadcasting dan Perfilman',
-                'Busana',
-                'Desain dan Produksi Kriya',
+                'Produksi dan Siaran Program Radio',
+                'Produksi dan Siaran Program Televisi',
+                'Produksi Film',
+                'Desain dan Produksi Busana',
+                'Kriya Kreatif Batik dan Tekstil',
+                'Kriya Kreatif Kayu dan Rotan',
+                'Kriya Kreatif Keramik',
+                'Kriya Kreatif Kulit dan Imitasi',
+                'Kriya Kreatif Logam dan Perhiasan',
                 'Desain Komunikasi Visual',
-                'Seni Pertunjukan',
+                'Teknik Grafika',
+                // Bernama sama dengan mapel seni di SMA, dibedakan sebagai
+                // konsentrasi keahlian agar kodenya tidak berbenturan.
+                'Seni Musik (Konsentrasi Keahlian)',
+                'Seni Tari (Konsentrasi Keahlian)',
             ],
             'Teknologi Informasi' => [
                 'Rekayasa Perangkat Lunak',
@@ -131,16 +189,36 @@ class SubjectSeeder extends Seeder
             ],
             'Teknologi Konstruksi dan Bangunan' => [
                 'Desain Pemodelan dan Informasi Bangunan',
-                'Teknik Furnitur',
+                'Desain dan Teknik Furnitur',
+                'Desain Interior dan Teknik Furnitur',
+                'Konstruksi Gedung dan Sanitasi',
                 'Teknik Konstruksi dan Perumahan',
                 'Teknik Perawatan Gedung',
             ],
             'Teknologi Manufaktur dan Rekayasa' => [
+                'Analisis Pengujian Laboratorium',
                 'Kimia Analisis',
-                'Teknik Elektronika',
-                'Teknik Konstruksi Kapal',
-                'Teknik Mesin',
-                'Teknik Otomotif',
+                'Teknik Audio Video',
+                'Teknik Elektronika Industri',
+                'Teknik Elektronika Komunikasi',
+                'Teknik Elektronika Pesawat Udara',
+                'Teknik Instrumentasi Medik',
+                'Teknik Mekatronika',
+                'Teknik Otomasi Industri',
+                'Desain Rancang Bangun Kapal',
+                'Konstruksi Kapal Baja',
+                'Konstruksi Kapal Non Baja',
+                'Desain Gambar Mesin',
+                'Teknik Mekanik Industri',
+                'Teknik Pemesinan',
+                'Teknik Pengecoran Logam',
+                'Teknik Alat Berat',
+                'Teknik Kendaraan Ringan',
+                'Teknik Ototronik',
+                'Teknik Sepeda Motor',
+                'Teknik Fabrikasi Logam dan Manufaktur',
+                'Airframe Powerplant',
+                'Electrical Avionic',
             ],
         ];
 

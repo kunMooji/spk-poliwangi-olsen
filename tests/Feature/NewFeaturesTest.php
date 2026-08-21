@@ -47,6 +47,7 @@ class NewFeaturesTest extends TestCase
             'full_name' => 'Rizky Calon Mahasiswa',
             'gender' => 'L',
             'school_name' => 'SMA Negeri 1 Banyuwangi',
+            'education_level' => 'SMA',
             'school_major' => 'IPA',
             'graduation_year' => (int) date('Y'),
             'phone' => '081234567890',

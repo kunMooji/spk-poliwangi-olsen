@@ -11,9 +11,10 @@
              di layouts/app.blade.php. --}}
         <script>
             (function () {
+                // Default tema: krem/terang kecuali pengguna pernah memilih gelap
+                // secara eksplisit (bukan lagi mengikuti preferensi sistem).
                 var stored = localStorage.getItem('theme');
-                var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                var isDark = stored ? stored === 'dark' : prefersDark;
+                var isDark = stored === 'dark';
                 document.documentElement.classList.toggle('dark', isDark);
             })();
         </script>
@@ -25,7 +26,7 @@
     </head>
 
     <body class="font-sans text-gray-900 antialiased dark:text-gray-100">
-        <div class="grid min-h-screen lg:grid-cols-2">
+        <div class="grid min-h-[100dvh] lg:grid-cols-2">
             {{-- Panel kiri: identitas sistem, disembunyikan pada layar sempit --}}
             <aside class="relative hidden flex-col justify-between bg-gradient-to-br from-brand-600 to-brand-900 p-12 text-white lg:flex">
                 <a href="{{ route('home') }}" class="flex items-center gap-3">
