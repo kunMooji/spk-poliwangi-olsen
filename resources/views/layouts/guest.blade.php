@@ -26,6 +26,8 @@
     </head>
 
     <body class="font-sans text-gray-900 antialiased dark:text-gray-100">
+        <x-loading-screen />
+
         <div class="grid min-h-[100dvh] lg:grid-cols-2">
             {{-- Panel kiri: identitas sistem, disembunyikan pada layar sempit --}}
             <aside class="relative hidden flex-col justify-between bg-gradient-to-br from-brand-600 to-brand-900 p-12 text-white lg:flex">

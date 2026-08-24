@@ -30,6 +30,175 @@ html.lenis body {
     display: none !important;
 }
 
+/* Layar pemuatan awal (komponen <x-loading-screen>, disembunyikan oleh
+   initPageLoader di app.js begitu window selesai dimuat) — dilepas dari DOM
+   sepenuhnya saat transisi opacity berakhir, bukan hanya disembunyikan. */
+.page-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e0f4ff;
+    transition: opacity 500ms ease, visibility 500ms ease;
+}
+
+.dark .page-loader {
+    background: #062b3d;
+}
+
+.page-loader.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.page-loader-rings {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 10rem;
+    height: 10rem;
+}
+
+/* Tiga cincin membesar & memudar berurutan di belakang logo, mensimulasikan
+   sinyal/denyut radar — jeda animasi dipatok manual per cincin (bukan
+   `stagger`) karena murni CSS, tanpa JS. */
+.page-loader-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    border: 2px solid #2390aa;
+    opacity: 0;
+    animation: page-loader-ping 2.4s cubic-bezier(0.2, 0.6, 0.35, 1) infinite;
+}
+
+.page-loader-ring:nth-child(2) {
+    animation-delay: 0.8s;
+}
+
+.page-loader-ring:nth-child(3) {
+    animation-delay: 1.6s;
+}
+
+@keyframes page-loader-ping {
+    0% { transform: scale(0.55); opacity: 0.55; }
+    100% { transform: scale(2.4); opacity: 0; }
+}
+
+.page-loader-logo {
+    position: relative;
+    z-index: 1;
+    width: 6.5rem;
+    height: 6.5rem;
+    object-fit: contain;
+    animation: page-loader-breathe 2.4s ease-in-out infinite;
+    filter: drop-shadow(0 6px 16px rgba(21, 115, 140, 0.35));
+}
+
+@keyframes page-loader-breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .page-loader {
+        transition: opacity 150ms linear;
+    }
+
+    .page-loader-ring {
+        animation: none;
+        opacity: 0;
+    }
+
+    .page-loader-logo {
+        animation: none;
+    }
+}
+
+/* Permukaan bersama untuk seluruh ruang calon siswa. Token dan elevasinya
+   mengikuti panel admin sehingga berpindah halaman tidak terasa berganti tema. */
+.student-panel {
+    border: 1px solid rgba(5, 14, 19, 0.05);
+    border-radius: 1rem;
+    background: #fff;
+    box-shadow: 0 4px 14px rgba(5, 14, 19, 0.05);
+}
+
+.student-panel-muted {
+    background: #faf8f3;
+}
+
+.student-table thead {
+    background: #faf8f3;
+    color: #2e5866;
+}
+
+.student-table tbody {
+    color: #152f39;
+}
+
+.dark .student-panel {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(10, 26, 32, 0.6);
+    box-shadow: 0 12px 30px rgba(5, 14, 19, 0.2);
+}
+
+.dark .student-panel-muted,
+.dark .student-table thead {
+    background: rgba(5, 14, 19, 0.5);
+}
+
+.dark .student-table tbody {
+    color: #f2ede2;
+}
+
+/* Aksen dimensi pada kartu kuesioner RIASEC. Warna hadir sebagai bingkai dan
+   sapuan tipis agar pengisian tetap nyaman dibaca, bukan sebagai blok warna penuh. */
+.riasec-question-card {
+    border-color: color-mix(in srgb, var(--question-color) 42%, transparent);
+    border-left: 4px solid var(--question-color);
+    background-image: linear-gradient(115deg, color-mix(in srgb, var(--question-color) 9%, white), white 55%);
+}
+
+.riasec-question-card:hover {
+    border-color: var(--question-color);
+    box-shadow: 0 10px 22px color-mix(in srgb, var(--question-color) 14%, transparent);
+}
+
+.riasec-question-number {
+    background: color-mix(in srgb, var(--question-color) 14%, white);
+    color: color-mix(in srgb, var(--question-color) 82%, #0a1a20);
+}
+
+.riasec-question-silhouette {
+    color: var(--question-color);
+    opacity: 0.09;
+    transform: rotate(-12deg);
+    transition: transform 200ms ease, opacity 200ms ease;
+}
+
+.riasec-question-card:hover .riasec-question-silhouette {
+    opacity: 0.15;
+    transform: rotate(-6deg) scale(1.04);
+}
+
+.dark .riasec-question-card {
+    border-color: color-mix(in srgb, var(--question-color) 60%, transparent);
+    background-image: linear-gradient(115deg, color-mix(in srgb, var(--question-color) 16%, #0a1a20), rgba(255, 255, 255, 0.06) 62%);
+}
+
+.dark .riasec-question-number {
+    background: color-mix(in srgb, var(--question-color) 25%, #0a1a20);
+    color: color-mix(in srgb, var(--question-color) 72%, white);
+}
+
+.dark .riasec-question-silhouette {
+    opacity: 0.16;
+}
+
 /* Beranda siswa hadir secara berurutan agar orientasi saat halaman pertama
    dimuat tetap jelas: ringkasan, statistik, lalu detail. Hanya transform dan
    opacity yang dianimasikan agar tidak memicu reflow. */

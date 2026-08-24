@@ -1,11 +1,7 @@
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-            {{ __('Profile Information') }}
-        </h2>
-
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            {{ __("Update your account's profile information and email address.") }}
+        <p class="text-sm text-ink-600 dark:text-porcelain-300">
+            {{ __('Perbarui nama dan alamat email yang terhubung ke akun Anda.') }}
         </p>
     </header>
 
@@ -13,7 +9,7 @@
         @csrf
     </form>
 
-    <form method="post" action="{{ route('profile.update') }}" class="mt-6 space-y-6">
+    <form method="post" action="{{ route('profile.update') }}" class="mt-5 space-y-4">
         @csrf
         @method('patch')
 

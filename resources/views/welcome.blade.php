@@ -23,6 +23,8 @@
     </head>
 
     <body class="bg-porcelain-50 font-sans text-ink-900 antialiased">
+        <x-loading-screen />
+
         {{-- Sentinel 1px untuk mendeteksi kapan halaman mulai di-scroll (lihat initHeaderShadow di app.js). --}}
         <div id="scroll-sentinel" class="pointer-events-none absolute left-0 top-0 h-px w-full"></div>
 

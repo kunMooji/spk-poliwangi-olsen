@@ -9,6 +9,24 @@
         // Jawaban yang sudah tersimpan di server dipakai sebagai nilai awal;
         // draft di localStorage hanya menambal butir yang belum tersimpan.
         $initial = $saved->mapWithKeys(fn ($score, $id) => [(string) $id => (int) $score]);
+        // Palet pertanyaan mengikuti urutan warna kartu rekomendasi; tiap
+        // dimensi RIASEC mendapat aksen tetap agar mudah dikenali saat mengisi.
+        $questionPalettes = [
+            'R' => '#42A5F5',
+            'I' => '#26C281',
+            'A' => '#AB47BC',
+            'S' => '#FFA200',
+            'E' => '#EF5350',
+            'C' => '#26C6DA',
+        ];
+        $questionIcons = [
+            'R' => 'wrench-screwdriver',
+            'I' => 'magnifying-glass',
+            'A' => 'paint-brush',
+            'S' => 'user-group',
+            'E' => 'arrow-trending-up',
+            'C' => 'clipboard-document-list',
+        ];
     @endphp
 
     <div class="py-6 sm:py-8"
@@ -95,16 +113,20 @@
                 @csrf
 
                 @foreach ($questions as $index => $question)
-                    <div class="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm shadow-ink-950/5 transition hover:border-brand-300 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/10 sm:p-6"
+                    @php($questionColor = $questionPalettes[$question->dimension] ?? '#42A5F5')
+                    @php($questionIcon = $questionIcons[$question->dimension] ?? 'sparkles')
+                    <div class="riasec-question-card relative overflow-hidden rounded-2xl border bg-white p-5 shadow-sm shadow-ink-950/5 transition dark:bg-white/[0.06] dark:shadow-black/10 sm:p-6"
+                         style="--question-color: {{ $questionColor }}"
                          :class="answers['{{ $question->id }}'] ? '' : 'ring-1 ring-amber-300 dark:ring-amber-700'">
-                        <div class="flex gap-3">
-                            <span class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gray-100 text-xs font-semibold text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                        <x-dynamic-component :component="'heroicon-o-'.$questionIcon" class="riasec-question-silhouette pointer-events-none absolute -bottom-7 -right-5 h-32 w-32" aria-hidden="true" />
+                        <div class="relative z-10 flex gap-3">
+                            <span class="riasec-question-number mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
                                 {{ $index + 1 }}
                             </span>
                             <p class="text-sm leading-relaxed text-gray-800 dark:text-gray-100">{{ $question->statement }}</p>
                         </div>
 
-                        <div class="mt-4 grid grid-cols-5 gap-2 ps-10">
+                        <div class="relative z-10 mt-4 grid grid-cols-5 gap-2 ps-10">
                             @foreach ($likert as $value => $label)
                                 <label class="cursor-pointer">
                                     <input type="radio" class="peer sr-only"

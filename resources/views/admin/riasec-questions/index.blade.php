@@ -122,15 +122,22 @@
 
             @if (! $questions->isEmpty())
                 <div x-show="view === 'card'" x-cloak>
-                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         @foreach ($questions as $question)
                             @php($qColor = \App\Support\Riasec::color($question->dimension))
+                            @php($qIcon = match ($question->dimension) {
+                                'R' => 'wrench-screwdriver',
+                                'I' => 'magnifying-glass',
+                                'A' => 'paint-brush',
+                                'S' => 'user-group',
+                                'E' => 'arrow-trending-up',
+                                'C' => 'clipboard-document-list',
+                                default => 'sparkles',
+                            })
                             <div class="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-gray-800">
                                 <div class="relative overflow-hidden p-5 text-white"
                                      style="background-color: {{ $qColor }}; background-image: linear-gradient(135deg, rgba(255,255,255,.20), rgba(0,0,0,.28));">
-                                    <span class="pointer-events-none absolute -right-2 -top-8 select-none text-8xl font-black leading-none text-white/10">
-                                        {{ $question->dimension }}
-                                    </span>
+                                    <x-dynamic-component :component="'heroicon-o-'.$qIcon" class="pointer-events-none absolute -right-2 -top-7 h-28 w-28 text-white/15" aria-hidden="true" />
 
                                     <div class="relative flex items-center justify-between gap-2">
                                         <span class="inline-flex items-center gap-1.5 rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold backdrop-blur-sm">

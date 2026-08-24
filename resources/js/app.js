@@ -187,8 +187,10 @@ function renderAssessmentHistoryCharts() {
                             usePointStyle: true,
                             pointStyle: 'circle',
                             color: dark ? '#e6ddc9' : '#475569',
-                            padding: 16,
-                            font: { size: 12 },
+                            // Legenda dibuat lebih rapat supaya bidang radar
+                            // mendapat ruang lebih besar tanpa keluar dari kartu.
+                            padding: 10,
+                            font: { size: 10 },
                         },
                     },
                     tooltip: {
@@ -513,7 +515,40 @@ function initSplitReveal() {
     });
 }
 
+/**
+ * Layar pemuatan awal (komponen <x-loading-screen>) — disembunyikan begitu
+ * seluruh aset window selesai dimuat, lalu dilepas dari DOM saat transisi
+ * opacity-nya berakhir. Kalau halaman sudah 'complete' duluan (mis. render
+ * dari cache), sembunyikan langsung tanpa menunggu event 'load' yang tidak
+ * akan terpicu lagi.
+ */
+function initPageLoader() {
+    const loader = document.getElementById('page-loader');
+    if (!loader) return;
+
+    const shownAt = performance.now();
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const minimumDisplay = reducedMotion ? 400 : 2200;
+
+    const hide = () => {
+        loader.classList.add('is-hidden');
+        loader.addEventListener('transitionend', () => loader.remove(), { once: true });
+    };
+
+    const hideAfterMinimumDisplay = () => {
+        const remaining = Math.max(0, minimumDisplay - (performance.now() - shownAt));
+        window.setTimeout(hide, remaining);
+    };
+
+    if (document.readyState === 'complete') {
+        hideAfterMinimumDisplay();
+    } else {
+        window.addEventListener('load', hideAfterMinimumDisplay, { once: true });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    initPageLoader();
     renderRiasecCharts();
     renderAssessmentHistoryCharts();
     initResultExplanationAnimation();

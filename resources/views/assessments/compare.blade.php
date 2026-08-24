@@ -16,8 +16,8 @@
             </div>
 
             @if ($sessions->count() < 2)
-                <div class="rounded-xl bg-white p-10 text-center shadow-sm dark:bg-gray-800">
-                    <p class="text-gray-500 dark:text-gray-400">
+                <div class="student-panel p-10 text-center">
+                    <p class="text-ink-500 dark:text-porcelain-300/70">
                         Perbandingan baru dapat ditampilkan setelah Anda menyelesaikan
                         <strong>minimal dua kali tes</strong>. Saat ini Anda memiliki
                         {{ $sessions->count() }} hasil tes yang selesai.
@@ -29,7 +29,7 @@
                 </div>
             @else
                 {{-- Pemilih dua sesi yang dibandingkan --}}
-                <form method="GET" class="grid gap-4 rounded-xl bg-white p-4 shadow-sm dark:bg-gray-800 sm:grid-cols-2 lg:grid-cols-3">
+                <form method="GET" class="student-panel grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
                     <div>
                         <x-input-label for="a" value="Tes Sebelumnya" />
                         <select id="a" name="a"
@@ -56,7 +56,7 @@
 
                     <div class="flex items-end">
                         <button type="submit"
-                                class="rounded-lg bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-700 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-white">
+                                class="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
                             Bandingkan
                         </button>
                     </div>
@@ -71,7 +71,7 @@
                     {{-- Ringkasan rekomendasi --}}
                     <section class="grid gap-4 sm:grid-cols-2">
                         @foreach ([['label' => 'Tes Sebelumnya', 'data' => $left, 'tone' => 'gray'], ['label' => 'Tes Pembanding', 'data' => $right, 'tone' => 'indigo']] as $card)
-                            <div class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800
+                            <div class="student-panel p-6
                                         {{ $card['tone'] === 'indigo' ? 'ring-2 ring-brand-500' : '' }}">
                                 <div class="flex items-baseline justify-between">
                                     <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ $card['label'] }}</p>
@@ -125,7 +125,7 @@
                     @endif
 
                     {{-- Pergeseran profil RIASEC --}}
-                    <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
+                    <section class="student-panel p-6 sm:p-7">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Pergeseran Profil Minat (RIASEC)</h3>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             Batang atas adalah tes sebelumnya, batang bawah tes pembanding.
@@ -157,12 +157,12 @@
                     </section>
 
                     {{-- Pergeseran nilai rapor --}}
-                    <section class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
+                    <section class="student-panel overflow-hidden">
                         <div class="p-6">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Perubahan Nilai Rapor</h3>
                         </div>
                         <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+                            <table class="student-table min-w-full divide-y divide-black/5 text-sm dark:divide-white/10">
                                 <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
                                     <tr>
                                         <th class="px-6 py-3">Mata Pelajaran</th>
@@ -189,7 +189,7 @@
                 @endif
 
                 {{-- Riwayat seluruh sesi --}}
-                <section class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
+                <section class="student-panel overflow-hidden">
                     <div class="p-6">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Riwayat Seluruh Tes</h3>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -197,7 +197,7 @@
                         </p>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+                    <table class="student-table min-w-full divide-y divide-black/5 text-sm dark:divide-white/10">
                             <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
                                 <tr>
                                     <th class="px-6 py-3">Tanggal</th>

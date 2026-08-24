@@ -23,6 +23,8 @@
     </head>
 
     <body class="bg-porcelain-50 font-sans text-ink-900 antialiased dark:bg-ink-950 dark:text-porcelain-100">
+        <x-loading-screen />
+
         <div class="flex min-h-[100dvh] items-center justify-center px-4 py-6 sm:px-6 lg:px-8 lg:py-6">
             <div class="w-full max-w-5xl">
                 <div class="mb-4 flex items-center justify-between">

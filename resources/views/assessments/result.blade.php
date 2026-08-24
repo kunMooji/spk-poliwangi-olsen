@@ -3,25 +3,25 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+            <h2 class="font-display text-[10px] font-bold uppercase tracking-wide text-ink-900 dark:text-porcelain-50 sm:text-sm">
                 Hasil Rekomendasi Program Studi
             </h2>
-            <span class="rounded-md bg-gray-100 px-3 py-1 font-mono text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+            <span class="rounded-lg bg-brand-50 px-3 py-1 font-mono text-xs font-bold text-brand-700 dark:bg-brand-500/10 dark:text-brand-200">
                 {{ $assessment->code }}
             </span>
         </div>
     </x-slot>
 
     <div class="py-8">
-        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-none space-y-6 px-5 sm:px-8 lg:px-10 xl:px-12">
             <x-flash />
 
             {{-- Kartu rekomendasi utama --}}
-            <section class="rounded-[2rem] bg-white p-2 shadow-sm ring-1 ring-gray-900/5 dark:bg-gray-800 dark:ring-white/10">
-                <div class="overflow-hidden rounded-[1.5rem] bg-gradient-to-br from-brand-600 to-brand-900 p-6 text-white shadow-inner sm:p-8">
-                    <p class="text-sm font-medium text-brand-100">Rekomendasi Utama</p>
-                    <h3 class="mt-1 text-3xl font-bold">{{ $assessment->recommendedProgram?->full_name ?? '-' }}</h3>
-                    <p class="mt-2 max-w-3xl text-sm leading-relaxed text-brand-100">
+            <section class="relative overflow-hidden rounded-[1.75rem] border border-brand-100 bg-[radial-gradient(circle_at_86%_0%,rgba(179,227,236,.65),transparent_28%),linear-gradient(135deg,#ffffff,#eff9fb)] p-2 shadow-xl shadow-ink-950/5 dark:border-white/10 dark:bg-[radial-gradient(circle_at_78%_7%,rgba(27,137,163,.30),transparent_24%),linear-gradient(135deg,#071b29,#0b1627_55%,#14243a)] dark:shadow-2xl dark:shadow-ink-950/20">
+                <div class="overflow-hidden rounded-[1.35rem] bg-ink-950 p-6 text-porcelain-50 shadow-inner sm:p-8">
+                    <p class="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-brand-200">Rekomendasi Utama</p>
+                    <h3 class="mt-3 text-3xl font-bold tracking-tight">{{ $assessment->recommendedProgram?->full_name ?? '-' }}</h3>
+                    <p class="mt-3 max-w-3xl text-sm leading-relaxed text-porcelain-200/75">
                         {{ $assessment->recommendedProgram?->description }}
                     </p>
                 </div>
@@ -56,7 +56,7 @@
 
             {{-- Penjelasan: kriteria mana yang mengangkat dan menahan prodi rekomendasi --}}
             @if ($contributions !== [])
-                <section class="result-explanation-enter rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
+                <section class="student-panel result-explanation-enter p-6 sm:p-7">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                         Mengapa {{ $assessment->recommendedProgram?->full_name }}?
                     </h3>
@@ -117,7 +117,7 @@
             @endif
 
             {{-- Profil RIASEC: grafik di kiri, nilai tiap dimensi di kanan. --}}
-            <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
+            <section class="student-panel p-6 sm:p-7">
                 <div class="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(17rem,0.75fr)] lg:items-start">
                     <div>
                         <div class="flex flex-wrap items-start justify-between gap-4">
@@ -162,7 +162,7 @@
             </section>
 
             {{-- Tabel peringkat --}}
-            <section x-data="{ showAllRanks: false }" class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
+            <section x-data="{ showAllRanks: false }" class="student-panel overflow-hidden">
                 <div class="p-6">
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div>
@@ -176,13 +176,13 @@
                         </span>
                     </div>
 
-                    <div class="mt-5 rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-gray-700 dark:bg-gray-900/30">
+                    <div class="student-panel-muted mt-5 rounded-xl border border-black/5 p-4 dark:border-white/10">
                         <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Pilihan program studi Anda</p>
                         <div class="mt-3 grid gap-3 md:grid-cols-3">
                             @foreach ($assessment->priorities->take(3) as $priority)
                                 @php($priorityResult = $assessment->results->firstWhere('study_program_id', $priority->study_program_id))
                                 @php($isPriorityRecommended = $priority->study_program_id === $assessment->recommended_program_id)
-                                <div class="rounded-lg bg-white p-3 shadow-sm ring-1 ring-gray-900/5 dark:bg-gray-800 dark:ring-white/10">
+                                <div class="rounded-lg border border-black/5 bg-white p-3 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.04]">
                                     <div class="flex items-center justify-between gap-2">
                                         <span class="text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-brand-300">Pilihan {{ $priority->priority_order }}</span>
                                         <span class="font-mono text-xs font-bold tabular-nums text-gray-600 dark:text-gray-300">
@@ -209,7 +209,7 @@
                 </div>
 
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+                    <table class="student-table min-w-full divide-y divide-black/5 text-sm dark:divide-white/10">
                         <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
                             <tr>
                                 <th class="px-6 py-3">#</th>

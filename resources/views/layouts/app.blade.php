@@ -27,13 +27,21 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
+        <x-loading-screen />
+
         <div class="min-h-screen bg-porcelain-50 dark:bg-ink-950">
             @include('layouts.navigation')
 
             <!-- App bar konsisten untuk administrator dan calon mahasiswa. -->
             <header class="sticky top-0 z-30 border-b border-black/5 bg-white/90 backdrop-blur dark:border-white/10 dark:bg-ink-900/90">
                 <div class="flex w-full items-center gap-3 px-4 py-3 pr-40 sm:px-6 sm:pr-56">
-                    <img src="{{ asset('images/poliwangi_logo.png') }}" alt="Logo Politeknik Negeri Banyuwangi" class="h-10 w-10 shrink-0 object-contain">
+                    @if (Auth::user()->isAdmin())
+                        <a href="{{ route('admin.dashboard') }}" class="shrink-0 rounded-lg transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:ring-offset-2 dark:focus:ring-offset-ink-900" aria-label="Kembali ke beranda administrator">
+                            <img src="{{ asset('images/poliwangi_logo.png') }}" alt="Logo Politeknik Negeri Banyuwangi" class="h-10 w-10 object-contain">
+                        </a>
+                    @else
+                        <img src="{{ asset('images/poliwangi_logo.png') }}" alt="Logo Politeknik Negeri Banyuwangi" class="h-10 w-10 shrink-0 object-contain">
+                    @endif
                     <div class="min-w-0 flex-1">
                         @isset($header)
                             {{ $header }}

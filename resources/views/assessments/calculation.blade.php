@@ -1,18 +1,18 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
+            <h2 class="font-display text-[10px] font-bold uppercase tracking-wide text-ink-900 dark:text-porcelain-50 sm:text-sm">
                 Detail Perhitungan CoCoSo
             </h2>
             <a href="{{ route('assessments.result', $assessment) }}"
-               class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+               class="rounded-lg border border-black/10 px-4 py-2 text-sm font-semibold text-ink-700 transition hover:bg-brand-50 dark:border-white/10 dark:text-porcelain-200 dark:hover:bg-white/10">
                 Kembali ke Hasil
             </a>
         </div>
     </x-slot>
 
     <div class="py-8">
-        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-none space-y-6 px-5 sm:px-8 lg:px-10 xl:px-12">
 
             <x-alert type="info">
                 Seluruh angka pada halaman ini dibaca dari data yang tersimpan saat perhitungan dijalankan
@@ -21,7 +21,7 @@
             </x-alert>
 
             {{-- Parameter --}}
-            <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
+            <section class="student-panel p-6 sm:p-7">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Parameter yang Dipakai</h3>
                 <dl class="mt-4 grid gap-4 sm:grid-cols-3">
                     @foreach ([
@@ -29,7 +29,7 @@
                         'Ambang kelayakan' => number_format($assessment->threshold_used, 2).' ('.$assessment->threshold_mode_used.')',
                         'Jumlah alternatif' => $results->count().' program studi',
                     ] as $label => $value)
-                        <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-900/40">
+                        <div class="student-panel-muted rounded-lg p-4">
                             <dt class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">{{ $label }}</dt>
                             <dd class="mt-1 font-semibold text-gray-900 dark:text-gray-100">{{ $value }}</dd>
                         </div>
@@ -38,12 +38,12 @@
             </section>
 
             {{-- Bobot --}}
-            <section class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
+            <section class="student-panel overflow-hidden">
                 <div class="p-6 pb-0">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Bobot Kriteria (snapshot)</h3>
                 </div>
                 <div class="mt-4 overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+                    <table class="student-table min-w-full divide-y divide-black/5 text-sm dark:divide-white/10">
                         <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
                             <tr>
                                 <th class="px-6 py-3">Kode</th>
@@ -79,13 +79,13 @@
                 ['title' => 'Tahap 1b — Matriks Ternormalisasi (r_ij)', 'key' => 'normalized', 'decimals' => 6,
                  'note' => 'r_ij = (x_ij − min_j) / (max_j − min_j) untuk kriteria benefit. Nilai dijaga minimal sebesar epsilon agar P_i tidak nol.'],
             ] as $stage)
-                <section class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
+                <section class="student-panel overflow-hidden">
                     <div class="p-6 pb-0">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ $stage['title'] }}</h3>
                         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ $stage['note'] }}</p>
                     </div>
                     <div class="mt-4 overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+                        <table class="student-table min-w-full divide-y divide-black/5 text-sm dark:divide-white/10">
                             <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
                                 <tr>
                                     <th class="px-4 py-3 text-left">Alternatif</th>
@@ -114,7 +114,7 @@
             @endforeach
 
             {{-- Tahap 2-5 --}}
-            <section class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
+            <section class="student-panel overflow-hidden">
                 <div class="p-6 pb-0">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                         Tahap 2&ndash;5 &mdash; S<sub>i</sub>, P<sub>i</sub>, Strategi Kompromi, dan Nilai Akhir
@@ -126,7 +126,7 @@
                     </p>
                 </div>
                 <div class="mt-4 overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+                    <table class="student-table min-w-full divide-y divide-black/5 text-sm dark:divide-white/10">
                         <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
                             <tr>
                                 <th class="px-4 py-3 text-left">#</th>

@@ -1,6 +1,6 @@
 @php($isAdmin = Auth::user()->isAdmin())
 
-{{-- Drawer untuk kedua peran agar area kerja tetap fokus pada konten. --}}
+{{-- Drawer untuk kedua peran berada di sisi kanan agar pola navigasi konsisten. --}}
 <div x-data="{ open: false }"
      x-effect="document.documentElement.style.overflow = open ? 'hidden' : ''; document.body.style.overflow = open ? 'hidden' : ''"
      @keydown.escape.window="open = false">
@@ -9,9 +9,13 @@
         <button type="button" @click="open = true" :aria-expanded="open.toString()" aria-controls="main-navigation"
                 class="inline-flex items-center gap-2 rounded-2xl border border-black/5 bg-white/85 p-1.5 ps-3 text-ink-700 shadow-sm shadow-ink-950/10 backdrop-blur transition duration-200 ease-brand-out hover:-translate-y-0.5 hover:border-brand-500/40 focus:outline-none focus:ring-2 focus:ring-brand-500/50 dark:border-white/10 dark:bg-ink-900/85 dark:text-porcelain-100">
             <span class="hidden text-sm font-semibold sm:block">Hi, {{ Auth::user()->name }}</span>
-            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-100 font-mono text-xs font-bold text-brand-800 dark:bg-brand-500/20 dark:text-brand-200">
-                {{ mb_strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}
-            </span>
+            @if (Auth::user()->avatar)
+                <img src="{{ Auth::user()->avatar_url }}" alt="Foto profil {{ Auth::user()->name }}" class="h-9 w-9 shrink-0 rounded-xl object-cover">
+            @else
+                <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-100 font-mono text-xs font-bold text-brand-800 dark:bg-brand-500/20 dark:text-brand-200">
+                    {{ mb_strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}
+                </span>
+            @endif
             <span class="sr-only">Buka menu {{ $isAdmin ? 'admin' : 'siswa' }}</span>
         </button>
     </div>
@@ -20,18 +24,9 @@
 
     <aside id="main-navigation" x-cloak x-show="open"
            x-transition:enter="transition ease-out duration-300"
-           @if ($isAdmin)
-               x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
-               x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
-           @else
-               x-transition:enter-start="-translate-x-full" x-transition:enter-end="translate-x-0"
-               x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-x-0" x-transition:leave-end="-translate-x-full"
-           @endif
-           @class([
-               'fixed inset-y-0 z-50 flex w-[20rem] max-w-[calc(100vw-2rem)] flex-col bg-porcelain-50 px-4 py-5 shadow-2xl shadow-ink-950/20 dark:bg-ink-950 sm:px-5',
-               'right-0 border-l border-black/5 dark:border-white/10' => $isAdmin,
-               'left-0 border-r border-black/5 dark:border-white/10' => ! $isAdmin,
-           ])
+           x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+           x-transition:leave="transition ease-in duration-200" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
+           class="fixed inset-y-0 right-0 z-50 flex w-[20rem] max-w-[calc(100vw-2rem)] flex-col border-l border-black/5 bg-porcelain-50 px-4 py-5 shadow-2xl shadow-ink-950/20 dark:border-white/10 dark:bg-ink-950 sm:px-5"
            role="dialog" aria-modal="true" aria-label="{{ $isAdmin ? 'Navigasi admin' : 'Navigasi siswa' }}">
         <div class="flex items-center justify-between gap-3 px-1">
             <a href="{{ $isAdmin ? route('admin.dashboard') : route('dashboard') }}" class="flex min-w-0 items-center gap-3" @click="open = false">
@@ -75,7 +70,16 @@
 
         <div class="mt-4 border-t border-black/10 pt-4 dark:border-white/10">
             <div class="flex items-center justify-between gap-3 px-2">
-                <a href="{{ route('profile.edit') }}" @click="open = false" class="min-w-0 transition hover:text-brand-600 dark:hover:text-brand-300"><p class="truncate text-sm font-semibold text-ink-800 dark:text-porcelain-100">{{ Auth::user()->name }}</p><p class="truncate text-xs text-ink-500 dark:text-porcelain-400">{{ Auth::user()->email }}</p></a>
+                <a href="{{ route('profile.edit') }}" @click="open = false" class="flex min-w-0 items-center gap-3 transition hover:text-brand-600 dark:hover:text-brand-300">
+                    @if (Auth::user()->avatar)
+                        <img src="{{ Auth::user()->avatar_url }}" alt="Foto profil {{ Auth::user()->name }}" class="h-10 w-10 shrink-0 rounded-xl object-cover">
+                    @else
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-100 font-mono text-sm font-bold text-brand-800 dark:bg-brand-500/20 dark:text-brand-200">
+                            {{ mb_strtoupper(mb_substr(Auth::user()->name, 0, 1)) }}
+                        </span>
+                    @endif
+                    <span class="min-w-0"><p class="truncate text-sm font-semibold text-ink-800 dark:text-porcelain-100">{{ Auth::user()->name }}</p><p class="truncate text-xs text-ink-500 dark:text-porcelain-400">{{ Auth::user()->email }}</p></span>
+                </a>
                 <x-theme-toggle />
             </div>
             <div class="mt-4 space-y-1.5">

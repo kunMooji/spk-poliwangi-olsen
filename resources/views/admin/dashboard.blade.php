@@ -11,15 +11,16 @@
                 <section class="relative overflow-hidden rounded-[1.75rem] border border-brand-100 bg-[radial-gradient(circle_at_86%_0%,rgba(179,227,236,.65),transparent_28%),linear-gradient(135deg,#ffffff,#eff9fb)] p-5 shadow-xl shadow-ink-950/5 dark:border-white/10 dark:bg-[radial-gradient(circle_at_78%_7%,rgba(27,137,163,.30),transparent_24%),linear-gradient(135deg,#071b29,#0b1627_55%,#14243a)] dark:shadow-2xl dark:shadow-ink-950/20 sm:p-7 lg:p-9">
                     <div class="pointer-events-none absolute inset-0 bg-grain opacity-0 dark:opacity-20"></div>
                     <div class="relative">
-                        <p class="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-brand-600 dark:text-brand-200">{{ now()->translatedFormat('l, d F Y') }}</p>
+                        <span class="pointer-events-none absolute -left-3 top-3 hidden grid grid-cols-3 gap-2 opacity-25 lg:grid"><i class="h-1 w-1 rounded-full bg-brand-600"></i><i class="h-1 w-1 rounded-full bg-brand-600"></i><i class="h-1 w-1 rounded-full bg-brand-600"></i><i class="h-1 w-1 rounded-full bg-brand-600"></i><i class="h-1 w-1 rounded-full bg-brand-600"></i><i class="h-1 w-1 rounded-full bg-brand-600"></i></span>
+                        <p class="ml-0 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-brand-600 dark:text-brand-200 lg:ml-6"><x-heroicon-o-calendar-days class="h-4 w-4" />{{ now()->translatedFormat('l, d F Y') }}</p>
                         <h1 class="mt-4 text-3xl font-bold tracking-tight text-ink-950 dark:text-white sm:text-4xl">Pusat kendali administrator</h1>
-                        <p class="mt-4 max-w-2xl text-sm leading-relaxed text-ink-600 dark:text-porcelain-200/75 sm:text-base">Pantau sesi calon mahasiswa, kelola data perhitungan, dan tinjau kesehatan parameter rekomendasi dalam satu tempat.</p>
+                        <p class="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600 dark:text-porcelain-200/75 sm:text-base">Pantau sesi calon mahasiswa, kelola data perhitungan, dan tinjau kesehatan parameter rekomendasi dalam satu tempat.</p>
 
                         <div class="mt-8 grid gap-6 lg:grid-cols-2 lg:items-center">
-                            <div class="space-y-5">
+                            <div class="space-y-5 lg:order-2">
                                 <section class="rounded-2xl border border-brand-100 bg-white/90 p-5 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-none">
-                                    <p class="text-xs font-bold uppercase tracking-wide text-brand-700 dark:text-brand-200">Ringkasan perhitungan</p>
-                                    <div class="mt-7 flex items-end justify-between gap-3">
+                                    <p class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-brand-700 dark:text-brand-200"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-200"><x-heroicon-o-chart-bar class="h-4 w-4" /></span>Ringkasan perhitungan</p>
+                                    <div class="mt-5 flex items-end justify-between gap-3">
                                         <div><p class="text-xs text-ink-500 dark:text-porcelain-200/70">Total bobot saat ini</p><p class="mt-2 text-2xl font-bold tabular-nums text-ink-950 dark:text-white">{{ number_format($totalWeight, 4) }}</p></div>
                                         <span @class([
                                             'rounded-lg px-3 py-1.5 text-xs font-bold',
@@ -27,7 +28,7 @@
                                             'bg-amber-100 text-amber-700 dark:bg-amber-400/15 dark:text-amber-100' => abs($totalWeight - 1) > 0.0001,
                                         ])>{{ abs($totalWeight - 1) <= 0.0001 ? 'Valid' : 'Perlu dicek' }}</span>
                                     </div>
-                                    <div class="mt-6 border-t border-brand-100 pt-4 text-xs text-ink-500 dark:border-white/10 dark:text-porcelain-200/75"><x-heroicon-o-clock class="mr-1 inline h-4 w-4" />{{ $criteriaCount }} kriteria aktif &middot; {{ $questionCount }} pernyataan RIASEC</div>
+                                    <div class="mt-5 grid grid-cols-2 gap-3 border-t border-brand-100 pt-4 dark:border-white/10"><div class="flex items-center gap-3 rounded-xl border border-brand-100 bg-brand-50/50 px-3 py-2.5 dark:border-white/10 dark:bg-brand-500/10"><x-heroicon-o-adjustments-horizontal class="h-5 w-5 text-brand-600 dark:text-brand-200" /><span><b class="block text-base leading-none text-ink-900 dark:text-white">{{ $criteriaCount }}</b><small class="text-[10px] text-ink-500 dark:text-porcelain-200/65">kriteria aktif</small></span></div><div class="flex items-center gap-3 rounded-xl border border-brand-100 bg-brand-50/50 px-3 py-2.5 dark:border-white/10 dark:bg-brand-500/10"><x-heroicon-o-document-text class="h-5 w-5 text-brand-600 dark:text-brand-200" /><span><b class="block text-base leading-none text-ink-900 dark:text-white">{{ $questionCount }}</b><small class="text-[10px] text-ink-500 dark:text-porcelain-200/65">pernyataan RIASEC</small></span></div></div>
                                 </section>
                                 <div class="flex flex-wrap gap-3">
                                     <a href="{{ route('admin.recap.index') }}" class="inline-flex items-center gap-2 rounded-xl bg-brand-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-brand-950/25 transition hover:-translate-y-0.5 hover:bg-brand-500 active:scale-[0.98]">Lihat rekap hasil <x-heroicon-o-chevron-right class="h-4 w-4" /></a>
@@ -35,10 +36,17 @@
                                 </div>
                             </div>
 
-                            <aside class="rounded-2xl border border-brand-100 bg-[radial-gradient(circle_at_86%_0%,rgba(179,227,236,.65),transparent_28%),linear-gradient(135deg,#ffffff,#eff9fb)] p-5 shadow-lg shadow-ink-950/10 dark:border-white/10 dark:bg-[radial-gradient(circle_at_78%_7%,rgba(27,137,163,.30),transparent_24%),linear-gradient(135deg,#071b29,#0b1627_55%,#14243a)]">
+                            <div class="space-y-4 lg:order-1"><aside class="rounded-2xl border border-brand-100 bg-white/80 p-5 shadow-lg shadow-ink-950/10 dark:border-white/10 dark:bg-ink-900/75">
                                 <p class="text-xs font-bold uppercase tracking-wide text-brand-700 dark:text-brand-200">Profil administrator</p>
                                 <div class="mt-5 flex items-center gap-4">
-                                    <div class="relative flex h-24 w-24 shrink-0 items-center justify-center rounded-full border-4 border-white bg-brand-100 text-brand-600 shadow-md shadow-brand-950/10 dark:border-ink-800 dark:bg-brand-500/15 dark:text-brand-200"><x-heroicon-o-user class="h-12 w-12" /><span class="absolute bottom-0 right-0 h-5 w-5 rounded-full border-2 border-white bg-emerald-500 dark:border-ink-800"></span></div>
+                                    <div class="relative flex h-24 w-24 shrink-0 items-center justify-center rounded-full border-4 border-white bg-brand-100 text-brand-600 shadow-md shadow-brand-950/10 dark:border-ink-800 dark:bg-brand-500/15 dark:text-brand-200">
+                                        @if (auth()->user()->avatar)
+                                            <img src="{{ auth()->user()->avatar_url }}" alt="Foto profil {{ auth()->user()->name }}" class="h-full w-full rounded-full object-cover">
+                                        @else
+                                            <x-heroicon-o-user class="h-12 w-12" />
+                                        @endif
+                                        <span class="absolute bottom-0 right-0 h-5 w-5 rounded-full border-2 border-white bg-emerald-500 dark:border-ink-800"></span>
+                                    </div>
                                     <div class="min-w-0"><p class="truncate text-xl font-bold text-ink-950 dark:text-white">{{ auth()->user()->name }}</p><p class="mt-1 text-sm font-medium text-brand-700 dark:text-brand-200">Administrator</p></div>
                                 </div>
                                 <div class="mt-5 space-y-3 text-sm text-ink-600 dark:text-porcelain-200/75">
@@ -46,11 +54,10 @@
                                     <p class="flex items-center gap-3"><x-heroicon-o-building-library class="h-5 w-5 shrink-0 text-brand-600 dark:text-brand-300" />Politeknik Negeri Banyuwangi</p>
                                     <p class="flex items-center gap-3"><x-heroicon-o-calendar-days class="h-5 w-5 shrink-0 text-brand-600 dark:text-brand-300" />Bergabung sejak {{ auth()->user()->created_at->translatedFormat('d M Y') }}</p>
                                 </div>
-                                <div class="mt-6 grid grid-cols-2 divide-x divide-brand-100 rounded-xl border border-brand-100 bg-white/80 py-3 shadow-sm shadow-ink-950/5 dark:divide-white/10 dark:border-white/10 dark:bg-ink-950/25">
+                            </aside><div class="grid grid-cols-2 divide-x divide-brand-100 rounded-2xl border border-brand-100 bg-white/80 py-3 shadow-sm shadow-ink-950/5 dark:divide-white/10 dark:border-white/10 dark:bg-ink-900/75">
                                     <div class="flex items-center gap-2 px-3"><span class="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300"><x-heroicon-o-user-group class="h-5 w-5" /></span><span><b class="block text-lg leading-none text-brand-700 dark:text-brand-200">{{ $totalStudents }}</b><small class="text-[10px] text-ink-500 dark:text-porcelain-200/65">Pengguna terdaftar</small></span></div>
                                     <div class="flex items-center gap-2 px-3"><span class="flex h-9 w-9 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300"><x-heroicon-o-academic-cap class="h-5 w-5" /></span><span><b class="block text-lg leading-none text-brand-700 dark:text-brand-200">{{ $programCount }}</b><small class="text-[10px] text-ink-500 dark:text-porcelain-200/65">Program studi aktif</small></span></div>
-                                </div>
-                            </aside>
+                            </div></div>
                         </div>
                     </div>
                 </section>
@@ -58,13 +65,13 @@
 
             <section class="dashboard-enter dashboard-enter-2 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 @foreach ([
-                    ['label' => 'Calon mahasiswa', 'value' => $totalStudents, 'unit' => 'akun', 'icon' => 'user-group', 'description' => 'Total akun calon mahasiswa terdaftar', 'trend' => $trends['students'], 'accent' => '#16b6d2', 'text' => 'text-ink-950 dark:text-porcelain-50', 'iconSurface' => 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300'],
-                    ['label' => 'Tes selesai', 'value' => $totalCompleted, 'unit' => 'sesi', 'icon' => 'clipboard-document-check', 'description' => 'Sesi tes yang telah diselesaikan', 'trend' => $trends['completed'], 'accent' => '#16b6d2', 'text' => 'text-ink-950 dark:text-porcelain-50', 'iconSurface' => 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300'],
-                    ['label' => 'Tes berjalan', 'value' => $totalOngoing, 'unit' => 'sesi', 'icon' => 'clock', 'description' => 'Sesi tes yang sedang berlangsung', 'trend' => $trends['ongoing'], 'accent' => '#16b6d2', 'text' => 'text-ink-950 dark:text-porcelain-50', 'iconSurface' => 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300'],
-                    ['label' => 'Total sesi tes', 'value' => $totalAssessments, 'unit' => 'sesi', 'icon' => 'chart-bar', 'description' => 'Total seluruh sesi tes', 'trend' => $trends['assessments'], 'accent' => '#16b6d2', 'text' => 'text-ink-950 dark:text-porcelain-50', 'iconSurface' => 'bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-300'],
+                    ['label' => 'Calon mahasiswa', 'value' => $totalStudents, 'unit' => 'akun', 'icon' => 'user-group', 'description' => 'Total akun calon mahasiswa terdaftar', 'trend' => $trends['students'], 'headerStyle' => 'background: linear-gradient(135deg, #42A5F5, #1976D2)', 'iconSurface' => 'bg-blue-50 text-blue-600 dark:bg-blue-400/15 dark:text-blue-200'],
+                    ['label' => 'Tes selesai', 'value' => $totalCompleted, 'unit' => 'sesi', 'icon' => 'clipboard-document-check', 'description' => 'Sesi tes yang telah diselesaikan', 'trend' => $trends['completed'], 'headerStyle' => 'background: linear-gradient(135deg, #26C281, #1AA368)', 'iconSurface' => 'bg-emerald-50 text-emerald-600 dark:bg-emerald-400/15 dark:text-emerald-200'],
+                    ['label' => 'Tes berjalan', 'value' => $totalOngoing, 'unit' => 'sesi', 'icon' => 'clock', 'description' => 'Sesi tes yang sedang berlangsung', 'trend' => $trends['ongoing'], 'headerStyle' => 'background: linear-gradient(135deg, #FFA200, #FDC15A)', 'iconSurface' => 'bg-amber-50 text-amber-600 dark:bg-amber-400/15 dark:text-amber-200'],
+                    ['label' => 'Total sesi tes', 'value' => $totalAssessments, 'unit' => 'sesi', 'icon' => 'chart-bar', 'description' => 'Total seluruh sesi tes', 'trend' => $trends['assessments'], 'headerStyle' => 'background: linear-gradient(135deg, #AB47BC, #7B1FA2)', 'iconSurface' => 'bg-violet-50 text-violet-600 dark:bg-violet-400/15 dark:text-violet-200'],
                 ] as $stat)
                     <article class="dashboard-lift overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm shadow-ink-950/5 transition duration-300 ease-brand-out hover:-translate-y-0.5 hover:shadow-lg hover:shadow-ink-950/10 dark:border-white/10 dark:bg-ink-900/60">
-                        <div class="bg-brand-600 px-5 py-4 text-white dark:bg-brand-700">
+                        <div class="px-5 py-4 text-white" style="{{ $stat['headerStyle'] }}">
                             <div class="flex items-start justify-between gap-3">
                                 <div>
                                     <p class="text-base font-bold">{{ $stat['label'] }}</p>
@@ -89,7 +96,7 @@
                                 </span>
                                 <div class="min-w-0">
                                     <p class="text-xs text-ink-500 dark:text-porcelain-300/70">Jumlah keseluruhan</p>
-                                    <p class="mt-0.5 text-2xl font-bold leading-none tracking-tight tabular-nums {{ $stat['text'] }}">{{ $stat['value'] }} <span class="text-xs font-medium text-ink-500 dark:text-porcelain-300/70">{{ $stat['unit'] }}</span></p>
+                                    <p class="mt-0.5 text-2xl font-bold leading-none tracking-tight tabular-nums text-ink-950 dark:text-porcelain-50">{{ $stat['value'] }} <span class="text-xs font-medium text-ink-500 dark:text-porcelain-300/70">{{ $stat['unit'] }}</span></p>
                                 </div>
                             </div>
                             <div class="mt-4 border-t border-black/5 pt-3 dark:border-white/10">
@@ -169,8 +176,7 @@
                                     <span class="pointer-events-none absolute -right-5 -top-6 h-24 w-24 rounded-full border border-white/10"></span>
                                     <span class="pointer-events-none absolute right-5 top-3 grid grid-cols-3 gap-1 opacity-35"><i class="h-1 w-1 rounded-full bg-white"></i><i class="h-1 w-1 rounded-full bg-white"></i><i class="h-1 w-1 rounded-full bg-white"></i><i class="h-1 w-1 rounded-full bg-white"></i><i class="h-1 w-1 rounded-full bg-white"></i><i class="h-1 w-1 rounded-full bg-white"></i></span>
                                     <div class="relative flex items-center gap-3">
-                                        <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-ink-950/75 font-mono text-sm font-bold">{{ $index + 1 }}</span>
-                                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15"><x-heroicon-o-academic-cap class="h-6 w-6" /></span>
+                                        <span class="shrink-0 font-mono text-sm font-bold tabular-nums text-white">{{ $index + 1 }}</span>
                                         <span class="min-w-0 flex-1 text-sm font-bold leading-snug sm:text-base">{{ $row->recommendedProgram?->full_name ?? '-' }}</span>
                                         <span class="shrink-0 rounded-lg bg-white/15 px-3 py-2 text-xs font-bold">{{ $row->total }} tes</span>
                                     </div>
