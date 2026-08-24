@@ -2,18 +2,18 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Bandingkan Hasil Tes</h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Lihat apa yang berubah antara dua kali Anda mengerjakan tes &mdash; profil minat, nilai rapor,
-                dan program studi yang direkomendasikan.
-            </p>
-        </div>
+        <h2 class="font-display text-[10px] font-bold uppercase tracking-wide text-ink-900 dark:text-porcelain-50 sm:text-sm">Bandingkan hasil tes</h2>
     </x-slot>
 
     <div class="py-8">
-        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto flex max-w-none flex-col gap-6 px-5 sm:px-8 lg:px-10 xl:px-12">
             <x-flash />
+
+            <div>
+                <p class="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-brand-600 dark:text-brand-300">Analisis pribadi</p>
+                <h1 class="mt-1 text-2xl font-bold tracking-tight text-ink-900 dark:text-porcelain-50">Bandingkan hasil tes</h1>
+                <p class="mt-2 text-sm leading-relaxed text-ink-500 dark:text-porcelain-300/70">Lihat perubahan profil minat, nilai rapor, dan program studi yang direkomendasikan dari dua sesi tes Anda.</p>
+            </div>
 
             @if ($sessions->count() < 2)
                 <div class="rounded-xl bg-white p-10 text-center shadow-sm dark:bg-gray-800">

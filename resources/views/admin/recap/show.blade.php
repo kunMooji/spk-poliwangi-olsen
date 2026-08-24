@@ -1,22 +1,11 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Detail Tes &mdash; {{ $assessment->full_name }}
-                </h2>
-                <p class="mt-1 font-mono text-xs text-gray-500 dark:text-gray-400">{{ $assessment->code }}</p>
-            </div>
-            <a href="{{ route('admin.recap.index') }}"
-               class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                Kembali ke Rekap
-            </a>
-        </div>
-    </x-slot>
+    <x-slot name="header"><h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Detail Tes &mdash; {{ $assessment->full_name }}</h2></x-slot>
 
     <div class="py-8">
-        <div class="mx-auto max-w-5xl space-y-6 px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-none space-y-6 px-5 sm:px-8 lg:px-10 xl:px-12">
             <x-flash />
+
+            <div class="flex justify-end"><a href="{{ route('admin.recap.index') }}" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Kembali ke Rekap</a></div>
 
             @unless ($assessment->isCompleted())
                 <x-alert type="warning">
@@ -66,18 +55,15 @@
                     @endforeach
                 </dl>
 
-                @if ($assessment->subjectScores->isNotEmpty())
+                @php($completedSubjectScores = $assessment->subjectScores->filter(fn ($row) => $row->score !== null))
+                @if ($completedSubjectScores->isNotEmpty())
                     <h4 class="mt-6 text-sm font-semibold text-gray-900 dark:text-gray-100">Mata Pelajaran Pendukung</h4>
                     <dl class="mt-3 grid gap-4 text-sm sm:grid-cols-4">
-                        @foreach ($assessment->subjectScores as $row)
+                        @foreach ($completedSubjectScores as $row)
                             <div>
                                 <dt class="text-gray-500 dark:text-gray-400">{{ $row->subject?->name ?? '—' }}</dt>
                                 <dd class="mt-0.5 text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                    @if ($row->score === null)
-                                        <span class="text-sm font-normal text-gray-400">tidak ditempuh</span>
-                                    @else
-                                        {{ number_format($row->score, 2) }}
-                                    @endif
+                                    {{ number_format($row->score, 2) }}
                                 </dd>
                             </div>
                         @endforeach

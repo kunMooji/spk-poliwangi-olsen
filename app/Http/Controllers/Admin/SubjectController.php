@@ -18,13 +18,34 @@ use Illuminate\View\View;
  */
 class SubjectController extends Controller
 {
+    /**
+     * Dikelompokkan per rumpun (kolom `group`) supaya daftar yang jumlahnya
+     * banyak tetap mudah disisir admin — tiap rumpun tampil sebagai accordion
+     * bernomor, mapel tanpa rumpun ditampung di grup "Tanpa Kelompok" di akhir.
+     */
     public function index(): View
     {
+        $subjects = Subject::query()
+            ->withCount('studyPrograms')
+            ->ordered()
+            ->get();
+
+        $grouped = $subjects->groupBy(fn (Subject $subject) => $subject->group ?: '');
+
+        // Urut alfabet, tapi grup tanpa nama (group kosong) selalu ditaruh
+        // paling akhir alih-alih di depan (mana kala "" < huruf apa pun).
+        $groups = $grouped->keys()
+            ->sort(fn ($a, $b) => $a === '' ? 1 : ($b === '' ? -1 : strcasecmp($a, $b)))
+            ->mapWithKeys(fn ($key) => [$key => $grouped[$key]]);
+
         return view('admin.subjects.index', [
-            'subjects' => Subject::query()
-                ->withCount('studyPrograms')
-                ->ordered()
-                ->get(),
+            'groups' => $groups,
+            'subject' => new Subject([
+                'education_level' => 'umum',
+                'is_active' => true,
+                'sort_order' => (int) Subject::query()->max('sort_order') + 1,
+            ]),
+            'levels' => Subject::EDUCATION_LEVELS,
         ]);
     }
 

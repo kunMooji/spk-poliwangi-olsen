@@ -22,6 +22,10 @@ export default {
                 // Muka utilitas untuk angka/kode (statistik, kode Holland,
                 // kode kriteria) — memberi kesan "dossier/sertifikat" data-driven.
                 mono: ['"Space Mono"', ...defaultTheme.fontFamily.mono],
+                // Muka tulisan tangan untuk catatan dekoratif kecil (mis.
+                // "Langkah kecil menuju masa depan besar" di banner wizard tes)
+                // — dipakai sangat hemat, bukan untuk body text.
+                script: ['"Caveat"', ...defaultTheme.fontFamily.sans],
             },
             transitionTimingFunction: {
                 // Easing kustom untuk hover/active pada tombol dan kartu —

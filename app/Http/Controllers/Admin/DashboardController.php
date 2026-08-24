@@ -19,12 +19,35 @@ class DashboardController extends Controller
     public function __invoke(): View
     {
         $completed = Assessment::query()->completed();
+        $now = now();
+        $currentWeekStart = $now->copy()->startOfWeek();
+        $previousWeekStart = $currentWeekStart->copy()->subWeek();
+
+        $weeklyCounts = [
+            'students' => [
+                User::query()->mahasiswa()->where('created_at', '>=', $currentWeekStart)->count(),
+                User::query()->mahasiswa()->where('created_at', '>=', $previousWeekStart)->where('created_at', '<', $currentWeekStart)->count(),
+            ],
+            'completed' => [
+                Assessment::query()->completed()->where('completed_at', '>=', $currentWeekStart)->count(),
+                Assessment::query()->completed()->where('completed_at', '>=', $previousWeekStart)->where('completed_at', '<', $currentWeekStart)->count(),
+            ],
+            'ongoing' => [
+                Assessment::query()->where('status', '!=', 'completed')->where('created_at', '>=', $currentWeekStart)->count(),
+                Assessment::query()->where('status', '!=', 'completed')->where('created_at', '>=', $previousWeekStart)->where('created_at', '<', $currentWeekStart)->count(),
+            ],
+            'assessments' => [
+                Assessment::query()->where('created_at', '>=', $currentWeekStart)->count(),
+                Assessment::query()->where('created_at', '>=', $previousWeekStart)->where('created_at', '<', $currentWeekStart)->count(),
+            ],
+        ];
 
         return view('admin.dashboard', [
             'totalStudents' => User::query()->mahasiswa()->count(),
             'totalAssessments' => Assessment::query()->count(),
             'totalCompleted' => (clone $completed)->count(),
             'totalOngoing' => Assessment::query()->where('status', '!=', 'completed')->count(),
+            'trends' => collect($weeklyCounts)->map(fn (array $counts) => $this->trend($counts[0], $counts[1]))->all(),
 
             'programCount' => StudyProgram::query()->active()->count(),
             'criteriaCount' => Criteria::query()->active()->count(),
@@ -52,5 +75,25 @@ class DashboardController extends Controller
             'matchCount' => (clone $completed)->where('matches_preference', true)->count(),
             'recent' => Assessment::query()->with(['user', 'recommendedProgram'])->latest()->take(5)->get(),
         ]);
+    }
+
+    /** @return array{label: string, period: string, direction: string} */
+    private function trend(int $current, int $previous): array
+    {
+        $difference = $current - $previous;
+
+        if ($previous === 0) {
+            return [
+                'label' => $current === 0 ? 'Tidak berubah' : '+'.$difference,
+                'period' => $current === 0 ? 'dibanding minggu lalu' : 'belum ada minggu lalu',
+                'direction' => $current === 0 ? 'flat' : 'up',
+            ];
+        }
+
+        return [
+            'label' => sprintf('%+d (%d%%)', $difference, round(abs($difference) / $previous * 100)),
+            'period' => 'dibanding minggu lalu',
+            'direction' => $difference === 0 ? 'flat' : ($difference > 0 ? 'up' : 'down'),
+        ];
     }
 }

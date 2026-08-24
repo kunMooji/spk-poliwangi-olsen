@@ -45,10 +45,18 @@ class AssessmentController extends Controller
         // kuesioner yang sudah tersimpan tidak hilang.
         $unfinished = $request->user()->assessments()->where('status', '!=', 'completed')->latest()->first();
 
-        if ($unfinished) {
+        if ($unfinished && ! $request->boolean('resume')) {
             return redirect()
                 ->route('assessments.questionnaire', $unfinished)
                 ->with('info', 'Anda masih memiliki tes yang belum selesai. Silakan lanjutkan pengisian kuesioner.');
+        }
+
+        // Kembali ke formulir (mis. dari kartu kemajuan di kuesioner RIASEC)
+        // memuat ulang isian yang sudah tersimpan lewat old(), persis seperti
+        // redirect gagal validasi — supaya berpindah langkah tidak terasa
+        // seperti mengulang dari kosong padahal datanya masih ada.
+        if ($unfinished && $request->boolean('resume') && ! $request->session()->hasOldInput()) {
+            $request->session()->flashInput($this->resumeInput($unfinished));
         }
 
         $programs = StudyProgram::query()->active()->with('supportSubjects')->orderBy('name')->get();
@@ -81,6 +89,32 @@ class AssessmentController extends Controller
             'minPriorities' => (int) Setting::get('min_priorities'),
             'maxPriorities' => 5,
         ]);
+    }
+
+    /**
+     * Isian formulir dari sesi tes yang belum selesai, dalam bentuk array
+     * senama dengan nama field-nya — supaya bisa langsung dipakai sebagai
+     * "old input" dan terbaca oleh setiap pemanggilan old() di view tanpa
+     * mengubah satu pun pemanggilan itu.
+     *
+     * @return array<string, mixed>
+     */
+    private function resumeInput(Assessment $assessment): array
+    {
+        return [
+            'full_name' => $assessment->full_name,
+            'gender' => $assessment->gender,
+            'phone' => $assessment->phone,
+            'school_name' => $assessment->school_name,
+            'graduation_year' => $assessment->graduation_year,
+            'education_level' => $assessment->education_level,
+            'school_major' => $assessment->school_major,
+            'rapor_semesters' => $assessment->raporSemesters->pluck('average_score', 'semester')->all(),
+            'priorities' => $assessment->priorities->pluck('study_program_id')->all(),
+            'subject_scores' => $assessment->subjectScores->pluck('score', 'subject_id')
+                ->filter(fn ($score) => $score !== null)
+                ->all(),
+        ];
     }
 
     /**
@@ -121,14 +155,25 @@ class AssessmentController extends Controller
         $period = Period::current();
 
         $assessment = DB::transaction(function () use ($request, $period) {
-            $assessment = $request->user()->assessments()->create(
-                $request->safe()->except('priorities', 'rapor_semesters', 'subject_scores') + [
-                    'rapor_average' => $request->raporAverage(),
-                    'status' => 'questionnaire',
-                    'period_id' => $period?->id,
-                ]
-            );
+            $attributes = $request->safe()->except('priorities', 'rapor_semesters', 'subject_scores') + [
+                'rapor_average' => $request->raporAverage(),
+                'status' => 'questionnaire',
+                'period_id' => $period?->id,
+            ];
 
+            // Sesi yang belum selesai dipakai ulang, bukan dibuat baru — kalau
+            // tidak, jawaban RIASEC yang sudah ter-autosave (terikat ke
+            // assessment_id lama) jadi yatim setiap kali responden kembali
+            // mengubah biodata/prodi dari kuesioner.
+            $assessment = $request->user()->assessments()->where('status', '!=', 'completed')->latest()->first();
+
+            if ($assessment) {
+                $assessment->update($attributes);
+            } else {
+                $assessment = $request->user()->assessments()->create($attributes);
+            }
+
+            $assessment->raporSemesters()->delete();
             foreach ($request->raporSemesters() as $semester => $average) {
                 $assessment->raporSemesters()->create([
                     'semester' => $semester,
@@ -136,6 +181,7 @@ class AssessmentController extends Controller
                 ]);
             }
 
+            $assessment->subjectScores()->delete();
             foreach ($request->subjectScores() as $subjectId => $score) {
                 $assessment->subjectScores()->create([
                     'subject_id' => $subjectId,
@@ -143,6 +189,7 @@ class AssessmentController extends Controller
                 ]);
             }
 
+            $assessment->priorities()->delete();
             foreach ($request->priorityIds() as $index => $programId) {
                 $assessment->priorities()->create([
                     'study_program_id' => $programId,

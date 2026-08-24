@@ -21,6 +21,7 @@ class StudyProgramController extends Controller
     public function index(Request $request): View
     {
         $programs = StudyProgram::query()
+            ->with('supportSubjects')
             ->when($request->string('q')->trim()->value(), function ($query, string $keyword) {
                 $query->where(fn ($q) => $q->where('name', 'like', "%{$keyword}%")
                     ->orWhere('code', 'like', "%{$keyword}%")
@@ -35,6 +36,14 @@ class StudyProgramController extends Controller
             'programs' => $programs,
             'total' => StudyProgram::query()->count(),
             'activeTotal' => StudyProgram::query()->active()->count(),
+            'program' => new StudyProgram([
+                'level' => 'D4',
+                'is_active' => true,
+            ]),
+            'subjects' => Subject::query()->active()->ordered()->get(),
+            'selectedSubjects' => [],
+            'maxSupportSubjects' => Rapor::MAX_SUPPORT_SUBJECTS,
+            'dimensions' => Riasec::LABELS,
         ]);
     }
 

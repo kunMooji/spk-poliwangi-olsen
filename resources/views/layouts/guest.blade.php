@@ -30,7 +30,7 @@
             {{-- Panel kiri: identitas sistem, disembunyikan pada layar sempit --}}
             <aside class="relative hidden flex-col justify-between bg-gradient-to-br from-brand-600 to-brand-900 p-12 text-white lg:flex">
                 <a href="{{ route('home') }}" class="flex items-center gap-3">
-                    <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 text-sm font-bold">SPK</span>
+                    <img src="{{ asset('images/poliwangi_logo.png') }}" alt="Logo Politeknik Negeri Banyuwangi" class="h-11 w-11 object-contain">
                     <span class="text-sm font-semibold leading-tight">
                         {{ config('app.name') }}
                         <span class="block text-xs font-normal text-brand-100">Politeknik Negeri Banyuwangi</span>
@@ -68,7 +68,7 @@
                 <div class="w-full max-w-md">
                     <div class="mb-8 flex items-center justify-between gap-3">
                         <a href="{{ route('home') }}" class="flex items-center gap-3 lg:hidden">
-                            <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600 text-sm font-bold text-white">SPK</span>
+                            <img src="{{ asset('images/poliwangi_logo.png') }}" alt="Logo Politeknik Negeri Banyuwangi" class="h-10 w-10 object-contain">
                             <span class="text-sm font-semibold leading-tight">
                                 {{ config('app.name') }}
                                 <span class="block text-xs font-normal text-gray-500 dark:text-gray-400">Politeknik Negeri Banyuwangi</span>

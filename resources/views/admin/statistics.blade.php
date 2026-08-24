@@ -1,36 +1,71 @@
 @use('App\Support\Riasec')
 
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-wrap items-end justify-between gap-4">
-            <div>
-                <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Statistik Institusional</h2>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Pola agregat dari {{ $totalCompleted }} tes yang sudah selesai.
-                </p>
-            </div>
-
-            <form method="GET" class="flex items-end gap-2">
-                <div>
-                    <x-input-label for="period" value="Gelombang" />
-                    <select id="period" name="period" onchange="this.form.submit()"
-                            class="mt-1 block w-full rounded-md border-gray-300 text-sm shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                        <option value="">Semua gelombang</option>
-                        @foreach ($periods as $periodOption)
-                            <option value="{{ $periodOption->id }}" @selected($selectedPeriod == $periodOption->id)>
-                                {{ $periodOption->name }} &mdash; {{ $periodOption->academic_year }}
-                            </option>
-                        @endforeach
-                        <option value="none" @selected($selectedPeriod === 'none')>Tanpa gelombang</option>
-                    </select>
-                </div>
-            </form>
-        </div>
-    </x-slot>
+    <x-slot name="header"><h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Statistik Institusional</h2></x-slot>
 
     <div class="py-8">
-        <div class="mx-auto max-w-7xl space-y-6 px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-none space-y-6 px-5 sm:px-8 lg:px-10 xl:px-12">
             <x-flash />
+
+            <x-admin-panel-hero eyebrow="Analitik keputusan" title="Statistik Institusional" description="Pantau pola minat, kecocokan rekomendasi, dan hasil asesmen di seluruh sesi." />
+
+            <form method="GET" class="rounded-2xl border border-brand-100 bg-white/80 p-4 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-none">
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                    <div>
+                        <x-input-label for="period" value="Gelombang" />
+                        <select id="period" name="period" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-brand-200 bg-white text-sm text-ink-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-white/15 dark:bg-ink-950/50 dark:text-white">
+                            <option value="">Semua gelombang</option>
+                            @foreach ($periods as $periodOption)
+                                <option value="{{ $periodOption->id }}" @selected($selectedPeriod == $periodOption->id)>{{ $periodOption->name }} &mdash; {{ $periodOption->academic_year }}</option>
+                            @endforeach
+                            <option value="none" @selected($selectedPeriod === 'none')>Tanpa gelombang</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <x-input-label for="program" value="Prodi Diterima" />
+                        <select id="program" name="program" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-brand-200 bg-white text-sm text-ink-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-white/15 dark:bg-ink-950/50 dark:text-white">
+                            <option value="">Semua prodi</option>
+                            @foreach ($programs as $programOption)
+                                <option value="{{ $programOption->id }}" @selected($selectedProgram == $programOption->id)>{{ $programOption->full_name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <x-input-label for="education_level" value="Jenjang Sekolah" />
+                        <select id="education_level" name="education_level" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-brand-200 bg-white text-sm text-ink-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-white/15 dark:bg-ink-950/50 dark:text-white">
+                            <option value="">Semua jenjang</option>
+                            <option value="SMA" @selected($selectedEducationLevel === 'SMA')>SMA</option>
+                            <option value="SMK" @selected($selectedEducationLevel === 'SMK')>SMK</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <x-input-label for="gender" value="Jenis Kelamin" />
+                        <select id="gender" name="gender" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-brand-200 bg-white text-sm text-ink-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-white/15 dark:bg-ink-950/50 dark:text-white">
+                            <option value="">Semua</option>
+                            <option value="L" @selected($selectedGender === 'L')>Laki-laki</option>
+                            <option value="P" @selected($selectedGender === 'P')>Perempuan</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <x-input-label for="matches_preference" value="Kesesuaian Pilihan" />
+                        <select id="matches_preference" name="matches_preference" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-brand-200 bg-white text-sm text-ink-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-white/15 dark:bg-ink-950/50 dark:text-white">
+                            <option value="">Semua</option>
+                            <option value="1" @selected($selectedMatchesPreference === '1')>Sesuai pilihan pertama</option>
+                            <option value="0" @selected($selectedMatchesPreference === '0')>Tidak sesuai pilihan pertama</option>
+                        </select>
+                    </div>
+                </div>
+
+                @if ($selectedPeriod || $selectedProgram || $selectedEducationLevel || $selectedGender || $selectedMatchesPreference !== null)
+                    <div class="mt-3 flex justify-end">
+                        <a href="{{ route('admin.statistics') }}" class="text-sm text-brand-600 hover:underline dark:text-brand-400">Hapus semua filter</a>
+                    </div>
+                @endif
+            </form>
 
             @if ($totalCompleted === 0)
                 <div class="rounded-xl bg-white p-10 text-center shadow-sm dark:bg-gray-800">

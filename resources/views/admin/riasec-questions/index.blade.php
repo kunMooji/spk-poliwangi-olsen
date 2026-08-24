@@ -1,24 +1,19 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Pernyataan Kuesioner RIASEC</h2>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Dijawab calon mahasiswa dengan skala Likert 1&ndash;5.
-                </p>
-            </div>
-            <a href="{{ route('admin.questions.create') }}"
-               class="inline-flex items-center rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700">
-                Tambah Pernyataan
-            </a>
-        </div>
-    </x-slot>
+    <x-slot name="header"><h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Pernyataan Kuesioner RIASEC</h2></x-slot>
 
     <div class="py-8">
-        <div class="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8"
-             x-data="{ view: localStorage.getItem('spk-list-view') || 'table' }"
-             x-init="$watch('view', v => localStorage.setItem('spk-list-view', v))">
+        <div class="mx-auto max-w-none space-y-4 px-5 sm:px-8 lg:px-10 xl:px-12"
+             x-data="{ view: localStorage.getItem('spk-list-view') || 'table', dialog: @js($errors->any() ? old('_dialog') : null) }"
+             x-init="$watch('view', v => localStorage.setItem('spk-list-view', v))"
+             x-effect="document.documentElement.style.overflow = dialog ? 'hidden' : ''; document.body.style.overflow = dialog ? 'hidden' : ''">
             <x-flash />
+
+            <x-admin-panel-hero eyebrow="Instrumen asesmen" title="Pernyataan Kuesioner RIASEC" description="Kelola butir pernyataan untuk mengukur enam dimensi kepribadian RIASEC.">
+                <x-slot:action>
+                    <button type="button" @click="dialog = 'create'" class="inline-flex items-center gap-2 rounded-xl bg-brand-500 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-brand-950/30 transition hover:-translate-y-0.5 hover:bg-brand-400"><x-heroicon-o-plus class="h-4 w-4" /> Tambah Pernyataan</button>
+                </x-slot:action>
+                <x-slot:content>
+                <div class="space-y-4">
 
             <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
                 @foreach ($labels as $code => $label)
@@ -54,13 +49,22 @@
                 </div>
             @endif
 
-            <div x-show="view === 'table'" class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
+            <div x-show="view === 'table'" class="overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/10">
+                <div class="flex items-center justify-between border-b border-brand-100 px-5 py-4 dark:border-white/10 sm:px-6">
+                    <div>
+                        <p class="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-brand-600 dark:text-brand-200">Daftar instrumen</p>
+                        <h2 class="mt-1 text-base font-bold text-ink-950 dark:text-white">Pernyataan RIASEC</h2>
+                    </div>
+                    @if (! $questions->isEmpty())
+                        <span class="rounded-md bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand-700 dark:bg-brand-400/15 dark:text-brand-200">{{ $questions->total() }} butir</span>
+                    @endif
+                </div>
                 @if ($questions->isEmpty())
                     <p class="p-10 text-center text-gray-500 dark:text-gray-400">Belum ada pernyataan pada dimensi ini.</p>
                 @else
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
-                            <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
+                        <table class="min-w-full divide-y divide-brand-100 text-sm dark:divide-white/10">
+                            <thead class="bg-brand-50 text-left text-xs uppercase tracking-wide text-ink-500 dark:bg-black/15 dark:text-porcelain-200/55">
                                 <tr>
                                     <th class="px-6 py-3">Urutan</th>
                                     <th class="px-6 py-3">Pernyataan</th>
@@ -69,9 +73,9 @@
                                     <th class="px-6 py-3 text-right">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            <tbody class="divide-y divide-brand-100 dark:divide-white/10">
                                 @foreach ($questions as $question)
-                                    <tr class="text-gray-700 dark:text-gray-300">
+                                    <tr class="text-ink-700 transition hover:bg-brand-50/70 dark:text-porcelain-100/80 dark:hover:bg-white/[0.04]">
                                         <td class="whitespace-nowrap px-6 py-4">{{ $question->sort_order }}</td>
                                         <td class="px-6 py-4 text-gray-900 dark:text-gray-100">{{ $question->statement }}</td>
                                         <td class="whitespace-nowrap px-6 py-4">
@@ -90,7 +94,7 @@
                                         </td>
                                         <td class="whitespace-nowrap px-6 py-4 text-right">
                                             <div class="inline-flex items-center gap-1">
-                                                <x-icon-button :href="route('admin.questions.edit', $question)" color="brand" title="Ubah">
+                                                <x-icon-button @click="dialog = 'edit-{{ $question->id }}'" color="brand" title="Ubah">
                                                     <x-icon.pencil />
                                                 </x-icon-button>
 
@@ -110,7 +114,7 @@
                         </table>
                     </div>
 
-                    <div class="border-t border-gray-200 px-6 py-4 dark:border-gray-700">
+                    <div class="border-t border-brand-100 px-6 py-4 dark:border-white/10">
                         {{ $questions->links() }}
                     </div>
                 @endif
@@ -153,7 +157,7 @@
                                         @endif
 
                                         <div class="inline-flex items-center gap-1">
-                                            <x-icon-button :href="route('admin.questions.edit', $question)" color="brand" title="Ubah">
+                                            <x-icon-button @click="dialog = 'edit-{{ $question->id }}'" color="brand" title="Ubah">
                                                 <x-icon.pencil />
                                             </x-icon-button>
 
@@ -177,6 +181,29 @@
                     </div>
                 </div>
             @endif
+                </div>
+                </x-slot:content>
+            </x-admin-panel-hero>
+
+            <template x-teleport="body">
+            <div x-show="dialog === 'create'" x-cloak x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-ink-950/55 p-4 backdrop-blur-sm" @keydown.escape.window="dialog = null" role="dialog" aria-modal="true" aria-labelledby="create-question-title">
+                <div @click.outside="dialog = null" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="scale-95 opacity-0" x-transition:enter-end="scale-100 opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="scale-100 opacity-100" x-transition:leave-end="scale-95 opacity-0" class="flex h-[calc(100vh-2rem)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-ink-900">
+                    <div class="flex shrink-0 items-center justify-between border-b border-brand-100 px-5 py-4 dark:border-white/10 sm:px-7"><div><p class="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-brand-600 dark:text-brand-200">Instrumen asesmen</p><h2 id="create-question-title" class="mt-1 text-lg font-bold text-ink-950 dark:text-white">Tambah Pernyataan RIASEC</h2></div><button type="button" @click="dialog = null" class="rounded-lg p-2 text-ink-400 transition hover:bg-brand-50 hover:text-ink-900 dark:text-porcelain-200/60 dark:hover:bg-white/10 dark:hover:text-white" aria-label="Tutup dialog"><x-heroicon-o-x-mark class="h-5 w-5" /></button></div>
+                    <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 sm:p-7" data-lenis-prevent><form method="POST" action="{{ route('admin.questions.store') }}">@csrf @include('admin.riasec-questions.form', ['isModal' => true, 'dialogKey' => 'create'])</form></div>
+                </div>
+            </div>
+            </template>
+
+            @foreach ($questions as $editQuestion)
+                <template x-teleport="body">
+                <div x-show="dialog === 'edit-{{ $editQuestion->id }}'" x-cloak x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-ink-950/55 p-4 backdrop-blur-sm" @keydown.escape.window="dialog = null" role="dialog" aria-modal="true" aria-labelledby="edit-question-title-{{ $editQuestion->id }}">
+                    <div @click.outside="dialog = null" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="scale-95 opacity-0" x-transition:enter-end="scale-100 opacity-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="scale-100 opacity-100" x-transition:leave-end="scale-95 opacity-0" class="flex h-[calc(100vh-2rem)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-ink-900">
+                        <div class="flex shrink-0 items-center justify-between border-b border-brand-100 px-5 py-4 dark:border-white/10 sm:px-7"><div><p class="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-brand-600 dark:text-brand-200">Instrumen asesmen</p><h2 id="edit-question-title-{{ $editQuestion->id }}" class="mt-1 text-lg font-bold text-ink-950 dark:text-white">Ubah Pernyataan RIASEC</h2></div><button type="button" @click="dialog = null" class="rounded-lg p-2 text-ink-400 transition hover:bg-brand-50 hover:text-ink-900 dark:text-porcelain-200/60 dark:hover:bg-white/10 dark:hover:text-white" aria-label="Tutup dialog"><x-heroicon-o-x-mark class="h-5 w-5" /></button></div>
+                        <div class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5 sm:p-7" data-lenis-prevent><form method="POST" action="{{ route('admin.questions.update', $editQuestion) }}">@csrf @method('PUT') @include('admin.riasec-questions.form', ['question' => $editQuestion, 'isModal' => true, 'dialogKey' => 'edit-'.$editQuestion->id])</form></div>
+                    </div>
+                </div>
+                </template>
+            @endforeach
         </div>
     </div>
 </x-app-layout>

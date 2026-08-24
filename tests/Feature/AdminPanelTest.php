@@ -104,7 +104,7 @@ class AdminPanelTest extends TestCase
         $this->actingAs($this->admin)
             ->get(route('admin.dashboard'))
             ->assertOk()
-            ->assertSee('Panel Administrator');
+            ->assertSee('Pusat kendali administrator');
     }
 
     public function test_seluruh_halaman_panel_admin_dapat_dibuka(): void
@@ -298,6 +298,78 @@ class AdminPanelTest extends TestCase
         $this->assertSame('TRPL Poliwangi', $program->refresh()->name);
     }
 
+    public function test_dialog_ubah_prodi_terbuka_otomatis_dan_tidak_tercampur_prodi_lain(): void
+    {
+        $programs = StudyProgram::query()->orderBy('code')->take(2)->get();
+        $this->assertCount(2, $programs, 'Butuh minimal dua prodi dari seeder untuk menguji ini.');
+        [$programA, $programB] = $programs;
+
+        $this->actingAs($this->admin)
+            ->from(route('admin.study-programs.index'))
+            ->put(route('admin.study-programs.update', $programA), [
+                '_dialog' => 'edit-'.$programA->id,
+                'code' => $programA->code,
+                'name' => '', // sengaja tidak valid supaya redirect kembali dengan old input
+                'level' => $programA->level,
+                'riasec_r' => 50, 'riasec_i' => 50, 'riasec_a' => 50,
+                'riasec_s' => 50, 'riasec_e' => 50, 'riasec_c' => 50,
+                'alumni_count' => 100,
+                'employed_count' => 80,
+            ])
+            ->assertSessionHasErrors('name');
+
+        $html = $this->get(route('admin.study-programs.index'))->assertOk()->getContent();
+
+        // Dialog ubah prodi A harus otomatis ditandai terbuka lewat old('_dialog').
+        $this->assertStringContainsString("dialog: 'edit-{$programA->id}'", $html);
+
+        // Input nama pada dialog prodi A kosong (mengikuti submission gagal),
+        // sementara dialog prodi B tetap memakai nama aslinya, bukan ikut kosong.
+        $blockA = $this->extractBetween($html, "id=\"edit-program-title-{$programA->id}\"", 'edit-program-title-');
+        $blockB = $this->extractBetween($html, "id=\"edit-program-title-{$programB->id}\"", 'edit-program-title-');
+
+        $this->assertSame('', $this->extractInputValue($blockA, 'name'));
+        $this->assertSame($programB->name, $this->extractInputValue($blockB, 'name'));
+    }
+
+    /**
+     * Ambil potongan HTML mulai dari sebuah penanda sampai penanda berikutnya
+     * (atau akhir string bila tidak ada lagi) — dipakai untuk memeriksa isi
+     * satu dialog spesifik tanpa ikut membaca dialog lain di halaman yang sama.
+     */
+    private function extractBetween(string $html, string $startMarker, string $nextMarkerPrefix): string
+    {
+        $start = strpos($html, $startMarker);
+        $this->assertNotFalse($start, "Marker \"{$startMarker}\" tidak ditemukan.");
+
+        $searchFrom = $start + strlen($startMarker);
+        $next = strpos($html, $nextMarkerPrefix, $searchFrom);
+
+        return $next === false
+            ? substr($html, $start)
+            : substr($html, $start, $next - $start);
+    }
+
+    /**
+     * Baca atribut `value` sebuah input di dalam satu potongan HTML, tanpa
+     * bergantung pada urutan atribut lain (class dirender lebih dulu oleh
+     * `$attributes->merge()`, mendahului id/name/type).
+     *
+     * Blade membuang atribut `value` sama sekali ketika nilainya null (mis.
+     * `old('name')` yang berasal dari input kosong, karena middleware bawaan
+     * Laravel mengubah string kosong pada request jadi null) — kasus itu
+     * disamakan dengan string kosong di sini.
+     */
+    private function extractInputValue(string $html, string $fieldId): string
+    {
+        $tagFound = preg_match('/<input\b[^>]*\bid="'.preg_quote($fieldId, '/').'"[^>]*>/', $html, $tagMatch);
+        $this->assertSame(1, $tagFound, "Input #{$fieldId} tidak ditemukan.");
+
+        preg_match('/\svalue="([^"]*)"/', $tagMatch[0], $valueMatch);
+
+        return html_entity_decode($valueMatch[1] ?? '');
+    }
+
     public function test_alumni_terserap_tidak_boleh_melebihi_total_alumni(): void
     {
         $program = StudyProgram::query()->firstOrFail();
@@ -361,6 +433,37 @@ class AdminPanelTest extends TestCase
             ->assertRedirect(route('admin.criteria.index'));
 
         $this->assertSame(0.3, $criterion->refresh()->weight);
+    }
+
+    public function test_dialog_ubah_kriteria_terbuka_otomatis_dan_tidak_tercampur_kriteria_lain(): void
+    {
+        $criteria = Criteria::query()->ordered()->take(2)->get();
+        $this->assertCount(2, $criteria, 'Butuh minimal dua kriteria dari seeder untuk menguji ini.');
+        [$criterionA, $criterionB] = $criteria;
+
+        $this->actingAs($this->admin)
+            ->from(route('admin.criteria.index'))
+            ->put(route('admin.criteria.update', $criterionA), [
+                '_dialog' => 'edit-'.$criterionA->id,
+                'code' => $criterionA->code,
+                'name' => '', // sengaja tidak valid supaya redirect kembali dengan old input
+                'weight' => $criterionA->weight,
+                'type' => $criterionA->type,
+                'source' => $criterionA->source,
+                'sort_order' => $criterionA->sort_order,
+                'is_active' => 1,
+            ])
+            ->assertSessionHasErrors('name');
+
+        $html = $this->get(route('admin.criteria.index'))->assertOk()->getContent();
+
+        $this->assertStringContainsString("dialog: 'edit-{$criterionA->id}'", $html);
+
+        $blockA = $this->extractBetween($html, "id=\"edit-criterion-title-{$criterionA->id}\"", 'edit-criterion-title-');
+        $blockB = $this->extractBetween($html, "id=\"edit-criterion-title-{$criterionB->id}\"", 'edit-criterion-title-');
+
+        $this->assertSame('', $this->extractInputValue($blockA, 'name'));
+        $this->assertSame($criterionB->name, $this->extractInputValue($blockB, 'name'));
     }
 
     public function test_mapel_pendukung_dibatasi_dua_sesuai_aturan_snbp(): void

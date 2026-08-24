@@ -31,9 +31,27 @@ class StatisticsController extends Controller
      */
     private ?string $periodId = null;
 
+    /** Prodi diterima (recommended_program_id) yang sedang disaring. */
+    private ?string $programId = null;
+
+    /** Jenjang sekolah asal (SMA/SMK) yang sedang disaring. */
+    private ?string $educationLevel = null;
+
+    /** Jenis kelamin (L/P) yang sedang disaring. */
+    private ?string $gender = null;
+
+    /** Kesesuaian dengan pilihan pertama ("1"/"0") yang sedang disaring. */
+    private ?string $matchesPreference = null;
+
     public function __invoke(Request $request): View
     {
         $this->periodId = $request->input('period') ?: null;
+        $this->programId = $request->input('program') ?: null;
+        $this->educationLevel = $request->input('education_level') ?: null;
+        $this->gender = $request->input('gender') ?: null;
+        $this->matchesPreference = $request->input('matches_preference') !== null && $request->input('matches_preference') !== ''
+            ? $request->input('matches_preference')
+            : null;
 
         $totalCompleted = $this->base()->count();
 
@@ -41,6 +59,11 @@ class StatisticsController extends Controller
             'totalCompleted' => $totalCompleted,
             'periods' => Period::query()->orderByDesc('starts_at')->orderByDesc('id')->get(),
             'selectedPeriod' => $this->periodId,
+            'programs' => StudyProgram::query()->orderBy('name')->get(),
+            'selectedProgram' => $this->programId,
+            'selectedEducationLevel' => $this->educationLevel,
+            'selectedGender' => $this->gender,
+            'selectedMatchesPreference' => $this->matchesPreference,
             'schools' => $this->topSchools(),
             'majors' => $this->distribution('school_major'),
             'genders' => $this->distribution('gender'),
@@ -68,7 +91,11 @@ class StatisticsController extends Controller
             ->completed()
             ->when($this->periodId, fn (Builder $query, string $period) => $period === 'none'
                 ? $query->whereNull('period_id')
-                : $query->where('period_id', $period));
+                : $query->where('period_id', $period))
+            ->when($this->programId, fn (Builder $query, string $program) => $query->where('recommended_program_id', $program))
+            ->when($this->educationLevel, fn (Builder $query, string $level) => $query->where('education_level', $level))
+            ->when($this->gender, fn (Builder $query, string $gender) => $query->where('gender', $gender))
+            ->when($this->matchesPreference !== null, fn (Builder $query) => $query->where('matches_preference', $this->matchesPreference === '1'));
     }
 
     /**

@@ -68,20 +68,19 @@ class AssessmentFlowTest extends TestCase
         $this->get(route('assessments.index'))->assertRedirect(route('login'));
     }
 
-    public function test_kuesioner_berisi_empat_puluh_dua_pernyataan(): void
+    public function test_kuesioner_berisi_dua_puluh_empat_pernyataan(): void
     {
-        // Mengikuti lembar RIASEC Career Interest Test: 42 pernyataan dengan
-        // jumlah butir per dimensi yang memang tidak sama rata. Persentase tetap
+        // 24 pernyataan dengan 4 butir per dimensi (seimbang). Persentase tetap
         // sebanding karena RiasecService membagi tiap dimensi dengan jumlah
         // butirnya sendiri, bukan dengan angka tetap.
-        $this->assertSame(42, RiasecQuestion::query()->active()->count());
+        $this->assertSame(24, RiasecQuestion::query()->active()->count());
 
         foreach (['R', 'I', 'A', 'S', 'E', 'C'] as $dimension) {
-            $this->assertGreaterThan(0, RiasecQuestion::query()->active()->where('dimension', $dimension)->count());
+            $this->assertSame(4, RiasecQuestion::query()->active()->where('dimension', $dimension)->count());
         }
 
         $this->assertSame(
-            42,
+            24,
             RiasecQuestion::query()->active()->whereIn('dimension', ['R', 'I', 'A', 'S', 'E', 'C'])->count()
         );
     }
@@ -348,6 +347,35 @@ class AssessmentFlowTest extends TestCase
             ->assertRedirect(route('assessments.questionnaire', $assessment));
 
         $this->assertDatabaseCount('assessments', 1);
+    }
+
+    public function test_kembali_ke_prioritas_prodi_tidak_menghilangkan_jawaban_riasec_yang_sudah_tersimpan(): void
+    {
+        $this->actingAs($this->student);
+        $this->post(route('assessments.store'), $this->biodataPayload());
+
+        $assessment = Assessment::query()->latest()->firstOrFail();
+
+        $someQuestionIds = RiasecQuestion::query()->active()->take(5)->pluck('id');
+        $partialAnswers = $someQuestionIds->mapWithKeys(fn ($id) => [$id => 4])->all();
+
+        $this->postJson(route('assessments.answers.autosave', $assessment), ['answers' => $partialAnswers])
+            ->assertOk();
+
+        $this->assertDatabaseCount('assessment_answers', 5);
+
+        // Responden menekan "Kembali ke Prioritas Prodi" lalu mengirim ulang
+        // formulir langkah 1-3 (mis. mengubah urutan prioritas).
+        $this->post(route('assessments.store'), $this->biodataPayload());
+
+        $this->assertDatabaseCount('assessments', 1);
+
+        $assessment->refresh();
+        $this->assertSame(5, $assessment->answers()->count());
+
+        $this->get(route('assessments.questionnaire', $assessment))
+            ->assertOk()
+            ->assertViewHas('saved', fn ($saved) => $saved->count() === 5);
     }
 
     public function test_hasil_belum_selesai_dialihkan_ke_kuesioner(): void

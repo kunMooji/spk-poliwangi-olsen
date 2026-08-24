@@ -1,25 +1,13 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Gelombang PMB</h2>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    Tes baru ditandai gelombang yang sedang aktif. Penandaan itu melekat pada sesi tes, sehingga
-                    mengganti gelombang aktif tidak memindahkan tes yang sudah tercatat.
-                </p>
-            </div>
-            <a href="{{ route('admin.periods.create') }}"
-               class="inline-flex items-center rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700">
-                Tambah Gelombang
-            </a>
-        </div>
-    </x-slot>
+    <x-slot name="header"><h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Gelombang PMB</h2></x-slot>
 
     <div class="py-8">
-        <div class="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8"
+        <div class="mx-auto max-w-none space-y-4 px-5 sm:px-8 lg:px-10 xl:px-12"
              x-data="{ view: localStorage.getItem('spk-list-view') || 'table' }"
              x-init="$watch('view', v => localStorage.setItem('spk-list-view', v))">
             <x-flash />
+
+            <div class="flex justify-end"><a href="{{ route('admin.periods.create') }}" class="inline-flex items-center rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-brand-700">Tambah Gelombang</a></div>
 
             @if ($current)
                 <x-alert type="success">

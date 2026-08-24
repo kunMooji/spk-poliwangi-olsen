@@ -2,14 +2,11 @@
     <x-slot name="header">
         <div>
             <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Pengaturan Algoritma</h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Parameter perhitungan RIASEC dan CoCoSo. Berlaku untuk tes berikutnya.
-            </p>
         </div>
     </x-slot>
 
     <div class="py-8">
-        <div class="mx-auto max-w-3xl space-y-6 px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-none space-y-6 px-5 sm:px-8 lg:px-10 xl:px-12">
             <x-flash />
 
             <form method="POST" action="{{ route('admin.settings.update') }}" class="space-y-6">

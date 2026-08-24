@@ -1,27 +1,17 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Rekap Hasil Tes</h2>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    {{ $totalCompleted }} tes selesai dari {{ $totalAll }} sesi yang pernah dibuat calon mahasiswa.
-                </p>
-            </div>
-            <a href="{{ route('admin.recap.export', request()->query()) }}"
-               class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700">
-                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
-                </svg>
-                Unduh CSV
-            </a>
-        </div>
-    </x-slot>
+    <x-slot name="header"><h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Rekap Hasil Tes</h2></x-slot>
 
     <div class="py-8">
-        <div class="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8"
+        <div class="mx-auto max-w-none space-y-4 px-5 sm:px-8 lg:px-10 xl:px-12"
              x-data="{ view: localStorage.getItem('spk-list-view') || 'table' }"
              x-init="$watch('view', v => localStorage.setItem('spk-list-view', v))">
             <x-flash />
+
+            <x-admin-panel-hero eyebrow="Arsip keputusan" title="Rekap Hasil Tes" description="Telusuri sesi asesmen, rekomendasi program studi, dan hasil perhitungan calon mahasiswa.">
+                <x-slot:action>
+                    <a href="{{ route('admin.recap.export', request()->query()) }}" class="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-950/25 transition hover:-translate-y-0.5 hover:bg-emerald-500"><x-heroicon-o-arrow-down-tray class="h-4 w-4" /> Unduh CSV</a>
+                </x-slot:action>
+            </x-admin-panel-hero>
 
             <form method="GET" class="grid gap-4 rounded-xl bg-white p-4 shadow-sm dark:bg-gray-800 sm:grid-cols-2 lg:grid-cols-6">
                 <div class="lg:col-span-2">

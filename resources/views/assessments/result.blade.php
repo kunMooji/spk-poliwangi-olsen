@@ -56,7 +56,7 @@
 
             {{-- Penjelasan: kriteria mana yang mengangkat dan menahan prodi rekomendasi --}}
             @if ($contributions !== [])
-                <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
+                <section class="result-explanation-enter rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                         Mengapa {{ $assessment->recommendedProgram?->full_name }}?
                     </h3>
@@ -98,8 +98,6 @@
                                 <div class="flex flex-wrap items-baseline justify-between gap-2 text-sm">
                                     <span class="text-gray-700 dark:text-gray-300">
                                         {{ $row['name'] }}
-                                        <span class="ms-1 font-mono text-xs text-gray-400">{{ $row['code'] }}</span>
-                                        <span class="ms-1 text-xs text-gray-400">bobot {{ number_format($row['weight'], 2) }}</span>
                                     </span>
                                     <span class="tabular-nums text-gray-500 dark:text-gray-400">
                                         {{ $row['share'] }}% dari nilai
@@ -118,151 +116,95 @@
                 </section>
             @endif
 
-            {{-- Penjelasan: kenapa pilihan pertama kalah --}}
-            @if ($comparison !== [])
-                <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                        Mengapa {{ $assessment->primaryProgram?->full_name }} tidak menjadi rekomendasi?
-                    </h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Selisih terbesar antara pilihan pertama Anda dan prodi yang direkomendasikan.
-                        Angka negatif berarti pilihan pertama Anda tertinggal pada kriteria tersebut.
-                    </p>
-
-                    <div class="mt-5 overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
-                            <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
-                                <tr>
-                                    <th class="px-4 py-3">Kriteria</th>
-                                    <th class="px-4 py-3 text-right">{{ $assessment->primaryProgram?->code }}</th>
-                                    <th class="px-4 py-3 text-right">{{ $assessment->recommendedProgram?->code }}</th>
-                                    <th class="px-4 py-3 text-right">Selisih</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                @foreach ($comparison as $row)
-                                    <tr class="text-gray-700 dark:text-gray-300">
-                                        <td class="px-4 py-3">
-                                            {{ $row['name'] }}
-                                            <span class="ms-1 font-mono text-xs text-gray-400">{{ $row['code'] }}</span>
-                                        </td>
-                                        <td class="px-4 py-3 text-right tabular-nums">{{ number_format($row['subject'], 4) }}</td>
-                                        <td class="px-4 py-3 text-right tabular-nums">{{ number_format($row['against'], 4) }}</td>
-                                        <td class="px-4 py-3 text-right font-semibold tabular-nums {{ $row['delta'] < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400' }}">
-                                            {{ $row['delta'] > 0 ? '+' : '' }}{{ number_format($row['delta'], 4) }}
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <p class="mt-4 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-                        Rekomendasi ini bersifat saran. Bila Anda tetap yakin pada pilihan pertama, gunakan tabel di
-                        atas untuk mengetahui bagian mana yang perlu Anda perkuat.
-                    </p>
-                </section>
-            @endif
-
-            {{-- Bar chart RIASEC --}}
+            {{-- Profil RIASEC: grafik di kiri, nilai tiap dimensi di kanan. --}}
             <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-                <div class="flex flex-wrap items-start justify-between gap-4">
+                <div class="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(17rem,0.75fr)] lg:items-start">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Profil Kepribadian RIASEC</h3>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Kode Holland Anda
-                            <span class="font-semibold text-gray-800 dark:text-gray-200">{{ $assessment->holland_code }}</span>
-                            &mdash; tipe dominan
-                            <span class="font-semibold text-gray-800 dark:text-gray-200">
-                                {{ Riasec::name($assessment->dominant_type) }}
-                            </span>.
-                        </p>
-                    </div>
-                    <dl class="flex gap-5 text-sm">
-                        <div>
-                            <dt class="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">Skor Likert Total</dt>
-                            <dd class="mt-0.5 font-semibold tabular-nums text-gray-800 dark:text-gray-200">{{ array_sum($assessment->riasecScores()) }}</dd>
-                        </div>
-                        <div>
-                            <dt class="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">Tanggal Tes</dt>
-                            <dd class="mt-0.5 font-semibold text-gray-800 dark:text-gray-200">
-                                {{ $assessment->completed_at?->translatedFormat('d F Y, H:i') }}
-                            </dd>
-                        </div>
-                    </dl>
-                </div>
-
-                <div class="mt-5 h-72">
-                    <canvas data-riasec-chart="{{ json_encode($chart) }}"></canvas>
-                </div>
-
-                <p class="mt-4 rounded-lg bg-gray-50 p-3 text-sm leading-relaxed text-gray-600 dark:bg-gray-900/40 dark:text-gray-300">
-                    {{ Riasec::description($assessment->dominant_type) }}
-                </p>
-            </section>
-
-            {{-- Rincian dimensi --}}
-            <section>
-                <div class="flex flex-wrap items-baseline justify-between gap-2">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Rincian Dimensi</h3>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">Enam dimensi minat &amp; kepribadian menurut model Holland.</p>
-                </div>
-
-                <div class="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    @foreach (Riasec::DIMENSIONS as $dimension)
-                        @php($color = Riasec::color($dimension))
-                        @php($isDominant = $dimension === $assessment->dominant_type)
-                        <div @class([
-                                'group relative flex flex-col overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:shadow-md dark:bg-gray-800 dark:ring-white/10',
-                                'ring-2' => $isDominant,
-                            ])
-                             @style(["--tw-ring-color: {$color}" => $isDominant])>
-                            <div class="relative overflow-hidden p-5 text-white"
-                                 style="background-color: {{ $color }}; background-image: linear-gradient(135deg, rgba(255,255,255,.20), rgba(0,0,0,.28));">
-                                <span class="pointer-events-none absolute -right-2 -top-8 select-none text-9xl font-black leading-none text-white/10">
-                                    {{ $dimension }}
-                                </span>
-
-                                <div class="relative">
-                                    <p class="text-xl font-bold">{{ Riasec::name($dimension) }}</p>
-                                    <p class="mt-0.5 text-xs font-medium uppercase tracking-wide text-white/75">
-                                        {{ Riasec::label($dimension) }}
-                                    </p>
-
-                                    <div class="mt-3 flex flex-wrap items-center gap-2">
-                                        <span class="rounded-full bg-white/20 px-2.5 py-1 text-xs font-semibold backdrop-blur-sm">
-                                            {{ number_format($percentages[$dimension], 1) }}%
-                                        </span>
-                                        @if ($isDominant)
-                                            <span class="rounded-full bg-white px-2.5 py-1 text-xs font-semibold" style="color: {{ $color }}">
-                                                Tipe Dominan
-                                            </span>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="flex flex-1 flex-col p-5">
-                                <p class="flex-1 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-                                    {{ Riasec::description($dimension) }}
+                        <div class="flex flex-wrap items-start justify-between gap-4">
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Profil Kepribadian RIASEC</h3>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    Kode Holland Anda <span class="font-semibold text-gray-800 dark:text-gray-200">{{ $assessment->holland_code }}</span>.
                                 </p>
-
-                                <div class="mt-4 h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
-                                    <div class="h-full rounded-full transition-all"
-                                         style="width: {{ $percentages[$dimension] }}%; background-color: {{ $color }}"></div>
-                                </div>
                             </div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">{{ $assessment->completed_at?->translatedFormat('d M Y') }}</p>
                         </div>
-                    @endforeach
+                        <div class="mt-5 h-72 pr-0 lg:pr-4">
+                            <canvas data-riasec-chart="{{ json_encode($chart) }}"></canvas>
+                        </div>
+                    </div>
+
+                    <aside class="border-t border-gray-100 pt-5 dark:border-gray-700 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+                        <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Rincian dimensi</h4>
+                        <dl class="mt-4 space-y-4">
+                            @foreach (Riasec::DIMENSIONS as $dimension)
+                                @php($color = Riasec::color($dimension))
+                                @php($isDominant = $dimension === $assessment->dominant_type)
+                                <div>
+                                    <div class="flex items-center gap-3">
+                                        <span class="h-2.5 w-2.5 shrink-0 rounded-full" style="background-color: {{ $color }}"></span>
+                                        <dt class="min-w-0 flex-1 text-sm text-gray-700 dark:text-gray-200">
+                                            {{ Riasec::name($dimension) }}
+                                            @if ($isDominant)
+                                                <span class="ms-1 text-xs font-semibold" style="color: {{ $color }}">Dominan</span>
+                                            @endif
+                                        </dt>
+                                        <dd class="font-mono text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{{ number_format($percentages[$dimension], 1) }}%</dd>
+                                    </div>
+                                    <p class="ms-5 mt-1 text-xs leading-relaxed text-gray-500 dark:text-gray-400">
+                                        {{ Riasec::shortDescription($dimension) }}
+                                    </p>
+                                </div>
+                            @endforeach
+                        </dl>
+                    </aside>
                 </div>
             </section>
 
             {{-- Tabel peringkat --}}
-            <section class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
+            <section x-data="{ showAllRanks: false }" class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
                 <div class="p-6">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Peringkat Program Studi</h3>
+                    <div class="flex flex-wrap items-start justify-between gap-3">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Peringkat Program Studi</h3>
+                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                Lima program studi dengan kecocokan tertinggi dari {{ $assessment->results->count() }} alternatif.
+                            </p>
+                        </div>
+                        <span class="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 dark:bg-brand-900/30 dark:text-brand-200">
+                            Top 5 rekomendasi
+                        </span>
+                    </div>
+
+                    <div class="mt-5 rounded-xl border border-gray-100 bg-gray-50/80 p-4 dark:border-gray-700 dark:bg-gray-900/30">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Pilihan program studi Anda</p>
+                        <div class="mt-3 grid gap-3 md:grid-cols-3">
+                            @foreach ($assessment->priorities->take(3) as $priority)
+                                @php($priorityResult = $assessment->results->firstWhere('study_program_id', $priority->study_program_id))
+                                @php($isPriorityRecommended = $priority->study_program_id === $assessment->recommended_program_id)
+                                <div class="rounded-lg bg-white p-3 shadow-sm ring-1 ring-gray-900/5 dark:bg-gray-800 dark:ring-white/10">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-brand-300">Pilihan {{ $priority->priority_order }}</span>
+                                        <span class="font-mono text-xs font-bold tabular-nums text-gray-600 dark:text-gray-300">
+                                            #{{ $priorityResult?->ranking ?? '-' }}
+                                        </span>
+                                    </div>
+                                    <p class="mt-2 text-sm font-semibold leading-snug text-gray-900 dark:text-gray-100">
+                                        {{ $priority->studyProgram?->full_name ?? '-' }}
+                                    </p>
+                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                        Peringkat {{ $priorityResult?->ranking ?? '-' }} dari {{ $assessment->results->count() }} prodi
+                                        @if ($isPriorityRecommended)
+                                            <span class="font-semibold text-brand-700 dark:text-brand-300">&middot; Rekomendasi utama</span>
+                                        @endif
+                                    </p>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Diurutkan dari yang paling sesuai dengan profil Anda.
+                        Label Pilihan 1, 2, dan 3 tetap ditampilkan pada daftar, termasuk bila peringkatnya di luar lima besar.
                     </p>
                 </div>
 
@@ -277,7 +219,9 @@
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
                             @foreach ($assessment->results as $result)
                                 @php($isRecommended = $result->study_program_id === $assessment->recommended_program_id)
-                                <tr class="{{ $isRecommended ? 'bg-brand-50 dark:bg-brand-900/20' : '' }} text-gray-700 dark:text-gray-300">
+                                @php($priorityOrder = $assessment->priorities->firstWhere('study_program_id', $result->study_program_id)?->priority_order)
+                                <tr @if ($result->ranking > 5) x-cloak x-show="showAllRanks" @endif
+                                    class="{{ $isRecommended ? 'bg-brand-50 dark:bg-brand-900/20' : '' }} text-gray-700 dark:text-gray-300">
                                     <td class="px-6 py-3 font-semibold">{{ $result->ranking }}</td>
                                     <td class="px-6 py-3">
                                         <span class="font-medium text-gray-900 dark:text-gray-100">
@@ -288,9 +232,9 @@
                                                 Rekomendasi
                                             </span>
                                         @endif
-                                        @if ($result->study_program_id === $assessment->primary_program_id)
+                                        @if ($priorityOrder)
                                             <span class="ms-1 rounded-full bg-gray-200 px-2 py-0.5 text-[10px] font-semibold uppercase text-gray-700 dark:bg-gray-600 dark:text-gray-200">
-                                                Pilihan 1
+                                                Pilihan {{ $priorityOrder }}
                                             </span>
                                         @endif
                                     </td>
@@ -299,6 +243,18 @@
                         </tbody>
                     </table>
                 </div>
+
+                @if ($assessment->results->count() > 5)
+                    <div class="border-t border-gray-100 px-6 py-4 text-center dark:border-gray-700">
+                        <button type="button" @click="showAllRanks = !showAllRanks"
+                                class="inline-flex items-center gap-2 rounded-lg border border-brand-200 px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50 dark:border-brand-700 dark:text-brand-200 dark:hover:bg-brand-900/20">
+                            <span x-text="showAllRanks ? 'Sembunyikan daftar lengkap' : 'Lihat lebih banyak'"></span>
+                            <svg class="h-4 w-4 transition-transform duration-200" :class="showAllRanks && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                            </svg>
+                        </button>
+                    </div>
+                @endif
             </section>
 
             <div class="flex flex-wrap gap-3">

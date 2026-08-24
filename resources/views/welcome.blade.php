@@ -92,36 +92,33 @@
 
         <main>
             {{-- Hero --}}
-            <section id="hero" class="relative overflow-hidden bg-porcelain-50">
-                <div class="absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_50%_-10%,rgba(63,174,196,0.25),transparent),radial-gradient(ellipse_60%_60%_at_100%_100%,rgba(22,75,92,0.35),transparent)]"></div>
-                <div class="absolute inset-0 bg-grain opacity-40 mix-blend-overlay"></div>
+            <section id="hero" class="relative overflow-hidden bg-ink-950">
+                <img src="{{ asset('images/landingpagetop.png') }}"
+                     alt="Mahasiswa Politeknik Negeri Banyuwangi berjalan di depan Gedung Kuliah Terpadu"
+                     class="absolute inset-0 h-full w-full object-cover">
 
-                {{-- Titik dekoratif ala pattern nefa — dibuat murni CSS (bukan
-                     sprite gambar) supaya ringan & mengikuti token warna brand. --}}
-                <span class="pointer-events-none absolute bottom-24 left-6 hidden h-2.5 w-2.5 rounded-full bg-gold-400 sm:block" aria-hidden="true"></span>
-                <span class="pointer-events-none absolute right-1/3 top-12 hidden h-2 w-2 rounded-full bg-brand-400 sm:block" aria-hidden="true"></span>
-                <span class="pointer-events-none absolute bottom-1/3 right-16 hidden h-2 w-2 rounded-full bg-gold-300 sm:block" aria-hidden="true"></span>
-                <span class="pointer-events-none absolute right-8 top-24 hidden h-3 w-3 rounded-full bg-brand-300 sm:block" aria-hidden="true"></span>
+                {{-- Gradasi gelap ganda: dari kiri (menaungi teks) dan dari bawah
+                     (menyatu ke bagian kartu statistik di bawah hero). --}}
+                <div class="pointer-events-none absolute inset-0 bg-gradient-to-r from-ink-950/90 via-ink-950/55 to-ink-950/10"></div>
+                <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/80 via-transparent to-transparent"></div>
+                <div class="pointer-events-none absolute inset-0 bg-grain opacity-20 mix-blend-overlay"></div>
 
-                <div class="pointer-events-none absolute -left-24 top-10 h-72 w-72 animate-float rounded-full bg-brand-500/20 blur-3xl" aria-hidden="true"></div>
-                <div class="pointer-events-none absolute -right-16 bottom-0 h-80 w-80 animate-float rounded-full bg-brand-400/10 blur-3xl [animation-delay:-4s]" aria-hidden="true"></div>
-
-                <div class="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-10 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-12 lg:px-8 lg:pt-20">
-                    <div class="animate-fade-up text-center lg:col-span-6 lg:text-left">
-                        <span class="brand-shimmer inline-flex items-center gap-2 rounded-full bg-clip-text px-0 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-transparent">
-                            <x-heroicon-o-sparkles class="h-3.5 w-3.5 text-brand-600" aria-hidden="true" />
+                <div class="relative mx-auto max-w-7xl px-4 pb-24 pt-14 sm:px-6 sm:pb-28 lg:px-8 lg:pt-20">
+                    <div class="animate-fade-up max-w-xl text-center lg:text-left">
+                        <span class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-porcelain-100 backdrop-blur">
+                            <x-heroicon-o-sparkles class="h-3.5 w-3.5 text-brand-300" aria-hidden="true" />
                             Dossier Penjurusan &middot; CoCoSo &times; RIASEC
                         </span>
 
-                        <h1 class="mt-5 font-display text-4xl font-extrabold uppercase leading-[1.05] tracking-tight sm:text-6xl">
+                        <h1 class="mt-5 font-display text-4xl font-extrabold uppercase leading-[1.05] tracking-tight text-porcelain-50 sm:text-6xl">
                             <span data-split-reveal>Pilih jurusan</span>
-                            <span class="block bg-gradient-to-r from-brand-600 via-brand-500 to-brand-400 bg-clip-text text-transparent">bukan tebakan.</span>
+                            <span class="block bg-gradient-to-r from-brand-300 via-brand-200 to-porcelain-100 bg-clip-text text-transparent">bukan tebakan.</span>
                         </h1>
 
-                        <p class="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-ink-600 lg:mx-0">
+                        <p class="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-porcelain-200/85 lg:mx-0">
                             Nilai rapor, minat bakat, urutan pilihan, sampai serapan kerja alumni ditimbang
                             sekaligus dan diberi peringkat.
-                            <strong class="font-semibold text-ink-900">Setiap angka bisa Anda bongkar alasannya</strong>,
+                            <strong class="font-semibold text-porcelain-50">Setiap angka bisa Anda bongkar alasannya</strong>,
                             bukan cuma percaya begitu saja.
                         </p>
 
@@ -143,34 +140,15 @@
                                     </span>
                                 </a>
                                 <a href="{{ route('login') }}"
-                                   class="inline-flex w-full items-center justify-center rounded-full border border-ink-900/25 px-6 py-3 text-sm font-semibold text-ink-900 transition duration-300 ease-brand-out hover:-translate-y-0.5 hover:border-brand-500/60 hover:bg-black/5 active:scale-[0.98] sm:w-auto">
+                                   class="inline-flex w-full items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-porcelain-50 transition duration-300 ease-brand-out hover:-translate-y-0.5 hover:border-white/60 hover:bg-white/10 active:scale-[0.98] sm:w-auto">
                                     Sudah punya akun
                                 </a>
                             @endauth
                         </div>
 
-                        <p class="mt-4 font-mono text-xs text-ink-500/80">
+                        <p class="mt-4 font-mono text-xs text-porcelain-200/70">
                             &Oslash; pengisian &plusmn;10 menit &middot; hasil tersimpan &amp; bisa dibuka lagi kapan saja
                         </p>
-                    </div>
-
-                    <div class="lg:col-span-6">
-                        <div class="relative mx-auto aspect-[6/5] w-full max-w-lg overflow-hidden rounded-[2rem] shadow-2xl shadow-ink-950/20">
-                            <img src="{{ asset('images/3-mahasiswa.png') }}"
-                                 alt="Tiga mahasiswa Politeknik Negeri Banyuwangi berbincang di area kampus"
-                                 class="absolute inset-0 h-full w-full object-cover">
-                            <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950/70 via-transparent to-transparent"></div>
-                            <div class="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-2xl border border-brand-300/30 bg-ink-950/80 px-4 py-3 shadow-xl backdrop-blur">
-                                <div>
-                                    <p class="font-mono text-[10px] uppercase tracking-widest text-porcelain-200/50">Peta minat</p>
-                                    <p class="mt-0.5 text-sm font-semibold text-porcelain-50">{{ $programs->count() }} program studi</p>
-                                </div>
-                                <span class="flex items-center gap-2 font-mono text-[11px] font-semibold text-porcelain-50">
-                                    <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-400"></span>
-                                    Aktif
-                                </span>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </section>

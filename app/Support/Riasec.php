@@ -40,6 +40,16 @@ final class Riasec
         'C' => 'Menyukai kegiatan yang tertib, sistematis, dan berhubungan dengan data serta administrasi. Teliti dan menyukai keteraturan, biasanya cocok pada bidang akuntansi, administrasi, maupun pengelolaan data.',
     ];
 
+    /** Ringkasan untuk rincian dimensi pada hasil tes. */
+    public const SHORT_DESCRIPTIONS = [
+        'R' => 'Praktis dan nyaman bekerja langsung dengan alat.',
+        'I' => 'Analitis, suka riset, data, dan pemecahan masalah.',
+        'A' => 'Kreatif serta ekspresif dalam menghasilkan karya.',
+        'S' => 'Senang membantu dan berinteraksi dengan orang lain.',
+        'E' => 'Percaya diri memimpin dan berorientasi pada target.',
+        'C' => 'Teliti, terstruktur, dan nyaman mengelola data.',
+    ];
+
     public const COLORS = [
         'R' => '#2563eb',
         'I' => '#0d9488',
@@ -80,6 +90,11 @@ final class Riasec
     public static function description(string $dimension): string
     {
         return self::DESCRIPTIONS[strtoupper($dimension)] ?? '';
+    }
+
+    public static function shortDescription(string $dimension): string
+    {
+        return self::SHORT_DESCRIPTIONS[strtoupper($dimension)] ?? '';
     }
 
     public static function color(string $dimension): string

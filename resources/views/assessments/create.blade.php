@@ -1,107 +1,208 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="space-y-2">
-            <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                Biodata, Nilai Rapor &amp; Prioritas Prodi
-            </h2>
-            <x-assessment-steps :current="1" />
-        </div>
-    </x-slot>
+    @php
+        // Langkah awal wizard mengikuti letak error validasi (kalau ada), supaya
+        // pengguna yang gagal validasi langsung diarahkan ke langkah yang
+        // bermasalah alih-alih selalu kembali ke langkah 1.
+        $initialStep = max(1, min(3, (int) request()->query('step', 1)));
 
-    <div class="py-8">
-        <div class="mx-auto max-w-4xl space-y-6 px-4 sm:px-6 lg:px-8">
+        $raporHasError = $errors->has('rapor_semesters')
+            || collect($errors->keys())->contains(fn ($key) => str_starts_with($key, 'rapor_semesters.'));
+
+        $prodiHasError = $errors->has('priorities')
+            || $errors->has('subject_scores')
+            || collect($errors->keys())->contains(fn ($key) => str_starts_with($key, 'priorities.') || str_starts_with($key, 'subject_scores.'));
+
+        $biodataFields = ['full_name', 'gender', 'phone', 'school_name', 'graduation_year', 'education_level', 'school_major'];
+        $biodataHasError = collect($biodataFields)->contains(fn ($field) => $errors->has($field));
+
+        if ($prodiHasError) {
+            $initialStep = 3;
+        }
+        if ($raporHasError) {
+            $initialStep = 2;
+        }
+        if ($biodataHasError) {
+            $initialStep = 1;
+        }
+    @endphp
+
+    <div class="py-8 sm:py-10">
+        <div class="mx-auto flex max-w-none flex-col gap-6 px-5 sm:px-8 lg:px-10 xl:px-12">
             <x-flash />
 
-            {{--
-                Seluruh formulir berbagi satu lingkup Alpine: jenjang dan jurusan
-                yang dipilih pada biodata menentukan mapel mana yang ditanyakan di
-                bagian nilai pendukung, sementara prodi yang dipilih menentukan
-                mapel mana yang disorot.
-            --}}
-            <form method="POST" action="{{ route('assessments.store') }}" class="space-y-6"
-                  x-data="raporForm({
-                      programSubjects: @js($programSubjectMap),
-                      programNames: @js($programs->pluck('full_name', 'id')),
-                      priorities: @js(array_values((array) old('priorities', []))),
-                      added: @js($addedSubjects),
-                      subjectProfiles: @js($subjectProfiles),
-                      extraSubjects: @js($extraSubjects),
-                      majorOptions: @js($majorOptions),
-                      level: @js(old('education_level', '')),
-                      major: @js(old('school_major', '')),
-                      commonGroup: @js(\App\Support\Rapor::COMMON_GROUP),
-                  })">
-                @csrf
+            {{-- Banner halaman: menggantikan judul polos bawaan layout supaya
+                 wizard tes terasa sebagai "acara" tersendiri, bukan halaman
+                 admin biasa. Ilustrasi & catatan tangan di kanan disembunyikan
+                 di layar sempit karena hanya dekoratif. --}}
+            <section class="relative shrink-0 rounded-[1.75rem] border border-brand-100 bg-[radial-gradient(circle_at_86%_0%,rgba(179,227,236,.65),transparent_28%),linear-gradient(135deg,#ffffff,#eff9fb)] p-6 shadow-xl shadow-ink-950/5 dark:border-white/10 dark:bg-[radial-gradient(circle_at_78%_7%,rgba(27,137,163,.30),transparent_24%),linear-gradient(135deg,#071b29,#0b1627_55%,#14243a)] dark:shadow-2xl dark:shadow-ink-950/20 sm:p-8">
+                <div class="relative flex flex-wrap items-center justify-between gap-6">
+                    <div class="flex items-start gap-4">
+                        <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white">
+                            <x-heroicon-o-user-group class="h-6 w-6" />
+                        </span>
+                        <div>
+                            <h1 class="text-xl font-semibold text-gray-900 dark:text-gray-100">
+                                Biodata, Nilai Rapor &amp; Prioritas Prodi
+                            </h1>
+                            <p class="mt-1 max-w-xl text-sm text-gray-500 dark:text-gray-400">
+                                Lengkapi data diri dan nilai rapor Anda untuk mendapatkan rekomendasi prodi yang
+                                sesuai dengan potensi dan minat Anda.
+                            </p>
+                        </div>
+                    </div>
 
-                {{-- Biodata --}}
-                <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Biodata</h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Data ini muncul pada lembar hasil tes Anda.</p>
+                    <div class="hidden shrink-0 items-end gap-3 sm:flex">
+                        <p class="max-w-[9.5rem] -rotate-3 font-script text-lg leading-tight text-brand-600 dark:text-brand-400">
+                            Langkah kecil menuju masa depan besar
+                        </p>
+                        <img src="{{ asset('images/ilastrasi_toga.png') }}" alt="" class="h-20 w-auto shrink-0">
+                    </div>
+                </div>
+
+          <div class="relative mt-8 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
+                <x-assessment-progress reactive sticky-top="lg:top-20"
+                    tip-title="Pastikan data yang Anda isi benar"
+                    tip-body="Data ini akan digunakan untuk proses rekomendasi prodi yang lebih akurat." />
+
+                {{--
+                    Seluruh formulir berbagi satu lingkup Alpine: jenjang dan jurusan
+                    yang dipilih pada biodata menentukan mapel mana yang ditanyakan di
+                    bagian nilai pendukung, sementara prodi yang dipilih menentukan
+                    mapel mana yang disorot. Langkah aktif disimpan di $store.wizard
+                    (global), bukan state lokal, supaya kartu kemajuan di kiri ikut
+                    bereaksi meski berada di luar cakupan x-data formulir ini.
+                --}}
+                <form method="POST" action="{{ route('assessments.store') }}" class="min-w-0"
+                      x-data="raporForm({
+                          programSubjects: @js($programSubjectMap),
+                          programNames: @js($programs->pluck('full_name', 'id')),
+                          priorities: @js(array_values((array) old('priorities', []))),
+                          added: @js($addedSubjects),
+                          subjectProfiles: @js($subjectProfiles),
+                          extraSubjects: @js($extraSubjects),
+                          majorOptions: @js($majorOptions),
+                          level: @js(old('education_level', '')),
+                          major: @js(old('school_major', '')),
+                          commonGroup: @js(\App\Support\Rapor::COMMON_GROUP),
+                      })"
+                      x-init="$store.wizard.step = {{ $initialStep }}; $nextTick(() => restoreDraft())"
+                      @submit="saveDraft($event)">
+                    @csrf
+
+                {{--
+                    Sengaja TANPA space-y-6 di sini. Ketiga panel langkah
+                    (Biodata, Nilai Rapor, panel langkah 3) saling menyembunyikan
+                    lewat x-show — hanya satu yang tampak sekaligus — tapi
+                    elemen yang disembunyikan (display:none) tetap dihitung
+                    sebagai "sibling" oleh selector space-y. Akibatnya panel
+                    manapun yang BUKAN anak pertama tetap kebagian margin-top
+                    dari panel tersembunyi di depannya, sehingga kartunya
+                    turun dan tidak sejajar dengan kartu Progress Assessment
+                    di sampingnya begitu ia ditampilkan. Jarak ke baris tombol
+                    di bawah cukup diberi mt-6 langsung di elemen tombolnya.
+                --}}
+                <div>
+
+                {{-- Langkah 1: Biodata --}}
+                <section x-show="$store.wizard.step === 1" x-cloak data-step-panel="1"
+                         class="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/10">
+                    <div class="flex items-center gap-3">
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
+                            <x-heroicon-o-user class="h-5 w-5" />
+                        </span>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Biodata</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Data ini muncul pada lembar hasil tes Anda.</p>
+                        </div>
+                    </div>
 
                     <div class="mt-5 grid gap-5 sm:grid-cols-2">
                         <div class="sm:col-span-2">
-                            <x-input-label for="full_name" value="Nama Lengkap" />
-                            <x-text-input id="full_name" name="full_name" type="text" class="mt-1 block w-full"
-                                          :value="old('full_name', auth()->user()->name)" required autofocus />
+                            <x-input-label for="full_name">Nama Lengkap <span class="text-rose-500">*</span></x-input-label>
+                            <div class="relative mt-1">
+                                <x-heroicon-o-user class="pointer-events-none absolute inset-y-0 left-3 my-auto h-4 w-4 text-gray-400" />
+                                <x-text-input id="full_name" name="full_name" type="text" class="block w-full pl-9"
+                                              :value="old('full_name', auth()->user()->name)" required autofocus />
+                            </div>
                             <x-input-error :messages="$errors->get('full_name')" class="mt-2" />
                         </div>
 
                         <div>
-                            <x-input-label for="gender" value="Jenis Kelamin" />
-                            <select id="gender" name="gender"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                <option value="">— Pilih —</option>
-                                <option value="L" @selected(old('gender') === 'L')>Laki-laki</option>
-                                <option value="P" @selected(old('gender') === 'P')>Perempuan</option>
-                            </select>
+                            <x-input-label for="gender">Jenis Kelamin <span class="text-rose-500">*</span></x-input-label>
+                            <div class="relative mt-1">
+                                <x-heroicon-o-identification class="pointer-events-none absolute inset-y-0 left-3 my-auto h-4 w-4 text-gray-400" />
+                                <select id="gender" name="gender"
+                                        class="block w-full rounded-lg border-gray-300 pl-9 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                                    <option value="">— Pilih —</option>
+                                    <option value="L" @selected(old('gender') === 'L')>Laki-laki</option>
+                                    <option value="P" @selected(old('gender') === 'P')>Perempuan</option>
+                                </select>
+                            </div>
                             <x-input-error :messages="$errors->get('gender')" class="mt-2" />
                         </div>
 
                         <div>
-                            <x-input-label for="phone" value="Nomor HP" />
-                            <x-text-input id="phone" name="phone" type="text" class="mt-1 block w-full"
-                                          :value="old('phone')" placeholder="08xxxxxxxxxx" />
+                            <x-input-label for="phone">Nomor HP <span class="text-rose-500">*</span></x-input-label>
+                            <div class="relative mt-1">
+                                <x-heroicon-o-phone class="pointer-events-none absolute inset-y-0 left-3 my-auto h-4 w-4 text-gray-400" />
+                                <x-text-input id="phone" name="phone" type="text" class="block w-full pl-9"
+                                              :value="old('phone')" placeholder="08xxxxxxxxxx" />
+                            </div>
                             <x-input-error :messages="$errors->get('phone')" class="mt-2" />
                         </div>
 
                         <div>
-                            <x-input-label for="school_name" value="Asal Sekolah" />
-                            <x-text-input id="school_name" name="school_name" type="text" class="mt-1 block w-full"
-                                          :value="old('school_name')" placeholder="SMA Negeri 1 Banyuwangi" />
+                            <x-input-label for="school_name">Asal Sekolah <span class="text-rose-500">*</span></x-input-label>
+                            <div class="relative mt-1">
+                                <x-heroicon-o-building-library class="pointer-events-none absolute inset-y-0 left-3 my-auto h-4 w-4 text-gray-400" />
+                                <x-text-input id="school_name" name="school_name" type="text" class="block w-full pl-9"
+                                              :value="old('school_name')" placeholder="SMA Negeri 1 Banyuwangi" />
+                            </div>
                             <x-input-error :messages="$errors->get('school_name')" class="mt-2" />
                         </div>
 
                         <div>
-                            <x-input-label for="graduation_year" value="Tahun Lulus" />
-                            <x-text-input id="graduation_year" name="graduation_year" type="number" class="mt-1 block w-full"
-                                          :value="old('graduation_year', date('Y'))" min="2000" max="{{ date('Y') + 1 }}" />
+                            <x-input-label for="graduation_year">Tahun Lulus <span class="text-rose-500">*</span></x-input-label>
+                            <div class="relative mt-1">
+                                <x-heroicon-o-calendar class="pointer-events-none absolute inset-y-0 left-3 my-auto h-4 w-4 text-gray-400" />
+                                <x-text-input id="graduation_year" name="graduation_year" type="number" class="block w-full pl-9"
+                                              :value="old('graduation_year', date('Y'))" min="2000" max="{{ date('Y') + 1 }}" />
+                            </div>
                             <x-input-error :messages="$errors->get('graduation_year')" class="mt-2" />
                         </div>
 
                         <div>
-                            <x-input-label for="education_level" value="Jenjang Sekolah" />
+                            <x-input-label for="education_level">Jenjang Sekolah <span class="text-rose-500">*</span></x-input-label>
                             {{-- Jurusan dikosongkan saat jenjang berganti: pilihan SMA tidak berlaku di SMK. --}}
-                            <select id="education_level" name="education_level" x-model="level" required
-                                    x-init="$watch('level', () => { major = '' })"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                <option value="">— Pilih —</option>
-                                @foreach ($educationLevels as $value => $label)
-                                    <option value="{{ $value }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
+                            <div class="relative mt-1">
+                                <x-heroicon-o-academic-cap class="pointer-events-none absolute inset-y-0 left-3 my-auto h-4 w-4 text-gray-400" />
+                                <select id="education_level" name="education_level" x-model="level" required
+                                        x-init="$watch('level', () => { major = '' })"
+                                        class="block w-full rounded-lg border-gray-300 pl-9 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
+                                    <option value="">— Pilih —</option>
+                                    @foreach ($educationLevels as $value => $label)
+                                        <option value="{{ $value }}">{{ $label }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
                             <x-input-error :messages="$errors->get('education_level')" class="mt-2" />
                         </div>
 
                         <div>
-                            <x-input-label for="school_major"
-                                           x-text="level === 'SMK' ? 'Rumpun Keahlian' : 'Jurusan'">Jurusan</x-input-label>
-                            <select id="school_major" name="school_major" x-model="major" :disabled="! level"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 disabled:bg-gray-100 disabled:text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:disabled:bg-gray-800">
-                                <option value="" x-text="level ? '— Pilih —' : '— Pilih jenjang dulu —'">— Pilih jenjang dulu —</option>
-                                <template x-for="option in availableMajors" :key="option">
-                                    <option :value="option" x-text="option"></option>
-                                </template>
-                            </select>
+                            <x-input-label for="school_major">
+                                <span x-text="level === 'SMK' ? 'Rumpun Keahlian' : 'Jurusan'">Jurusan</span>
+                                <span class="text-rose-500">*</span>
+                            </x-input-label>
+                            <div class="relative mt-1">
+                                <x-heroicon-o-book-open class="pointer-events-none absolute inset-y-0 left-3 my-auto h-4 w-4 text-gray-400" />
+                                <select id="school_major" name="school_major" x-model="major" :disabled="! level"
+                                        class="block w-full rounded-lg border-gray-300 pl-9 shadow-sm focus:border-brand-500 focus:ring-brand-500 disabled:bg-gray-100 disabled:text-gray-400 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:disabled:bg-gray-800">
+                                    <option value="" x-text="level ? '— Pilih —' : '— Pilih jenjang dulu —'">— Pilih jenjang dulu —</option>
+                                    <template x-for="option in availableMajors" :key="option">
+                                        <option :value="option" x-text="option"></option>
+                                    </template>
+                                </select>
+                            </div>
                             <p class="mt-1 text-xs text-gray-400" x-show="level === 'SMK'" x-cloak>
                                 Pilih rumpun sesuai konsentrasi keahlian yang tercantum di rapor Anda.
                             </p>
@@ -110,14 +211,22 @@
                     </div>
                 </section>
 
-                {{-- Komponen pertama SNBP: rerata rapor seluruh mapel per semester --}}
-                <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Rerata Rapor per Semester</h3>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Masukkan nilai rata-rata <strong>seluruh mata pelajaran</strong> pada setiap semester, skala
-                        0&ndash;100. Semester terakhir memang tidak diminta &mdash; SNBP memeringkat berdasarkan semua
-                        semester kecuali yang terakhir.
-                    </p>
+                {{-- Langkah 2: Komponen pertama SNBP — rerata rapor seluruh mapel per semester --}}
+                <section x-show="$store.wizard.step === 2" x-cloak data-step-panel="2"
+                         class="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/10">
+                    <div class="flex items-center gap-3">
+                        <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
+                            <x-heroicon-o-chart-bar class="h-5 w-5" />
+                        </span>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Rerata Rapor per Semester</h3>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                Masukkan nilai rata-rata <strong>seluruh mata pelajaran</strong> pada setiap semester,
+                                skala 0&ndash;100. Semester terakhir memang tidak diminta &mdash; SNBP memeringkat
+                                berdasarkan semua semester kecuali yang terakhir.
+                            </p>
+                        </div>
+                    </div>
 
                     <div class="mt-5 grid gap-5 sm:grid-cols-5">
                         @foreach ($semesters as $semester)
@@ -132,15 +241,23 @@
                     </div>
                 </section>
 
-                <div class="space-y-6">
+                {{-- Langkah 3: pemilihan program studi & nilai mapel pendukung --}}
+                <div x-show="$store.wizard.step === 3" x-cloak data-step-panel="3" class="space-y-6">
 
                     {{-- Prioritas prodi --}}
-                    <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Urutan Prioritas Program Studi</h3>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Pilih minimal {{ $minPriorities }} program studi sesuai urutan minat Anda. Prioritas pertama
-                            memperoleh skor minat tertinggi. Program studi tidak boleh dipilih dua kali.
-                        </p>
+                    <section class="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/10">
+                        <div class="flex items-center gap-3">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
+                                <x-heroicon-o-list-bullet class="h-5 w-5" />
+                            </span>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Urutan Prioritas Program Studi</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    Pilih minimal {{ $minPriorities }} program studi sesuai urutan minat Anda. Prioritas
+                                    pertama memperoleh skor minat tertinggi. Program studi tidak boleh dipilih dua kali.
+                                </p>
+                            </div>
+                        </div>
 
                         <div class="mt-5 space-y-4">
                             @for ($i = 0; $i < $maxPriorities; $i++)
@@ -171,16 +288,24 @@
                     </section>
 
                     {{-- Komponen kedua SNBP: nilai mapel pendukung prodi --}}
-                    <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Nilai Mata Pelajaran Pendukung</h3>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                            Daftar ini menyesuaikan jenjang dan jurusan yang Anda pilih di biodata, sehingga Anda tidak
-                            diminta mengisi mata pelajaran yang tidak pernah Anda tempuh. Yang ditanyakan hanya mata
-                            pelajaran pendukung dari <strong>program studi yang Anda jadikan prioritas</strong> di atas
-                            &mdash; program studi lain tidak memerlukan isian di sini.
-                            <strong>Kosongkan</strong> mata pelajaran yang tidak ada di rapor Anda &mdash; nilainya akan
-                            digantikan rerata rapor Anda, bukan dianggap nol.
-                        </p>
+                    <section class="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/10">
+                        <div class="flex items-center gap-3">
+                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
+                                <x-heroicon-o-book-open class="h-5 w-5" />
+                            </span>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Nilai Mata Pelajaran Pendukung</h3>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    Daftar ini menyesuaikan jenjang dan jurusan yang Anda pilih di biodata, sehingga
+                                    Anda tidak diminta mengisi mata pelajaran yang tidak pernah Anda tempuh. Yang
+                                    ditanyakan hanya mata pelajaran pendukung dari
+                                    <strong>program studi yang Anda jadikan prioritas</strong> di atas &mdash; program
+                                    studi lain tidak memerlukan isian di sini. <strong>Kosongkan</strong> mata
+                                    pelajaran yang tidak ada di rapor Anda &mdash; nilainya akan digantikan rerata
+                                    rapor Anda, bukan dianggap nol.
+                                </p>
+                            </div>
+                        </div>
 
                         <p class="mt-3 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300"
                            x-show="! level" x-cloak>
@@ -258,17 +383,35 @@
                     </section>
                 </div>
 
-                <div class="flex items-center justify-end gap-3">
-                    <a href="{{ route('dashboard') }}"
-                       class="rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                        Batal
-                    </a>
-                    <button type="submit"
-                            class="rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
+                <div class="mt-6 flex items-center justify-between gap-3">
+                    <div>
+                        <a href="{{ route('dashboard') }}" x-show="$store.wizard.step === 1"
+                           class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                            <x-heroicon-o-arrow-left class="h-4 w-4" />
+                            Batal
+                        </a>
+                        <button type="button" @click="prevStep()" x-show="$store.wizard.step > 1" x-cloak
+                                class="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 px-5 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                            <x-heroicon-o-arrow-left class="h-4 w-4" />
+                            Kembali
+                        </button>
+                    </div>
+
+                    <button type="button" @click="nextStep()" x-show="$store.wizard.step < 3"
+                            class="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
+                        Lanjut
+                        <x-heroicon-o-arrow-right class="h-4 w-4" />
+                    </button>
+                    <button type="submit" x-show="$store.wizard.step === 3" x-cloak
+                            class="inline-flex items-center gap-1.5 rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
                         Lanjut ke Kuesioner
+                        <x-heroicon-o-arrow-right class="h-4 w-4" />
                     </button>
                 </div>
-            </form>
+                </div>
+                </form>
+            </div>
+            </section>
         </div>
     </div>
 
@@ -299,6 +442,75 @@
                     commonGroup,
                     level: level ?? '',
                     major: major ?? '',
+
+                    restoreDraft() {
+                        try {
+                            const raw = sessionStorage.getItem('spk-assessment-draft');
+                            if (!raw) return;
+
+                            const values = JSON.parse(raw);
+                            Object.entries(values).forEach(([name, entries]) => {
+                                const fields = this.$root.querySelectorAll(`[name="${name}"]`);
+                                fields.forEach((field) => {
+                                    const value = entries.find((entry) => entry.value === field.value)?.value ?? entries[0]?.value ?? '';
+                                    if (field.type === 'checkbox' || field.type === 'radio') {
+                                        field.checked = entries.some((entry) => entry.value === field.value);
+                                    } else {
+                                        field.value = value;
+                                    }
+                                    field.dispatchEvent(new Event('input', { bubbles: true }));
+                                    field.dispatchEvent(new Event('change', { bubbles: true }));
+                                });
+                            });
+
+                            const restored = JSON.parse(raw);
+                            this.priorities = Object.entries(restored)
+                                .filter(([name]) => name.startsWith('priorities['))
+                                .sort(([left], [right]) => left.localeCompare(right, undefined, { numeric: true }))
+                                .map(([, entries]) => entries[0]?.value ?? '');
+                            this.level = restored.education_level?.[0]?.value ?? this.level;
+                            this.major = restored.school_major?.[0]?.value ?? this.major;
+                        } catch (error) {
+                            sessionStorage.removeItem('spk-assessment-draft');
+                        }
+                    },
+
+                    saveDraft(event) {
+                        const values = {};
+                        new FormData(event.currentTarget).forEach((value, name) => {
+                            (values[name] ??= []).push({ value: String(value) });
+                        });
+                        sessionStorage.setItem('spk-assessment-draft', JSON.stringify(values));
+                    },
+
+                    /**
+                     * Pindah ke langkah berikutnya, ditolak kalau ada isian wajib
+                     * yang belum valid pada panel yang sedang tampil. Memakai
+                     * `:invalid` bawaan HTML (bukan pengecekan manual per field)
+                     * supaya aturan seperti `required`, `min`, `max` pada input
+                     * tetap satu sumber kebenaran dengan validasi peramban.
+                     */
+                    nextStep() {
+                        const panel = this.$root.querySelector(`[data-step-panel="${this.$store.wizard.step}"]`);
+                        const invalid = panel?.querySelector(':invalid');
+
+                        if (invalid) {
+                            invalid.reportValidity();
+                            return;
+                        }
+
+                        if (this.$store.wizard.step < 3) {
+                            this.$store.wizard.step++;
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    },
+
+                    prevStep() {
+                        if (this.$store.wizard.step > 1) {
+                            this.$store.wizard.step--;
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }
+                    },
 
                     /** Jurusan atau rumpun keahlian yang tersedia pada jenjang terpilih. */
                     get availableMajors() {

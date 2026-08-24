@@ -2,17 +2,16 @@
     <x-slot name="header">
         <div>
             <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Tracer Study</h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                Data serapan kerja alumni &mdash; menjadi nilai kriteria C9 pada perhitungan CoCoSo.
-            </p>
         </div>
     </x-slot>
 
     <div class="py-8">
-        <div class="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8"
+        <div class="mx-auto max-w-none space-y-4 px-5 sm:px-8 lg:px-10 xl:px-12"
              x-data="{ view: localStorage.getItem('spk-list-view') || 'table' }"
              x-init="$watch('view', v => localStorage.setItem('spk-list-view', v))">
             <x-flash />
+
+            <x-admin-panel-hero eyebrow="Data prospek kerja" title="Tracer Study" description="Perbarui data alumni dan serapan kerja sebagai dasar kriteria prospek kerja." />
 
             <div class="flex justify-end">
                 <x-list-view-toggle />

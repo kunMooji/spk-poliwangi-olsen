@@ -28,6 +28,11 @@ class RiasecQuestionController extends Controller
         return view('admin.riasec-questions.index', [
             'questions' => $questions,
             'labels' => Riasec::LABELS,
+            'question' => new RiasecQuestion([
+                'dimension' => 'R',
+                'is_active' => true,
+                'sort_order' => (int) RiasecQuestion::query()->max('sort_order') + 1,
+            ]),
             // Jumlah butir aktif per dimensi — idealnya seimbang supaya
             // persentase RIASEC antar dimensi dapat dibandingkan.
             'counts' => RiasecQuestion::query()->active()

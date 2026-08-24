@@ -2,15 +2,11 @@
     <x-slot name="header">
         <div>
             <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Catatan Perubahan</h2>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {{ $total }} perubahan data master tercatat. Bobot kriteria dan parameter algoritma memengaruhi
-                rekomendasi seluruh tes sesudahnya, sehingga perubahannya perlu dapat ditelusuri.
-            </p>
         </div>
     </x-slot>
 
     <div class="py-8">
-        <div class="mx-auto max-w-7xl space-y-4 px-4 sm:px-6 lg:px-8"
+        <div class="mx-auto max-w-none space-y-4 px-5 sm:px-8 lg:px-10 xl:px-12"
              x-data="{ view: localStorage.getItem('spk-list-view') || 'table' }"
              x-init="$watch('view', v => localStorage.setItem('spk-list-view', v))">
             <x-flash />

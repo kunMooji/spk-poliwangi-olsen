@@ -1,18 +1,5 @@
 <x-app-layout>
-    <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <div>
-                <h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Analisis Sensitivitas &mdash; {{ $assessment->full_name }}
-                </h2>
-                <p class="mt-1 font-mono text-xs text-gray-500 dark:text-gray-400">{{ $assessment->code }}</p>
-            </div>
-            <a href="{{ route('admin.recap.show', $assessment) }}"
-               class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                Kembali ke Detail
-            </a>
-        </div>
-    </x-slot>
+    <x-slot name="header"><h2 class="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">Analisis Sensitivitas &mdash; {{ $assessment->full_name }}</h2></x-slot>
 
     @php
         $winner = $analysis['baseline']['winner'];
@@ -21,8 +8,10 @@
     @endphp
 
     <div class="py-8">
-        <div class="mx-auto max-w-6xl space-y-6 px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-none space-y-6 px-5 sm:px-8 lg:px-10 xl:px-12">
             <x-flash />
+
+            <div class="flex justify-end"><a href="{{ route('admin.recap.show', $assessment) }}" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">Kembali ke Detail</a></div>
 
             <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Ringkasan</h3>

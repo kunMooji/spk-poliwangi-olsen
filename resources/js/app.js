@@ -8,6 +8,11 @@ import Lenis from 'lenis';
 window.Alpine = Alpine;
 window.Chart = Chart;
 
+// Langkah aktif formulir tes bertahap (biodata/rapor/prodi & mapel pendukung).
+// Disimpan sebagai store global, bukan state lokal, supaya indikator langkah
+// di header (di luar cakupan x-data formulir) tetap ikut bereaksi.
+Alpine.store('wizard', { step: 1 });
+
 Alpine.start();
 
 /**
@@ -19,13 +24,14 @@ Alpine.start();
 function renderRiasecCharts() {
     document.querySelectorAll('canvas[data-riasec-chart]').forEach((canvas) => {
         const { labels, values, colors } = JSON.parse(canvas.dataset.riasecChart);
+        const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         // Warna teks mengikuti tema terang/gelap yang sedang aktif.
         const dark = document.documentElement.classList.contains('dark');
         const tick = dark ? '#cbd5e1' : '#475569';
         const grid = dark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.15)';
 
-        new Chart(canvas, {
+        const createChart = () => new Chart(canvas, {
             type: 'bar',
             data: {
                 labels,
@@ -40,6 +46,16 @@ function renderRiasecCharts() {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                // Batang tumbuh berurutan saat hasil pertama kali terbuka agar
+                // sebaran skor lebih mudah dibaca. Interaksi berikutnya tetap
+                // langsung, dan pengguna reduced-motion tidak mendapat gerak.
+                animation: reduceMotion ? false : {
+                    duration: 300,
+                    easing: 'easeOutQuart',
+                    delay: (context) => (context.type === 'data' && context.mode === 'default')
+                        ? context.dataIndex * 50
+                        : 0,
+                },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
@@ -58,6 +74,136 @@ function renderRiasecCharts() {
                     x: {
                         ticks: { color: tick },
                         grid: { display: false },
+                    },
+                },
+            },
+        });
+
+        // Bagian hasil biasanya berada di bawah kartu rekomendasi. Menunggu
+        // sampai grafik terlihat memastikan animasi tidak habis sebelum siswa
+        // sempat menggulir ke bagian profil RIASEC.
+        if (reduceMotion || !('IntersectionObserver' in window)) {
+            createChart();
+            return;
+        }
+
+        const observer = new IntersectionObserver((entries) => {
+            if (!entries[0]?.isIntersecting) {
+                return;
+            }
+
+            observer.unobserve(canvas);
+            requestAnimationFrame(() => requestAnimationFrame(createChart));
+        }, { threshold: 0.2 });
+
+        observer.observe(canvas);
+    });
+}
+
+/** Memulai animasi panel alasan tepat saat panel pertama kali terlihat. */
+function initResultExplanationAnimation() {
+    const panels = document.querySelectorAll('.result-explanation-enter');
+    if (!panels.length) {
+        return;
+    }
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion || !('IntersectionObserver' in window)) {
+        panels.forEach((panel) => panel.classList.add('is-visible'));
+        return;
+    }
+
+    document.documentElement.classList.add('result-motion-ready');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) {
+                return;
+            }
+
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+        });
+    }, { threshold: 0.2 });
+
+    panels.forEach((panel) => observer.observe(panel));
+}
+
+/**
+ * Grafik radial profil RIASEC pada beranda siswa.
+ *
+ * Setiap irisan menggambarkan persentase satu dimensi RIASEC pada sesi tes
+ * terakhir yang selesai. Data disediakan server melalui atribut
+ * `data-assessment-history-chart`, jadi tidak ada data contoh statis.
+ */
+function renderAssessmentHistoryCharts() {
+    document.querySelectorAll('canvas[data-assessment-history-chart]').forEach((canvas) => {
+        const rows = JSON.parse(canvas.dataset.assessmentHistoryChart);
+        const dark = document.documentElement.classList.contains('dark');
+
+        new Chart(canvas, {
+            type: 'polarArea',
+            data: {
+                labels: rows.map((row) => row.label),
+                datasets: [{
+                    data: rows.map((row) => row.value),
+                    backgroundColor: rows.map((row) => `${row.color}cc`),
+                    borderColor: rows.map((row) => row.color),
+                    borderWidth: 2,
+                    // Jarak irisan menjauh dari pusat saat disentuh/di-hover —
+                    // umpan balik langsung tanpa perlu tooltip untuk terlihat.
+                    hoverOffset: 14,
+                }],
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                // Tiap irisan tumbuh bergantian saat kartu pertama kali tampil
+                // (mode 'default') — setara efek stagger() anime.js, tapi lewat
+                // `delay` bawaan Chart.js karena irisan chart digambar di satu
+                // <canvas>, bukan elemen DOM terpisah yang bisa disasar
+                // anime.js. Saat disentuh (mode 'active', dipicu hoverOffset)
+                // dipercepat & tanpa jeda supaya hover tetap terasa responsif —
+                // durasi & delay sengaja fungsi, bukan blok animations.radius
+                // terpisah, karena blok terpisah itu menimpa animasi radius
+                // pertumbuhan awal dengan durasi cepat ini juga.
+                // Total durasi masuk sengaja dipatok 3 detik (6 irisan x 500ms
+                // jeda antar-irisan) supaya terasa "berjalan" pelan, bukan
+                // buru-buru. Hover (mode 'active') tetap cepat & tanpa jeda.
+                animation: {
+                    easing: 'easeOutQuart',
+                    animateRotate: true,
+                    animateScale: true,
+                    duration: (context) => (context.type === 'data' && context.mode === 'default') ? 500 : 250,
+                    delay: (context) => (context.type === 'data' && context.mode === 'default')
+                        ? context.dataIndex * 500
+                        : 0,
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            boxWidth: 10,
+                            boxHeight: 10,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            color: dark ? '#e6ddc9' : '#475569',
+                            padding: 16,
+                            font: { size: 12 },
+                        },
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: (context) => `${context.label}: ${context.parsed.r.toFixed(2)}%`,
+                        },
+                    },
+                },
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: { display: false, stepSize: 20 },
+                        grid: { color: dark ? 'rgba(230,221,201,0.16)' : 'rgba(21,63,75,0.12)' },
+                        angleLines: { color: dark ? 'rgba(230,221,201,0.16)' : 'rgba(21,63,75,0.12)' },
                     },
                 },
             },
@@ -369,6 +515,8 @@ function initSplitReveal() {
 
 document.addEventListener('DOMContentLoaded', () => {
     renderRiasecCharts();
+    renderAssessmentHistoryCharts();
+    initResultExplanationAnimation();
     initScrollReveal();
     initCarousels();
     initHeaderShadow();

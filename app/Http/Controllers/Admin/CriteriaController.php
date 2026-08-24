@@ -22,6 +22,14 @@ class CriteriaController extends Controller
             'criteria' => Criteria::query()->ordered()->get(),
             'totalWeight' => Criteria::totalActiveWeight(),
             'raporShare' => Criteria::raporComponentShare(),
+            'criterion' => new Criteria([
+                'type' => 'benefit',
+                'source' => 'rapor_average',
+                'is_active' => true,
+                'weight' => 0,
+                'sort_order' => (int) Criteria::query()->max('sort_order') + 1,
+            ]),
+            'sources' => Criteria::SOURCES,
         ]);
     }
 
