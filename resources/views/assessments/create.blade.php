@@ -233,7 +233,7 @@
                             <div>
                                 <x-input-label :for="'rapor_semesters_'.$semester" :value="'Semester '.$semester" />
                                 <x-text-input :id="'rapor_semesters_'.$semester" :name="'rapor_semesters['.$semester.']'"
-                                              type="number" step="0.01" min="0" max="100"
+                                              type="text" inputmode="decimal" placeholder="mis. 82,5"
                                               class="mt-1 block w-full" :value="old('rapor_semesters.'.$semester)" required />
                                 <x-input-error :messages="$errors->get('rapor_semesters.'.$semester)" class="mt-2" />
                             </div>
@@ -336,7 +336,7 @@
                                        x-text="'Pendukung ' + relevantLabel({{ $subject->id }})"></p>
 
                                     <x-text-input :id="'subject_scores_'.$subject->id" :name="'subject_scores['.$subject->id.']'"
-                                                  type="number" step="0.01" min="0" max="100"
+                                                  type="text" inputmode="decimal" placeholder="mis. 82,5"
                                                   class="mt-1 block w-full" :value="old('subject_scores.'.$subject->id)" />
                                     <x-input-error :messages="$errors->get('subject_scores.'.$subject->id)" class="mt-2" />
                                 </div>
@@ -349,7 +349,7 @@
                                            :for="'subject_scores_' + subject.id" x-text="subject.name"></label>
                                     <p class="mt-0.5 text-xs text-gray-400">ditambahkan sendiri</p>
                                     <div class="mt-1 flex gap-2">
-                                        <input type="number" step="0.01" min="0" max="100"
+                                        <input type="text" inputmode="decimal" placeholder="mis. 82,5"
                                                :id="'subject_scores_' + subject.id"
                                                :name="'subject_scores[' + subject.id + ']'"
                                                :value="subject.score"

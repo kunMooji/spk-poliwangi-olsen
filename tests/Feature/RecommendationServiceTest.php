@@ -156,8 +156,7 @@ class RecommendationServiceTest extends TestCase
 
         $this->assertSame('completed', $assessment->status);
         $this->assertNotNull($assessment->completed_at);
-        $this->assertSame(70.0, $assessment->threshold_used);
-        $this->assertSame('normal', $assessment->threshold_mode_used);
+        $this->assertSame(10.0, $assessment->margin_threshold_used);
         $this->assertSame(0.5, $assessment->lambda_used);
 
         // Bobot dibaca dari data, bukan dipatok angka, supaya penyetelan ulang
@@ -196,25 +195,53 @@ class RecommendationServiceTest extends TestCase
         $this->assertSame(100.0, $assessment->recommended_k_normal);
     }
 
-    public function test_ambang_batas_tidak_lagi_menentukan_prodi_yang_direkomendasikan(): void
+    public function test_ambang_margin_tidak_menentukan_prodi_yang_direkomendasikan(): void
     {
-        // Ambang batas berapa pun tidak boleh memindahkan rekomendasi: minat calon
-        // mahasiswa sudah dihitung sebagai kriteria C4, sehingga memakainya lagi
-        // sebagai aturan penimpa berarti menghitung minat dua kali.
+        // Ambang margin hanya menandai seberapa tegas hasilnya, tidak boleh
+        // memindahkan rekomendasi: minat calon mahasiswa sudah dihitung sebagai
+        // kriteria C4, memakainya lagi sebagai penimpa berarti menghitungnya dua kali.
         $assessment = $this->makeAssessment();
 
-        Setting::set('threshold', 0);
+        Setting::set('margin_threshold', 0);
         Setting::forgetCache();
         $this->recommendation->calculate($assessment->fresh(['priorities', 'answers']));
         $longgar = $assessment->fresh()->recommended_program_id;
 
-        Setting::set('threshold', 100);
+        Setting::set('margin_threshold', 100);
         Setting::forgetCache();
         $calculation = $this->recommendation->calculate($assessment->fresh(['priorities', 'answers']));
         $ketat = $assessment->fresh()->recommended_program_id;
 
         $this->assertSame($longgar, $ketat);
         $this->assertSame(array_search(1, $calculation['ranking'], true), $ketat);
+    }
+
+    public function test_margin_ke_peringkat_dua_dicatat_dan_menentukan_penanda_keyakinan(): void
+    {
+        $assessment = $this->makeAssessment();
+        $calculation = $this->recommendation->calculate($assessment);
+        $assessment->refresh();
+
+        $runnerUpId = array_search(2, $calculation['ranking'], true);
+
+        // Peringkat 1 selalu bernilai 100, jadi marginnya adalah 100 - skor peringkat 2.
+        // Deltanya mengikuti presisi kolom decimal(8,4) tempat margin disimpan.
+        $this->assertEqualsWithDelta(
+            100 - $calculation['k_normal'][$runnerUpId],
+            $assessment->margin_to_runner_up,
+            1e-4,
+        );
+
+        // Penanda keyakinan mengikuti ambang, bukan sebaliknya.
+        Setting::set('margin_threshold', 0);
+        Setting::forgetCache();
+        $this->recommendation->calculate($assessment->fresh(['priorities', 'answers']));
+        $this->assertTrue($assessment->fresh()->hasConfidentRecommendation());
+
+        Setting::set('margin_threshold', 100);
+        Setting::forgetCache();
+        $this->recommendation->calculate($assessment->fresh(['priorities', 'answers']));
+        $this->assertFalse($assessment->fresh()->hasConfidentRecommendation());
     }
 
     public function test_matches_preference_menandai_pilihan_pertama_yang_menempati_peringkat_satu(): void
@@ -466,27 +493,179 @@ class RecommendationServiceTest extends TestCase
         $this->assertEqualsWithDelta(77.0, $result->matrix['C2'], 0.0001);
     }
 
-    public function test_prodi_non_prioritas_memakai_nilai_semester_terendah(): void
+    public function test_prodi_non_prioritas_tetap_memakai_nilai_mapel_yang_sudah_terkumpul(): void
     {
-        // Prodi yang tidak dijadikan prioritas tidak pernah ditanyakan mapel
-        // pendukungnya, sehingga C2-nya diganti nilai semester terendah —
-        // bukan rerata — supaya prodi prioritas tidak kalah bersaing hanya
-        // karena lemah di satu mapel spesifik.
-        $program = StudyProgram::query()->where('code', 'TRPL-D4')->firstOrFail();
+        // Formulir menanyakan mapel pendukung SELURUH prodi aktif, bukan hanya prodi
+        // prioritas, sehingga prodi non-prioritas pun punya nilai asli. C2 wajib
+        // memakainya — bukan menggantinya dengan penalti tetap, yang akan membuat C2
+        // mengukur "apakah prodi ini dipilih" alih-alih prestasi akademik.
+        $program = StudyProgram::query()->where('code', 'TRPL-D4')->with('supportSubjects')->firstOrFail();
 
-        $assessment = $this->makeAssessment(raporAverage: 85.0);
+        $assessment = $this->makeAssessment(raporAverage: 85.0, subjectScores: ['matematika' => 40.0]);
 
         // Prasyarat tes: TRPL-D4 memang bukan salah satu prioritas bawaan
         // makeAssessment() (tiga prodi pertama menurut kode).
         $this->assertFalse($assessment->priorities->contains('study_program_id', $program->id));
+        $this->assertTrue($program->supportSubjects->contains('code', 'matematika'));
 
+        // Semester terendah dibuat jauh berbeda dari rerata, supaya kalau nilai
+        // semester terendah yang dipakai, tes ini pasti gagal.
         $assessment->raporSemesters()->where('semester', 1)->update(['average_score' => 55.0]);
 
         $this->recommendation->calculate($assessment->fresh(['priorities', 'answers', 'subjectScores', 'raporSemesters']));
 
         $result = $assessment->results()->where('study_program_id', $program->id)->firstOrFail();
 
-        // Semester terendah (55.0), bukan rerata (85.0).
-        $this->assertEqualsWithDelta(55.0, $result->matrix['C2'], 0.0001);
+        $relevan = $program->supportSubjects->filter(fn ($subject) => Rapor::appliesTo(
+            $subject, $assessment->education_level, $assessment->school_major,
+        ));
+
+        // Matematika 40, mapel pendukung lain yang relevan bernilai rerata 85.
+        $harapan = (40.0 + 85.0 * ($relevan->count() - 1)) / $relevan->count();
+
+        $this->assertEqualsWithDelta($harapan, $result->matrix['C2'], 0.0001);
+        $this->assertNotEqualsWithDelta(55.0, $result->matrix['C2'], 0.0001);
+    }
+
+    public function test_nilai_mapel_pendukung_menggerakkan_prodi_non_prioritas(): void
+    {
+        // Konsekuensi yang paling penting: prodi di luar daftar pilihan responden
+        // kini bisa naik atau turun karena prestasinya sendiri.
+        $program = StudyProgram::query()->where('code', 'TRPL-D4')->firstOrFail();
+
+        $rendah = $this->makeAssessment(subjectScores: ['matematika' => 30.0, 'informatika' => 30.0]);
+        $this->recommendation->calculate($rendah);
+        $peringkatRendah = $rendah->results()->where('study_program_id', $program->id)->value('ranking');
+
+        $tinggi = $this->makeAssessment(subjectScores: ['matematika' => 100.0, 'informatika' => 100.0]);
+        $this->recommendation->calculate($tinggi);
+        $peringkatTinggi = $tinggi->results()->where('study_program_id', $program->id)->value('ranking');
+
+        $this->assertLessThan($peringkatRendah, $peringkatTinggi);
+    }
+
+    public function test_total_bobot_bukan_satu_diskalakan_dan_tidak_mengubah_perbandingan(): void
+    {
+        // Semua bobot digandakan tiga kali. Perbandingan antar kriteria tidak
+        // berubah, jadi peringkatnya wajib persis sama dengan bobot aslinya.
+        $asli = Criteria::query()->active()->pluck('weight', 'code')
+            ->map(fn ($weight) => (float) $weight)->all();
+
+        $sesiAcuan = $this->makeAssessment();
+        $acuan = $this->recommendation->calculate($sesiAcuan);
+
+        foreach ($asli as $code => $weight) {
+            Criteria::query()->where('code', $code)->update(['weight' => $weight * 3]);
+        }
+
+        $this->assertEqualsWithDelta(3.0, Criteria::totalActiveWeight(), 1e-9);
+
+        $sesiUji = $this->makeAssessment();
+        $uji = $this->recommendation->calculate($sesiUji);
+
+        $this->assertSame($acuan['ranking'], $uji['ranking']);
+
+        foreach ($acuan['k'] as $programId => $k) {
+            $this->assertEqualsWithDelta($k, $uji['k'][$programId], 1e-9);
+        }
+    }
+
+    public function test_snapshot_menyimpan_bobot_terpakai_dan_bobot_asli(): void
+    {
+        Criteria::query()->active()->each(
+            fn (Criteria $criterion) => $criterion->update(['weight' => (float) $criterion->weight * 2])
+        );
+
+        $assessment = $this->makeAssessment();
+        $this->recommendation->calculate($assessment);
+        $assessment->refresh();
+
+        $snapshot = $assessment->weights_snapshot;
+
+        // Yang dipakai CoCoSo berjumlah 1, yang asli tetap tercatat apa adanya.
+        $this->assertEqualsWithDelta(1.0, array_sum(array_column($snapshot, 'weight')), 1e-9);
+        $this->assertEqualsWithDelta(2.0, array_sum(array_column($snapshot, 'weight_raw')), 1e-9);
+
+        $c3 = (float) Criteria::query()->where('code', 'C3')->value('weight');
+        $this->assertEqualsWithDelta($c3, $snapshot['C3']['weight_raw'], 1e-9);
+        $this->assertEqualsWithDelta($c3 / 2, $snapshot['C3']['weight'], 1e-9);
+    }
+
+    public function test_menolak_perhitungan_saat_ada_bobot_negatif(): void
+    {
+        Criteria::query()->where('code', 'C3')->update(['weight' => -0.2]);
+
+        $assessment = $this->makeAssessment();
+
+        $this->expectException(CalculationException::class);
+        $this->expectExceptionMessage('C3');
+
+        $this->recommendation->calculate($assessment);
+    }
+
+    public function test_prodi_yang_skornya_berdekatan_ditandai_praktis_seri(): void
+    {
+        $assessment = $this->makeAssessment();
+        $this->recommendation->calculate($assessment);
+        $assessment->refresh()->load('results');
+
+        // Ambang 0 mematikan penandaan: tidak ada yang dianggap seri.
+        Setting::set('tie_threshold', 0);
+        Setting::forgetCache();
+        $this->assertSame([], $assessment->tieGroups());
+
+        // Ambang selebar seluruh skala menyatukan semua prodi jadi satu kelompok.
+        Setting::set('tie_threshold', 100);
+        Setting::forgetCache();
+        $semua = $assessment->tieGroups();
+
+        $this->assertCount($assessment->results->count(), $semua);
+        $this->assertSame(1, reset($semua)['from']);
+        $this->assertSame($assessment->results->count(), reset($semua)['to']);
+    }
+
+    public function test_penanda_seri_tidak_mengubah_peringkat_maupun_rekomendasi(): void
+    {
+        $assessment = $this->makeAssessment();
+        $this->recommendation->calculate($assessment);
+        $assessment->refresh()->load('results');
+
+        $peringkat = $assessment->results->pluck('ranking', 'study_program_id')->all();
+        $rekomendasi = $assessment->recommended_program_id;
+
+        Setting::set('tie_threshold', 100);
+        Setting::forgetCache();
+
+        $assessment->tieGroups();
+        $assessment->refresh()->load('results');
+
+        $this->assertSame($peringkat, $assessment->results->pluck('ranking', 'study_program_id')->all());
+        $this->assertSame($rekomendasi, $assessment->recommended_program_id);
+    }
+
+    public function test_kelompok_seri_hanya_memuat_prodi_yang_benar_benar_berdekatan(): void
+    {
+        $assessment = $this->makeAssessment();
+        $this->recommendation->calculate($assessment);
+        $assessment->refresh()->load('results');
+
+        $ambang = 0.5;
+        Setting::set('tie_threshold', $ambang);
+        Setting::forgetCache();
+
+        $urut = $assessment->results->sortBy('ranking')->values();
+
+        foreach ($assessment->tieGroups() as $programId => $meta) {
+            // Setiap anggota kelompok wajib punya tetangga sekelompok yang jaraknya
+            // memang di bawah ambang — kalau tidak, pengelompokannya keliru.
+            $posisi = $urut->search(fn ($result) => $result->study_program_id === $programId);
+            $dekatAtas = $posisi > 0
+                && (float) $urut[$posisi - 1]->k_normal - (float) $urut[$posisi]->k_normal < $ambang;
+            $dekatBawah = $posisi < $urut->count() - 1
+                && (float) $urut[$posisi]->k_normal - (float) $urut[$posisi + 1]->k_normal < $ambang;
+
+            $this->assertTrue($dekatAtas || $dekatBawah, "Prodi {$programId} dikelompokkan tanpa tetangga yang berdekatan.");
+            $this->assertGreaterThanOrEqual(2, $meta['size']);
+        }
     }
 }

@@ -24,20 +24,11 @@
                             </div>
 
                             <div>
-                                @if (isset($choices[$setting->key]))
-                                    <select id="{{ $setting->key }}" name="settings[{{ $setting->key }}]"
-                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300">
-                                        @foreach ($choices[$setting->key] as $value => $label)
-                                            <option value="{{ $value }}" @selected(old($field, $values[$setting->key]) === $value)>{{ $label }}</option>
-                                        @endforeach
-                                    </select>
-                                @else
-                                    <x-text-input :id="$setting->key" :name="'settings['.$setting->key.']'"
-                                                  type="number"
-                                                  step="{{ $setting->type === 'integer' ? '1' : 'any' }}"
-                                                  class="block w-full"
-                                                  :value="old($field, $values[$setting->key])" required />
-                                @endif
+                                <x-text-input :id="$setting->key" :name="'settings['.$setting->key.']'"
+                                              type="number"
+                                              step="{{ $setting->type === 'integer' ? '1' : 'any' }}"
+                                              class="block w-full"
+                                              :value="old($field, $values[$setting->key])" required />
                                 <x-input-error :messages="$errors->get($field)" class="mt-2" />
                             </div>
                         </div>

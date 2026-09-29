@@ -262,8 +262,8 @@ class NewFeaturesTest extends TestCase
         // Formulir pengaturan mengirim seluruh kunci sekaligus, bukan sebagian.
         $this->actingAs($this->admin)->put(route('admin.settings.update'), [
             'settings' => [
-                'threshold' => 85,
-                'threshold_mode' => 'normal',
+                'margin_threshold' => 15,
+                'tie_threshold' => 0.5,
                 'lambda' => 0.5,
                 'epsilon' => 0.000001,
                 'unselected_priority_score' => 0,
@@ -273,7 +273,7 @@ class NewFeaturesTest extends TestCase
             ],
         ])->assertSessionHasNoErrors();
 
-        $threshold = Setting::query()->where('key', 'threshold')->firstOrFail();
+        $threshold = Setting::query()->where('key', 'margin_threshold')->firstOrFail();
 
         $log = ActivityLog::query()
             ->where('subject_type', Setting::class)
@@ -283,7 +283,7 @@ class NewFeaturesTest extends TestCase
             ->latest('id')
             ->firstOrFail();
 
-        $this->assertSame('85', (string) $log->changes['value']['to']);
+        $this->assertSame('15', (string) $log->changes['value']['to']);
     }
 
     public function test_seeder_tidak_ikut_tercatat_karena_berjalan_tanpa_pengguna(): void
@@ -365,7 +365,7 @@ class NewFeaturesTest extends TestCase
 
         $orangLain = User::query()->create([
             'name' => 'Calon Lain',
-            'email' => 'lain@example.com',
+            'email' => 'hasanudin@gmail.com',
             'password' => 'password',
             'role' => User::ROLE_MAHASISWA,
         ]);
@@ -450,7 +450,7 @@ class NewFeaturesTest extends TestCase
 
         $orangLain = User::query()->create([
             'name' => 'Calon Lain',
-            'email' => 'lain2@example.com',
+            'email' => 'siskaayu@gmail.com',
             'password' => 'password',
             'role' => User::ROLE_MAHASISWA,
         ]);
@@ -491,7 +491,7 @@ class NewFeaturesTest extends TestCase
 
         $orangLain = User::query()->create([
             'name' => 'Calon Lain',
-            'email' => 'lain3@example.com',
+            'email' => 'fajarnugroho@gmail.com',
             'password' => 'password',
             'role' => User::ROLE_MAHASISWA,
         ]);

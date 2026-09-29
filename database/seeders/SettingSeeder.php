@@ -11,18 +11,18 @@ class SettingSeeder extends Seeder
     {
         $rows = [
             [
-                'key' => 'threshold',
-                'value' => '70',
+                'key' => 'margin_threshold',
+                'value' => '10',
                 'type' => 'float',
-                'label' => 'Ambang Batas Kelayakan',
-                'description' => 'Nilai minimum agar sebuah prodi ditandai layak dipertimbangkan. Bersifat penanda pada lembar hasil — tidak menentukan prodi mana yang direkomendasikan, karena rekomendasi mengikuti peringkat CoCoSo.',
+                'label' => 'Ambang Margin Rekomendasi Meyakinkan',
+                'description' => 'Selisih minimum (poin, skala relatif 0-100) antara prodi peringkat 1 dan peringkat 2 agar rekomendasi ditandai meyakinkan. Di bawah nilai ini hasil ditandai tipis. Tidak menentukan prodi mana yang direkomendasikan — rekomendasi tetap mengikuti peringkat CoCoSo.',
             ],
             [
-                'key' => 'threshold_mode',
-                'value' => 'normal',
-                'type' => 'string',
-                'label' => 'Mode Pembanding Ambang Batas',
-                'description' => '"normal" membandingkan terhadap K ternormalisasi (0-100), "raw" membandingkan terhadap nilai K asli.',
+                'key' => 'tie_threshold',
+                'value' => '0.5',
+                'type' => 'float',
+                'label' => 'Ambang Peringkat Praktis Seri',
+                'description' => 'Selisih maksimum (poin, skala relatif 0-100) agar dua prodi bersebelahan ditandai praktis seri pada tabel peringkat. Bersifat penanda — tidak mengubah urutan peringkat maupun prodi yang direkomendasikan.',
             ],
             [
                 'key' => 'lambda',
@@ -42,7 +42,7 @@ class SettingSeeder extends Seeder
                 'key' => 'unselected_priority_score',
                 'value' => '0',
                 'type' => 'float',
-                'label' => 'Skor C8 untuk Prodi yang Tidak Dipilih',
+                'label' => 'Skor C4 untuk Prodi yang Tidak Dipilih',
                 'description' => 'Nilai minat yang diberikan pada prodi di luar daftar prioritas calon mahasiswa.',
             ],
             [

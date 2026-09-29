@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Assessment;
+use App\Services\CriteriaInfluenceService;
 use App\Services\ExplanationService;
 use App\Support\Riasec;
 use Illuminate\Http\RedirectResponse;
@@ -114,7 +115,7 @@ class ResultController extends Controller
      * Seluruh angka dibaca dari kolom yang sudah tersimpan saat perhitungan,
      * bukan dihitung ulang, sehingga tetap konsisten dengan hasil aslinya.
      */
-    public function calculation(Assessment $assessment): View|RedirectResponse
+    public function calculation(Assessment $assessment, CriteriaInfluenceService $influence): View|RedirectResponse
     {
         $this->authorize('view', $assessment);
 
@@ -131,6 +132,7 @@ class ResultController extends Controller
             'weights' => $weights,
             'codes' => array_keys($weights),
             'results' => $assessment->results,
+            'influence' => $influence->forResults($assessment->results, $weights),
         ]);
     }
 }

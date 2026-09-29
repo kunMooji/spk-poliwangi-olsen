@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Kriteria penilaian C1..C9 beserta bobot keputusan CoCoSo.
+ * Kriteria penilaian C1..C5 beserta bobot keputusan CoCoSo.
  */
 class Criteria extends Model
 {

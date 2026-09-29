@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Urutan prioritas prodi pilihan calon mahasiswa (dasar perhitungan C8).
+ * Urutan prioritas prodi pilihan calon mahasiswa (dasar perhitungan C4).
  */
 class AssessmentPriority extends Model
 {

@@ -59,23 +59,74 @@ final class Riasec
         'C' => '#65a30d',
     ];
 
-    /** Label skala Likert 1-5 pada kuesioner. */
-    public const LIKERT_LABELS = [
-        1 => 'Sangat Tidak Sesuai',
-        2 => 'Tidak Sesuai',
-        3 => 'Netral',
-        4 => 'Sesuai',
-        5 => 'Sangat Sesuai',
+    /**
+     * Label skala Likert menurut BANYAKNYA titik, bukan menurut nilainya.
+     *
+     * Skala kuesioner dapat disetel admin lewat `likert_min` dan `likert_max`,
+     * sehingga labelnya tidak boleh dipatok pada 1-5. Kunci larik ini adalah
+     * jumlah titik skala; nilainya dipetakan ke rentang yang sedang berlaku.
+     *
+     * Titik tengah hanya ada pada jumlah ganjil. Skala genap sengaja tidak
+     * diberi "Netral" — itu memang sifat skala genap (forced choice), bukan
+     * label yang kebetulan hilang.
+     */
+    private const LIKERT_ANCHORS = [
+        2 => ['Tidak Sesuai', 'Sesuai'],
+        3 => ['Tidak Sesuai', 'Netral', 'Sesuai'],
+        4 => ['Sangat Tidak Sesuai', 'Tidak Sesuai', 'Sesuai', 'Sangat Sesuai'],
+        5 => ['Sangat Tidak Sesuai', 'Tidak Sesuai', 'Netral', 'Sesuai', 'Sangat Sesuai'],
+        6 => ['Sangat Tidak Sesuai', 'Tidak Sesuai', 'Agak Tidak Sesuai', 'Agak Sesuai', 'Sesuai', 'Sangat Sesuai'],
+        7 => ['Sangat Tidak Sesuai', 'Tidak Sesuai', 'Agak Tidak Sesuai', 'Netral', 'Agak Sesuai', 'Sesuai', 'Sangat Sesuai'],
     ];
 
-    /** Versi ringkas untuk tombol pilihan pada layar sempit. */
-    public const LIKERT_SHORT = [
-        1 => 'STS',
-        2 => 'TS',
-        3 => 'N',
-        4 => 'S',
-        5 => 'SS',
+    /** Singkatan label, dipakai pada tombol pilihan di layar sempit. */
+    private const LIKERT_ANCHORS_SHORT = [
+        2 => ['TS', 'S'],
+        3 => ['TS', 'N', 'S'],
+        4 => ['STS', 'TS', 'S', 'SS'],
+        5 => ['STS', 'TS', 'N', 'S', 'SS'],
+        6 => ['STS', 'TS', 'ATS', 'AS', 'S', 'SS'],
+        7 => ['STS', 'TS', 'ATS', 'N', 'AS', 'S', 'SS'],
     ];
+
+    /**
+     * Label skala Likert untuk rentang yang sedang berlaku.
+     *
+     * Mengembalikan `[nilai => label]` sepanjang rentang $min..$max. Rentang di
+     * luar daftar jangkar diberi label ujung saja dan nomor di antaranya —
+     * lebih jujur daripada mengarang gradasi kata yang tidak punya padanan.
+     *
+     * @return array<int, string>
+     */
+    public static function likertScale(int $min, int $max, bool $short = false): array
+    {
+        if ($max <= $min) {
+            return [$min => $short ? 'S' : 'Sesuai'];
+        }
+
+        $count = $max - $min + 1;
+        $anchors = $short ? self::LIKERT_ANCHORS_SHORT : self::LIKERT_ANCHORS;
+
+        $labels = $anchors[$count] ?? null;
+
+        $scale = [];
+
+        foreach (range($min, $max) as $index => $value) {
+            if ($labels !== null) {
+                $scale[$value] = $labels[$index];
+
+                continue;
+            }
+
+            $scale[$value] = match (true) {
+                $index === 0 => $short ? 'STS' : 'Sangat Tidak Sesuai',
+                $index === $count - 1 => $short ? 'SS' : 'Sangat Sesuai',
+                default => (string) $value,
+            };
+        }
+
+        return $scale;
+    }
 
     public static function name(string $dimension): string
     {

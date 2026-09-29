@@ -18,12 +18,43 @@
             @if (abs($totalWeight - 1) > 0.0001)
                 <x-alert type="warning">
                     Total bobot kriteria aktif saat ini <span class="font-semibold">{{ number_format($totalWeight, 4) }}</span>,
-                    seharusnya <span class="font-semibold">1.0000</span>. Perhitungan tetap berjalan, namun nilai
-                    S<sub>i</sub> dan P<sub>i</sub> tidak berada pada skala yang seharusnya.
+                    seharusnya <span class="font-semibold">1.0000</span>. Perhitungan tetap berjalan &mdash; bobot
+                    diskalakan otomatis agar berjumlah 1 sebelum masuk CoCoSo, sehingga perbandingan antar kriteria
+                    tetap seperti yang Anda maksud. Yang perlu diperhatikan: angka yang tersimpan pada snapshot
+                    hasil adalah bobot setelah diskalakan, bukan angka di bawah ini.
                 </x-alert>
             @else
                 <x-alert type="success">
                     Total bobot kriteria aktif <span class="font-semibold">{{ number_format($totalWeight, 4) }}</span> &mdash; sudah sesuai.
+                </x-alert>
+            @endif
+
+            @php
+                // Kriteria aktif yang diberi bobot tetapi kolomnya konstan, sehingga
+                // bobot itu tidak pernah mengubah peringkat.
+                $mati = collect($influence)->filter(function (array $row, string $code) use ($criteria) {
+                    $criterion = $criteria->firstWhere('code', $code);
+
+                    return $row['share'] < 0.05
+                        && $criterion !== null
+                        && $criterion->is_active
+                        && (float) $criterion->weight > 0;
+                });
+            @endphp
+
+            @if ($mati->isNotEmpty())
+                <x-alert type="warning">
+                    Kriteria berikut memegang bobot tetapi <span class="font-semibold">tidak memisahkan apa pun</span>:
+                    @foreach ($mati as $code => $row)
+                        <span class="font-semibold">{{ $code }}</span> (bobot {{ number_format($row['weight'], 4) }}){{ ! $loop->last ? ', ' : '' }}
+                    @endforeach.
+                    Nilainya sama untuk seluruh program studi, sehingga bobot berapa pun tidak mengubah peringkat.
+                    Rerata dari {{ collect($influence)->first()['sessions'] ?? 0 }} sesi terakhir.
+                    @if (isset($mati['C1']))
+                        Untuk C1 ini wajar dan tidak bisa diperbaiki dengan menyetel bobot: rerata rapor adalah atribut
+                        calon mahasiswa, jadi nilainya sama untuk setiap prodi. Kriteria itu tetap dipertahankan karena
+                        SNPMB mewajibkannya, dan pembeda nilai rapor antar prodi ada pada C2.
+                    @endif
                 </x-alert>
             @endif
 
@@ -74,6 +105,7 @@
                                 <th class="px-6 py-3">Sumber Nilai</th>
                                 <th class="px-6 py-3">Jenis</th>
                                 <th class="px-6 py-3 text-right">Bobot</th>
+                                <th class="px-6 py-3 text-right" title="Rerata sumbangan kriteria ini terhadap selisih peringkat pada sesi-sesi terakhir. Bobot menyatakan niat; angka ini menyatakan pengaruh yang benar-benar terjadi.">Daya pisah</th>
                                 <th class="px-6 py-3">Status</th>
                                 <th class="px-6 py-3 text-right">Aksi</th>
                             </tr>
@@ -86,6 +118,16 @@
                                     <td class="px-6 py-4">{{ $criterion->source_label }}</td>
                                     <td class="px-6 py-4">{{ $criterion->isBenefit() ? 'Benefit' : 'Cost' }}</td>
                                     <td class="whitespace-nowrap px-6 py-4 text-right font-mono font-bold">{{ number_format($criterion->weight, 4) }}</td>
+                                    <td class="whitespace-nowrap px-6 py-4 text-right font-mono">
+                                        @if (! isset($influence[$criterion->code]))
+                                            <span class="text-ink-400 dark:text-porcelain-200/45" title="Belum ada sesi selesai yang memakai kriteria ini.">&mdash;</span>
+                                        @elseif ($influence[$criterion->code]['share'] < 0.05)
+                                            <span class="rounded-md bg-amber-100 px-2 py-1 text-xs font-semibold text-amber-700 dark:bg-amber-400/15 dark:text-amber-100"
+                                                  title="Nilainya sama untuk seluruh program studi, sehingga bobot berapa pun tidak mengubah peringkat.">0,0%</span>
+                                        @else
+                                            {{ number_format($influence[$criterion->code]['share'], 1) }}%
+                                        @endif
+                                    </td>
                                     <td class="px-6 py-4">
                                         @if ($criterion->is_active)
                                             <span class="rounded-md bg-emerald-100 px-2 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-200">Aktif</span>

@@ -27,7 +27,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
-        <x-loading-screen />
+        @php($dashboardRoute = Auth::user()->isAdmin() ? route('admin.dashboard') : route('dashboard'))
 
         <div class="min-h-screen bg-porcelain-50 dark:bg-ink-950">
             @include('layouts.navigation')
@@ -35,14 +35,16 @@
             <!-- App bar konsisten untuk administrator dan calon mahasiswa. -->
             <header class="sticky top-0 z-30 border-b border-black/5 bg-white/90 backdrop-blur dark:border-white/10 dark:bg-ink-900/90">
                 <div class="flex w-full items-center gap-3 px-4 py-3 pr-40 sm:px-6 sm:pr-56">
-                    @if (Auth::user()->isAdmin())
-                        <a href="{{ route('admin.dashboard') }}" class="shrink-0 rounded-lg transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:ring-offset-2 dark:focus:ring-offset-ink-900" aria-label="Kembali ke beranda administrator">
-                            <img src="{{ asset('images/poliwangi_logo.png') }}" alt="Logo Politeknik Negeri Banyuwangi" class="h-10 w-10 object-contain">
-                        </a>
-                    @else
+                    <a href="{{ $dashboardRoute }}" class="shrink-0 rounded-lg transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:ring-offset-2 dark:focus:ring-offset-ink-900" aria-label="Kembali ke dasbor">
                         <img src="{{ asset('images/poliwangi_logo.png') }}" alt="Logo Politeknik Negeri Banyuwangi" class="h-10 w-10 shrink-0 object-contain">
-                    @endif
-                    <div class="min-w-0 flex-1">
+                    </a>
+                    <div class="group relative min-w-0 max-w-full cursor-pointer rounded-lg outline-none transition hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500/60 dark:hover:text-brand-200"
+                         role="link" tabindex="0" aria-label="Kembali ke dasbor"
+                         x-data
+                         @click="if (!$event.target.closest('a, button, input, select, textarea, label')) window.location.href = '{{ $dashboardRoute }}'"
+                         @keydown.enter.prevent="window.location.href = '{{ $dashboardRoute }}'"
+                         @keydown.space.prevent="window.location.href = '{{ $dashboardRoute }}'">
+                        <span class="pointer-events-none absolute left-[calc(100%+0.75rem)] top-1/2 z-50 whitespace-nowrap rounded-md bg-white px-3 py-2 text-sm font-medium text-ink-700 opacity-0 shadow-lg shadow-ink-950/15 transition duration-200 -translate-x-1 -translate-y-1/2 group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 dark:bg-ink-800 dark:text-porcelain-50">Back to Home</span>
                         @isset($header)
                             {{ $header }}
                         @else

@@ -9,7 +9,7 @@ return new class extends Migration
     /**
      * Catatan perubahan data master.
      *
-     * Menjawab "siapa mengubah bobot C7, kapan, dari berapa ke berapa" — bobot
+     * Menjawab "siapa mengubah bobot C3, kapan, dari berapa ke berapa" — bobot
      * kriteria dan parameter algoritma memengaruhi rekomendasi seluruh calon
      * mahasiswa sesudahnya, sehingga perubahannya perlu dapat ditelusuri.
      *

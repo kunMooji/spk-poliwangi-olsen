@@ -2,19 +2,25 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="font-display text-[10px] font-bold uppercase tracking-wide text-ink-900 dark:text-porcelain-50 sm:text-sm">
-                Hasil Rekomendasi Program Studi
-            </h2>
-            <span class="rounded-lg bg-brand-50 px-3 py-1 font-mono text-xs font-bold text-brand-700 dark:bg-brand-500/10 dark:text-brand-200">
-                {{ $assessment->code }}
-            </span>
-        </div>
+        <h2 class="font-display text-[10px] font-bold uppercase tracking-wide text-ink-900 dark:text-porcelain-50 sm:text-sm">
+            Hasil Rekomendasi Program Studi
+        </h2>
     </x-slot>
 
     <div class="py-8">
         <div class="mx-auto max-w-none space-y-6 px-5 sm:px-8 lg:px-10 xl:px-12">
-            <x-flash />
+            @if (session('success'))
+                <x-alert type="success" class="mb-4">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <span>{{ session('success') }}</span>
+                        <span class="shrink-0 rounded-lg bg-white/60 px-3 py-1 font-mono text-xs font-bold text-brand-700 dark:bg-brand-500/10 dark:text-brand-200">
+                            {{ $assessment->code }}
+                        </span>
+                    </div>
+                </x-alert>
+            @endif
+
+            <x-flash :show-success="false" />
 
             {{-- Kartu rekomendasi utama --}}
             <section class="relative overflow-hidden rounded-[1.75rem] border border-brand-100 bg-[radial-gradient(circle_at_86%_0%,rgba(179,227,236,.65),transparent_28%),linear-gradient(135deg,#ffffff,#eff9fb)] p-2 shadow-xl shadow-ink-950/5 dark:border-white/10 dark:bg-[radial-gradient(circle_at_78%_7%,rgba(27,137,163,.30),transparent_24%),linear-gradient(135deg,#071b29,#0b1627_55%,#14243a)] dark:shadow-2xl dark:shadow-ink-950/20">
@@ -32,9 +38,8 @@
                 <x-alert type="success">
                     Program studi pilihan pertama Anda,
                     <strong>{{ $assessment->primaryProgram?->full_name }}</strong>,
-                    sekaligus menempati peringkat teratas dengan nilai
-                    <strong>{{ number_format($primaryResult?->k_normal ?? 0, 2) }}</strong>
-                    dari {{ $assessment->results->count() }} program studi.
+                    sekaligus menempati peringkat teratas dari
+                    {{ $assessment->results->count() }} program studi.
                     Peringkat ini murni hasil perhitungan seluruh kriteria &mdash;
                     bukan karena Anda menempatkannya sebagai pilihan pertama.
                 </x-alert>
@@ -44,19 +49,52 @@
                     <strong>{{ $assessment->primaryProgram?->full_name ?? '-' }}</strong>,
                     berada di peringkat
                     <strong>{{ $primaryResult?->ranking ?? '-' }}</strong>
-                    dari {{ $assessment->results->count() }} program studi dengan nilai
-                    <strong>{{ number_format($primaryResult?->k_normal ?? 0, 2) }}</strong>.
-                    Nilai tertinggi diraih
-                    <strong>{{ $assessment->recommendedProgram?->full_name }}</strong>
-                    ({{ number_format($recommendedResult?->k_normal ?? 0, 2) }}).
+                    dari {{ $assessment->results->count() }} program studi, dengan skor
+                    <strong>{{ number_format($primaryResult?->k_normal ?? 0, 2) }}</strong>
+                    dari 100 relatif terhadap peringkat teratas,
+                    <strong>{{ $assessment->recommendedProgram?->full_name }}</strong>.
                     Minat Anda sudah ikut diperhitungkan sebagai salah satu kriteria,
                     dan keputusan akhir tetap berada di tangan Anda.
                 </x-alert>
             @endif
 
+
+            {{-- Seberapa meyakinkan peringkat teratas dibanding pesaing terdekatnya --}}
+            @if ($assessment->hasConfidentRecommendation() === false)
+                <x-alert type="warning">
+                    Jarak <strong>{{ $assessment->recommendedProgram?->full_name }}</strong> terhadap prodi
+                    peringkat kedua hanya
+                    <strong>{{ number_format($assessment->margin_to_runner_up, 2) }} poin</strong>
+                    dari 100 &mdash; di bawah ambang
+                    {{ number_format($assessment->margin_threshold_used, 2) }} poin.
+                    Keduanya praktis setara, jadi sebaiknya Anda menimbang kedua program studi itu
+                    dan tidak memperlakukan peringkat 1 sebagai jawaban tunggal.
+                </x-alert>
+            @elseif ($assessment->hasConfidentRecommendation() === true)
+                <x-alert type="info">
+                    <strong>{{ $assessment->recommendedProgram?->full_name }}</strong> unggul
+                    <strong>{{ number_format($assessment->margin_to_runner_up, 2) }} poin</strong>
+                    dari 100 atas prodi peringkat kedua, sehingga peringkat teratasnya cukup meyakinkan
+                    dan tidak mudah berubah oleh selisih nilai yang kecil.
+                </x-alert>
+            @endif
+
             {{-- Penjelasan: kriteria mana yang mengangkat dan menahan prodi rekomendasi --}}
             @if ($contributions !== [])
-                <section class="student-panel result-explanation-enter p-6 sm:p-7">
+                @php
+                    $dominantRiasecImage = match (strtoupper((string) $assessment->dominant_type)) {
+                        'R' => 'images/realistic char.png',
+                        'I' => 'images/investigative char.png',
+                        'A' => 'images/artistic char.png',
+                        'S' => 'images/social char.png',
+                        'E' => 'images/Enterprise char.png',
+                        'C' => 'images/conventional char.png',
+                        default => 'images/artistic char.png',
+                    };
+                @endphp
+                <section class="student-panel result-explanation-enter overflow-hidden">
+                    <div class="grid lg:grid-cols-[minmax(0,2fr)_minmax(17rem,1fr)]">
+                        <div class="p-6 sm:p-7">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
                         Mengapa {{ $assessment->recommendedProgram?->full_name }}?
                     </h3>
@@ -113,6 +151,19 @@
                             </div>
                         @endforeach
                     </div>
+                        </div>
+
+                        <figure class="relative min-h-64 overflow-hidden bg-porcelain-50 dark:bg-ink-800 lg:min-h-full">
+                            <img src="{{ asset($dominantRiasecImage) }}"
+                                 alt="Ilustrasi tipe kepribadian RIASEC {{ Riasec::name($assessment->dominant_type) }}"
+                                 class="absolute inset-0 h-full w-full object-contain"
+                                 loading="lazy">
+                            <div class="absolute inset-0 bg-gradient-to-t from-ink-950/45 via-transparent to-transparent"></div>
+                            <figcaption class="absolute inset-x-0 bottom-0 p-5 text-sm font-semibold text-white drop-shadow-sm">
+                                Profil dominan Anda: {{ Riasec::name($assessment->dominant_type) }}.
+                            </figcaption>
+                        </figure>
+                    </div>
                 </section>
             @endif
 
@@ -134,24 +185,28 @@
                         </div>
                     </div>
 
-                    <aside class="border-t border-gray-100 pt-5 dark:border-gray-700 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+                    <aside class="border-t border-gray-100 pt-5 dark:border-gray-700 lg:flex lg:h-[356px] lg:flex-col lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
                         <h4 class="text-sm font-semibold text-gray-900 dark:text-gray-100">Rincian dimensi</h4>
-                        <dl class="mt-4 space-y-4">
+                        <dl class="mt-4 grid gap-2.5 lg:min-h-0 lg:flex-1 lg:grid-rows-6">
                             @foreach (Riasec::DIMENSIONS as $dimension)
                                 @php($color = Riasec::color($dimension))
                                 @php($isDominant = $dimension === $assessment->dominant_type)
-                                <div>
+                                <div class="riasec-dimension-card" style="--dimension-color: {{ $color }}">
                                     <div class="flex items-center gap-3">
-                                        <span class="h-2.5 w-2.5 shrink-0 rounded-full" style="background-color: {{ $color }}"></span>
-                                        <dt class="min-w-0 flex-1 text-sm text-gray-700 dark:text-gray-200">
+                                        <span class="riasec-dimension-index flex h-7 w-7 shrink-0 items-center justify-center rounded-lg font-mono text-xs font-bold">
+                                            {{ $loop->iteration }}
+                                        </span>
+                                        <dt class="riasec-dimension-name min-w-0 flex-1 text-sm font-semibold">
                                             {{ Riasec::name($dimension) }}
                                             @if ($isDominant)
-                                                <span class="ms-1 text-xs font-semibold" style="color: {{ $color }}">Dominan</span>
+                                                <span class="riasec-dimension-dominant ms-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">Dominan</span>
                                             @endif
                                         </dt>
-                                        <dd class="font-mono text-sm font-bold tabular-nums text-gray-900 dark:text-gray-100">{{ number_format($percentages[$dimension], 1) }}%</dd>
+                                        <dd class="riasec-dimension-score rounded-lg px-2.5 py-1 font-mono text-sm font-bold tabular-nums">
+                                            {{ number_format($percentages[$dimension], 1) }}%
+                                        </dd>
                                     </div>
-                                    <p class="ms-5 mt-1 text-xs leading-relaxed text-gray-500 dark:text-gray-400">
+                                    <p class="riasec-dimension-description ms-10 mt-1 text-xs leading-relaxed" title="{{ Riasec::shortDescription($dimension) }}">
                                         {{ Riasec::shortDescription($dimension) }}
                                     </p>
                                 </div>
@@ -217,8 +272,10 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            @php($tieGroups = $assessment->tieGroups())
                             @foreach ($assessment->results as $result)
                                 @php($isRecommended = $result->study_program_id === $assessment->recommended_program_id)
+                                @php($tie = $tieGroups[$result->study_program_id] ?? null)
                                 @php($priorityOrder = $assessment->priorities->firstWhere('study_program_id', $result->study_program_id)?->priority_order)
                                 <tr @if ($result->ranking > 5) x-cloak x-show="showAllRanks" @endif
                                     class="{{ $isRecommended ? 'bg-brand-50 dark:bg-brand-900/20' : '' }} text-gray-700 dark:text-gray-300">
@@ -230,6 +287,12 @@
                                         @if ($isRecommended)
                                             <span class="ms-2 rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
                                                 Rekomendasi
+                                            </span>
+                                        @endif
+                                        @if ($tie)
+                                            <span class="ms-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-700 dark:bg-amber-400/15 dark:text-amber-100"
+                                                  title="Selisih skornya terlalu kecil untuk dianggap berbeda. Peringkat {{ $tie['from'] }}–{{ $tie['to'] }} sebaiknya dibaca setara.">
+                                                Setara #{{ $tie['from'] }}&ndash;{{ $tie['to'] }}
                                             </span>
                                         @endif
                                         @if ($priorityOrder)

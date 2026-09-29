@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Urutan prioritas prodi pilihan calon mahasiswa (dasar perhitungan C8).
+     * Urutan prioritas prodi pilihan calon mahasiswa (dasar perhitungan C4).
      */
     public function up(): void
     {

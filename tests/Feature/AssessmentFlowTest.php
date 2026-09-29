@@ -119,7 +119,223 @@ class AssessmentFlowTest extends TestCase
 
         $this->get(route('assessments.calculation', $assessment))
             ->assertOk()
-            ->assertSee('Matriks Ternormalisasi');
+            ->assertSee('Matriks Ternormalisasi')
+            // Daya pisah wajib tampil supaya kesenjangan antara bobot yang tertulis
+            // dan pengaruh yang sebenarnya tidak bisa tersembunyi lagi.
+            ->assertSee('Daya pisah')
+            // C1 bernilai sama untuk seluruh prodi, jadi harus ditandai apa adanya.
+            ->assertSee('tidak memisahkan');
+    }
+
+    public function test_nilai_rapor_menerima_desimal_dengan_titik_maupun_koma(): void
+    {
+        $this->actingAs($this->student);
+
+        $payload = $this->biodataPayload();
+        // Semester 1 memakai titik, semester 2 memakai koma seperti penulisan
+        // bahasa Indonesia. Keduanya harus diterima dan bernilai sama.
+        $payload['rapor_semesters'][1] = '82.5';
+        $payload['rapor_semesters'][2] = '87,25';
+        $payload['rapor_semesters'][3] = 90;
+        $payload['rapor_semesters'][4] = 90;
+        $payload['rapor_semesters'][5] = 90;
+
+        $this->post(route('assessments.store'), $payload)->assertSessionHasNoErrors();
+
+        $assessment = Assessment::query()->latest()->firstOrFail();
+        $semesters = $assessment->raporSemesters->pluck('average_score', 'semester');
+
+        $this->assertSame(82.5, (float) $semesters[1]);
+        $this->assertSame(87.25, (float) $semesters[2]);
+
+        // Rerata ikut desimal, tidak dibulatkan ke bilangan bulat.
+        $this->assertSame(87.95, (float) $assessment->rapor_average);
+    }
+
+    public function test_nilai_mapel_pendukung_menerima_desimal(): void
+    {
+        $this->actingAs($this->student);
+
+        $subject = Rapor::supportSubjects()->firstOrFail();
+
+        $payload = $this->biodataPayload();
+        $payload['subject_scores'][$subject->id] = '78,75';
+
+        $this->post(route('assessments.store'), $payload)->assertSessionHasNoErrors();
+
+        $assessment = Assessment::query()->latest()->firstOrFail();
+
+        $this->assertSame(78.75, (float) $assessment->subjectScoreMap()[$subject->id]);
+    }
+
+    public function test_nilai_dibulatkan_ke_dua_desimal_bukan_dipangkas_diam_diam(): void
+    {
+        // Kolomnya decimal(5,2). Tanpa pembulatan eksplisit, 82.756 akan dibulatkan
+        // oleh basis data sementara rerata terlanjur dihitung dari angka aslinya,
+        // sehingga angka tersimpan dan angka yang dipakai menghitung berbeda.
+        $this->actingAs($this->student);
+
+        $payload = $this->biodataPayload();
+        $payload['rapor_semesters'][1] = '82.756';
+
+        $this->post(route('assessments.store'), $payload)->assertSessionHasNoErrors();
+
+        $assessment = Assessment::query()->latest()->firstOrFail();
+        $semesters = $assessment->raporSemesters->pluck('average_score', 'semester');
+
+        $this->assertSame(82.76, (float) $semesters[1]);
+
+        $harapan = round((82.76 + 85 * 4) / 5, 2);
+        $this->assertSame($harapan, (float) $assessment->rapor_average);
+    }
+
+    public function test_masukan_yang_bukan_angka_tetap_ditolak(): void
+    {
+        $this->actingAs($this->student);
+
+        $payload = $this->biodataPayload();
+        $payload['rapor_semesters'][1] = 'delapan puluh';
+
+        $this->post(route('assessments.store'), $payload)
+            ->assertSessionHasErrors('rapor_semesters.1');
+    }
+
+    public function test_tes_yang_sudah_selesai_tidak_dapat_dihitung_ulang_lewat_pengiriman_baru(): void
+    {
+        $this->actingAs($this->student);
+        $this->post(route('assessments.store'), $this->biodataPayload());
+        $assessment = Assessment::query()->latest()->firstOrFail();
+
+        // Profil condong ke satu dimensi, supaya kiriman kedua benar-benar berbeda.
+        $condong = fn (string $dimension) => RiasecQuestion::query()->active()->get()
+            ->mapWithKeys(fn ($question) => [$question->id => $question->dimension === $dimension ? 5 : 1])
+            ->all();
+
+        $this->post(route('assessments.answers.store', $assessment), ['answers' => $condong('R')]);
+
+        $assessment->refresh();
+        $sebelum = [
+            'rekomendasi' => $assessment->recommended_program_id,
+            'holland' => $assessment->holland_code,
+            'k' => $assessment->recommended_k_value,
+        ];
+
+        $this->post(route('assessments.answers.store', $assessment), ['answers' => $condong('S')])
+            ->assertRedirect(route('assessments.result', $assessment));
+
+        $assessment->refresh();
+
+        $this->assertSame($sebelum['rekomendasi'], $assessment->recommended_program_id);
+        $this->assertSame($sebelum['holland'], $assessment->holland_code);
+        $this->assertSame($sebelum['k'], $assessment->recommended_k_value);
+
+        // Mengulang tes tetap boleh, tetapi lewat sesi baru sehingga keduanya
+        // tersimpan dan bisa dibandingkan.
+        $this->post(route('assessments.store'), $this->biodataPayload())->assertRedirect();
+        $this->assertSame(2, Assessment::query()->where('user_id', $this->student->id)->count());
+    }
+
+    public function test_kuesioner_mengikuti_skala_likert_yang_disetel_admin(): void
+    {
+        Setting::set('likert_max', 7);
+        Setting::forgetCache();
+
+        $this->actingAs($this->student);
+        $this->post(route('assessments.store'), $this->biodataPayload());
+        $assessment = Assessment::query()->latest()->firstOrFail();
+
+        $response = $this->get(route('assessments.questionnaire', $assessment))->assertOk();
+
+        // Tombol pilihan wajib sebanyak titik skalanya, bukan tetap lima.
+        $this->assertCount(7, $response->viewData('likert'));
+        $this->assertCount(7, $response->viewData('likertShort'));
+        $this->assertSame(7, $response->viewData('likertMax'));
+
+        $response->assertSee('skala 1 sampai 7');
+    }
+
+    public function test_menjawab_setinggi_mungkin_selalu_menghasilkan_seratus_persen(): void
+    {
+        // Inti cacat yang diperbaiki: bila layar hanya menampilkan 5 tombol
+        // sementara perhitungan membagi dengan rentang 1-7, responden yang
+        // menjawab semaksimal mungkin tercatat 66,67% dan bukan 100%.
+        foreach ([5, 7] as $maksimum) {
+            Setting::set('likert_max', $maksimum);
+            Setting::forgetCache();
+
+            $student = User::factory()->create(['role' => User::ROLE_MAHASISWA]);
+            $this->actingAs($student);
+            $this->post(route('assessments.store'), $this->biodataPayload())->assertSessionHasNoErrors();
+            $assessment = Assessment::query()->where('user_id', $student->id)->latest()->firstOrFail();
+
+            $skala = $this->get(route('assessments.questionnaire', $assessment))->viewData('likert');
+            $tertinggi = array_key_last($skala);
+
+            $this->assertSame($maksimum, $tertinggi);
+
+            $this->post(route('assessments.answers.store', $assessment), [
+                'answers' => RiasecQuestion::query()->active()->pluck('id')
+                    ->mapWithKeys(fn ($id) => [$id => $tertinggi])->all(),
+            ])->assertSessionHasNoErrors();
+
+            $assessment->refresh();
+
+            foreach (['r', 'i', 'a', 's', 'e', 'c'] as $dimensi) {
+                $this->assertSame(
+                    100.0,
+                    (float) $assessment->{'percent_'.$dimensi},
+                    "Skala 1-{$maksimum}: dimensi {$dimensi} seharusnya 100%.",
+                );
+            }
+        }
+    }
+
+    public function test_skala_likert_yang_lebih_lebar_menaikkan_resolusi_nilai(): void
+    {
+        // Alasan menaikkan skala: resolusi = jumlah butir x rentang skala.
+        // Dengan 4 butir per dimensi, skala 1-5 hanya punya 17 tingkat
+        // (langkah 6,25 poin) sementara skala 1-7 punya 25 tingkat (4,17 poin).
+        $tingkat = fn (int $butir, int $min, int $max) => $butir * ($max - $min) + 1;
+
+        $this->assertSame(17, $tingkat(4, 1, 5));
+        $this->assertSame(25, $tingkat(4, 1, 7));
+
+        // Sama persisnya dengan menambah butir jadi 6, tanpa menambah satu pun soal.
+        $this->assertSame($tingkat(6, 1, 5), $tingkat(4, 1, 7));
+    }
+
+    public function test_daya_pisah_kriteria_dihitung_dari_rentang_bukan_dari_bobot(): void
+    {
+        $this->actingAs($this->student);
+        $this->post(route('assessments.store'), $this->biodataPayload());
+        $assessment = Assessment::query()->latest()->firstOrFail();
+        $this->post(route('assessments.answers.store', $assessment), ['answers' => $this->answersPayload()]);
+
+        $assessment->refresh()->load('results');
+
+        $influence = $this->get(route('assessments.calculation', $assessment))
+            ->assertOk()
+            ->viewData('influence');
+
+        // C1 (rerata rapor) bernilai identik untuk setiap prodi, sehingga rentangnya
+        // nol dan daya pisahnya nol — berapa pun bobot yang diberikan admin.
+        $this->assertSame(0.0, $influence['C1']['spread']);
+        $this->assertSame(0.0, $influence['C1']['share']);
+        $this->assertGreaterThan(0.0, $influence['C1']['weight']);
+
+        // Fixture ini menjawab sama pada seluruh butir, sehingga profil RIASEC-nya
+        // datar dan tidak punya pola untuk dicocokkan. C3 karena itu bernilai netral
+        // 50 untuk setiap prodi dan ikut tidak memisahkan — bukan 0 yang berarti
+        // "berlawanan dengan semua prodi".
+        $this->assertSame(0.0, $influence['C3']['share']);
+        foreach ($assessment->results as $result) {
+            $this->assertEqualsWithDelta(50.0, $result->matrix['C3'], 1e-6);
+        }
+
+        // Kriteria yang benar-benar bervariasi punya daya pisah positif, dan seluruh
+        // porsinya berjumlah 100%.
+        $this->assertGreaterThan(0.0, $influence['C4']['share']);
+        $this->assertEqualsWithDelta(100.0, array_sum(array_column($influence, 'share')), 1e-6);
     }
 
     public function test_hasil_menjelaskan_kriteria_yang_mengangkat_rekomendasi(): void

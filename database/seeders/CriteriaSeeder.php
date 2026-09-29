@@ -16,10 +16,22 @@ use Illuminate\Database\Seeder;
  * dihitung terhadap blok rapor saja; RIASEC, prioritas, dan tracer study adalah
  * tambahan sistem ini yang tidak dikenal SNBP.
  *
- * C1 bernilai sama untuk seluruh program studi dalam satu sesi, sehingga tidak
- * membedakan peringkat — pembeda nilai rapor antar prodi ada pada C2. Lihat
- * catatan rancangan di DecisionMatrixBuilder mengenai konsekuensi kolom konstan
- * ini terhadap normalisasi.
+ * C1 dipertahankan karena aturan SNPMB mewajibkan rerata rapor semester 1 sampai
+ * 5 sebagai komponen penilaian, dan Rapor::SEMESTERS memang mengunci semester itu.
+ * Yang perlu disadari: nilainya sama untuk seluruh program studi dalam satu sesi,
+ * sehingga secara matematis C1 **tidak dapat mengubah urutan peringkat sama sekali**
+ * — bobot 0.25 padanya tidak berarti 25% pengaruh, melainkan 0%. Ini bukan cacat
+ * yang bisa ditambal dengan menyetel bobot: sebuah kolom yang konstan tidak
+ * memisahkan apa pun. Penyebabnya struktural, yaitu SNBP memeringkat siswa untuk
+ * satu prodi sedangkan sistem ini memeringkat prodi untuk satu siswa, sehingga
+ * rerata rapor keseluruhan tidak punya sisi yang berbeda antar alternatif.
+ * Pembeda nilai rapor antar prodi sepenuhnya ada pada C2.
+ *
+ * Agar C1 benar-benar ikut memeringkat, dibutuhkan data yang belum ada di sistem:
+ * pembanding yang melekat pada prodi, misalnya rerata rapor pendaftar yang
+ * biasanya diterima atau tingkat keketatan tiap prodi. Selama data itu belum ada,
+ * yang paling jujur adalah menampilkan daya pisah tiap kriteria apa adanya —
+ * lihat kolom "daya pisah" pada halaman rincian perhitungan.
  *
  * C4 (urutan prioritas) sengaja diberi bobot terkecil. Berbeda dengan kriteria
  * lain, nilainya bukan atribut yang melekat pada program studi melainkan
@@ -27,6 +39,11 @@ use Illuminate\Database\Seeder;
  * mengembalikan pilihan yang sudah disebutkan responden alih-alih memberi
  * informasi baru. Pada 0.05, C4 hanya sanggup membalikkan keputusan yang sudah
  * nyaris seri — berperan sebagai pemecah seri, bukan penggerak hasil.
+ *
+ * Perlu dicatat, C2 pernah ikut menjejak pilihan responden karena prodi di luar
+ * daftar prioritas otomatis diberi nilai semester terendah. Itu sudah dihapus:
+ * formulir memang mengumpulkan nilai mapel pendukung seluruh prodi aktif, jadi
+ * C2 kini mengukur prestasi akademik apa adanya untuk setiap prodi.
  *
  * Minat sendiri tetap tertimbang besar lewat C3, yang mengukurnya dengan
  * instrumen RIASEC alih-alih menanyakan preferensi secara langsung.
@@ -45,8 +62,8 @@ class CriteriaSeeder extends Seeder
 
         $descriptions = [
             'rapor_average' => 'Rerata nilai rapor seluruh mata pelajaran, semua semester kecuali semester terakhir (komponen pertama SNBP).',
-            'support_subject' => 'Rerata nilai rapor pada mata pelajaran pendukung yang ditetapkan untuk masing-masing program studi (komponen kedua SNBP).',
-            'riasec' => 'Cosine similarity antara vektor RIASEC calon mahasiswa dan profil RIASEC program studi.',
+            'support_subject' => 'Rerata nilai rapor pada mata pelajaran pendukung yang ditetapkan untuk masing-masing program studi (komponen kedua SNBP), paling banyak dua mapel per responden sesuai jenjang dan jurusannya.',
+            'riasec' => 'Korelasi Pearson antara vektor RIASEC calon mahasiswa dan profil RIASEC program studi, dipetakan ke skala 0-100: 100 pola minat searah sempurna, 50 tidak berkorelasi, 0 berlawanan.',
             'priority' => 'Konversi urutan pilihan prodi: prioritas pertama memperoleh skor tertinggi.',
             'tracer' => 'Rasio alumni yang terserap dunia kerja berdasarkan data tracer study.',
         ];

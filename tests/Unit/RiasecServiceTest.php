@@ -122,28 +122,53 @@ class RiasecServiceTest extends TestCase
 
     public function test_vektor_sejajar_dengan_besaran_berbeda_tetap_seratus_persen(): void
     {
-        // Cosine mengukur kemiripan pola minat, bukan besarnya skor.
+        // Yang diukur adalah pola minat, bukan besarnya skor.
         $student = ['R' => 20.0, 'I' => 40.0, 'A' => 10.0, 'S' => 0.0, 'E' => 0.0, 'C' => 0.0];
         $program = ['R' => 40.0, 'I' => 80.0, 'A' => 20.0, 'S' => 0.0, 'E' => 0.0, 'C' => 0.0];
 
         $this->assertSame(100.0, $this->riasec->compatibility($student, $program));
     }
 
-    public function test_vektor_tegak_lurus_menghasilkan_nol_persen(): void
+    public function test_pola_yang_bergeser_seragam_tetap_seratus_persen(): void
     {
-        $student = ['R' => 100.0, 'I' => 0.0, 'A' => 0.0, 'S' => 0.0, 'E' => 0.0, 'C' => 0.0];
-        $program = ['R' => 0.0, 'I' => 100.0, 'A' => 0.0, 'S' => 0.0, 'E' => 0.0, 'C' => 0.0];
+        // Kekebalan terhadap pergeseran adalah yang membedakan korelasi Pearson dari
+        // cosine: responden yang menjawab konsisten lebih tinggi pada seluruh dimensi
+        // tetap punya pola minat yang sama persis.
+        $student = ['R' => 10.0, 'I' => 30.0, 'A' => 20.0, 'S' => 50.0, 'E' => 40.0, 'C' => 0.0];
+        $program = ['R' => 60.0, 'I' => 80.0, 'A' => 70.0, 'S' => 100.0, 'E' => 90.0, 'C' => 50.0];
+
+        $this->assertSame(100.0, $this->riasec->compatibility($student, $program));
+    }
+
+    public function test_pola_berlawanan_sempurna_menghasilkan_nol(): void
+    {
+        // Korelasi -1 dipetakan ke ujung bawah skala.
+        $student = ['R' => 10.0, 'I' => 20.0, 'A' => 30.0, 'S' => 40.0, 'E' => 50.0, 'C' => 60.0];
+        $program = ['R' => 60.0, 'I' => 50.0, 'A' => 40.0, 'S' => 30.0, 'E' => 20.0, 'C' => 10.0];
 
         $this->assertSame(0.0, $this->riasec->compatibility($student, $program));
     }
 
-    public function test_kecocokan_pada_sudut_empat_puluh_lima_derajat(): void
+    public function test_pola_tidak_berkorelasi_menghasilkan_lima_puluh(): void
     {
-        // cos 45° = 1/√2 = 0.70710678... -> 70.7107 %
-        $student = ['R' => 1.0, 'I' => 1.0, 'A' => 0.0, 'S' => 0.0, 'E' => 0.0, 'C' => 0.0];
-        $program = ['R' => 1.0, 'I' => 0.0, 'A' => 0.0, 'S' => 0.0, 'E' => 0.0, 'C' => 0.0];
+        // Korelasi 0 adalah titik tengah skala, bukan ujung bawah — inilah alasan
+        // C3 sekarang boleh dinormalisasi dengan batas tetap 0..100.
+        $student = ['R' => 1.0, 'I' => -1.0, 'A' => 1.0, 'S' => -1.0, 'E' => 1.0, 'C' => -1.0];
+        $program = ['R' => 1.0, 'I' => 1.0, 'A' => -1.0, 'S' => -1.0, 'E' => 0.0, 'C' => 0.0];
 
-        $this->assertEqualsWithDelta(70.7107, $this->riasec->compatibility($student, $program), 1e-4);
+        $this->assertEqualsWithDelta(50.0, $this->riasec->compatibility($student, $program), 1e-9);
+    }
+
+    public function test_profil_datar_dinilai_netral_bukan_nol(): void
+    {
+        // Responden yang menjawab seragam pada seluruh butir tidak punya pola untuk
+        // dicocokkan. Korelasinya tidak terdefinisi, dan menilainya 0 berarti
+        // menyatakan "berlawanan" — sebuah klaim yang tidak didukung data.
+        $datar = ['R' => 40.0, 'I' => 40.0, 'A' => 40.0, 'S' => 40.0, 'E' => 40.0, 'C' => 40.0];
+        $program = ['R' => 60.0, 'I' => 95.0, 'A' => 55.0, 'S' => 30.0, 'E' => 45.0, 'C' => 80.0];
+
+        $this->assertSame(50.0, $this->riasec->compatibility($datar, $program));
+        $this->assertSame(50.0, $this->riasec->compatibility($program, $datar));
     }
 
     public function test_vektor_nol_tidak_menyebabkan_pembagian_nol(): void
@@ -151,7 +176,24 @@ class RiasecServiceTest extends TestCase
         $zero = ['R' => 0.0, 'I' => 0.0, 'A' => 0.0, 'S' => 0.0, 'E' => 0.0, 'C' => 0.0];
         $program = ['R' => 60.0, 'I' => 95.0, 'A' => 55.0, 'S' => 30.0, 'E' => 45.0, 'C' => 80.0];
 
-        $this->assertSame(0.0, $this->riasec->compatibility($zero, $program));
-        $this->assertSame(0.0, $this->riasec->compatibility($program, $zero));
+        $this->assertSame(50.0, $this->riasec->compatibility($zero, $program));
+        $this->assertSame(50.0, $this->riasec->compatibility($program, $zero));
+    }
+
+    public function test_hasil_selalu_berada_pada_skala_nol_seratus(): void
+    {
+        for ($i = 0; $i < 500; $i++) {
+            $student = [];
+            $program = [];
+            foreach (['R', 'I', 'A', 'S', 'E', 'C'] as $dimension) {
+                $student[$dimension] = (float) random_int(0, 10000) / 100;
+                $program[$dimension] = (float) random_int(0, 10000) / 100;
+            }
+
+            $value = $this->riasec->compatibility($student, $program);
+
+            $this->assertGreaterThanOrEqual(0.0, $value);
+            $this->assertLessThanOrEqual(100.0, $value);
+        }
     }
 }

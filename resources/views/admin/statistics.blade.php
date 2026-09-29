@@ -81,7 +81,7 @@
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ([
                         ['label' => 'Tes Selesai', 'value' => $totalCompleted, 'unit' => 'sesi'],
-                        ['label' => 'Rata-rata Kecocokan', 'value' => number_format($averageFit, 1), 'unit' => 'dari 100'],
+                        ['label' => 'Rata-rata Margin #1 vs #2', 'value' => number_format($averageMargin, 1), 'unit' => 'poin dari 100'],
                         ['label' => 'Sesuai Pilihan Pertama', 'value' => $matchRatio.'%', 'unit' => ''],
                         ['label' => 'Asal Sekolah Terdata', 'value' => $schools->count(), 'unit' => 'sekolah teratas'],
                     ] as $stat)
@@ -94,6 +94,74 @@
                         </div>
                     @endforeach
                 </div>
+
+                {{-- Reliabilitas instrumen RIASEC --}}
+                <section class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
+                    <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                            Reliabilitas Instrumen RIASEC &mdash; Cronbach's Alpha
+                        </h3>
+                        <p class="mt-1 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                            Mengukur apakah butir-butir dalam satu dimensi benar-benar menilai hal yang sama.
+                            Dihitung dari {{ $reliability['respondents'] }} responden yang menjawab lengkap seluruh
+                            butir yang aktif saat ini. Kesesuaian RIASEC memegang bagian terbesar daya pisah
+                            keputusan, sehingga angka inilah dasar untuk menilai panjang instrumen &mdash;
+                            bukan dugaan.
+                        </p>
+
+                        @if (! $reliability['sufficient'])
+                            <p class="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-800 dark:bg-amber-400/10 dark:text-amber-100">
+                                <strong>Belum memadai untuk dilaporkan.</strong>
+                                Alpha baru stabil pada sekitar {{ $reliability['minimum'] }} responden;
+                                saat ini {{ $reliability['respondents'] }}. Angka di bawah boleh dipantau,
+                                tetapi jangan dikutip sebagai hasil penelitian.
+                            </p>
+                        @endif
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+                            <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
+                                <tr>
+                                    <th class="px-6 py-3">Dimensi</th>
+                                    <th class="px-6 py-3 text-right">Butir</th>
+                                    <th class="px-6 py-3 text-right">Alpha</th>
+                                    <th class="px-6 py-3">Tafsir</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                @foreach ($reliability['dimensions'] as $dimension => $row)
+                                    <tr class="text-gray-700 dark:text-gray-300">
+                                        <td class="px-6 py-3 font-medium text-gray-900 dark:text-gray-100">
+                                            {{ $dimension }} &mdash; {{ \App\Support\Riasec::name($dimension) }}
+                                        </td>
+                                        <td class="px-6 py-3 text-right tabular-nums">{{ $row['items'] }}</td>
+                                        <td class="px-6 py-3 text-right tabular-nums font-semibold">
+                                            {{ $row['alpha'] === null ? '—' : number_format($row['alpha'], 3) }}
+                                        </td>
+                                        <td class="px-6 py-3">{{ $row['interpretation'] }}</td>
+                                    </tr>
+                                @endforeach
+                                <tr class="bg-gray-50 font-semibold text-gray-900 dark:bg-gray-900/50 dark:text-gray-100">
+                                    <td class="px-6 py-3">Seluruh instrumen</td>
+                                    <td class="px-6 py-3 text-right tabular-nums">{{ $reliability['overall']['items'] }}</td>
+                                    <td class="px-6 py-3 text-right tabular-nums">
+                                        {{ $reliability['overall']['alpha'] === null ? '—' : number_format($reliability['overall']['alpha'], 3) }}
+                                    </td>
+                                    <td class="px-6 py-3">{{ $reliability['overall']['interpretation'] }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <p class="border-t border-gray-200 px-6 py-4 text-xs leading-relaxed text-gray-500 dark:border-gray-700 dark:text-gray-400">
+                        Acuan lazim (George &amp; Mallery): &ge; 0,9 sangat baik &middot; &ge; 0,8 baik &middot;
+                        &ge; 0,7 memadai &middot; &ge; 0,6 dipertanyakan &middot; &lt; 0,6 perlu diperbaiki.
+                        Alpha seluruh instrumen wajar lebih rendah daripada per dimensi, karena RIASEC memang
+                        mengukur enam hal berbeda &mdash; bukan satu sifat tunggal. Yang perlu diperhatikan adalah
+                        angka per dimensi. Alpha bernilai negatif menandakan butir-butirnya justru berlawanan arah.
+                    </p>
+                </section>
 
                 {{-- Minat vs rekomendasi --}}
                 <section class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
@@ -159,7 +227,7 @@
                                     <tr>
                                         <th class="px-6 py-3">Sekolah</th>
                                         <th class="px-6 py-3 text-right">Peserta</th>
-                                        <th class="px-6 py-3 text-right">Rata-rata Kecocokan</th>
+                                        <th class="px-6 py-3 text-right">Rata-rata Margin</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -167,7 +235,7 @@
                                         <tr class="text-gray-700 dark:text-gray-300">
                                             <td class="px-6 py-3">{{ $school->school_name }}</td>
                                             <td class="px-6 py-3 text-right tabular-nums">{{ $school->total }}</td>
-                                            <td class="px-6 py-3 text-right tabular-nums">{{ number_format((float) $school->average_fit, 1) }}</td>
+                                            <td class="px-6 py-3 text-right tabular-nums">{{ number_format((float) $school->average_margin, 1) }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>

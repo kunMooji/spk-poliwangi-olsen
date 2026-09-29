@@ -18,9 +18,53 @@ class StoreAssessmentRequest extends FormRequest
      */
     private ?array $supportSubjectIds = null;
 
+    /** Presisi nilai rapor, mengikuti kolom decimal(5,2) tempat nilainya disimpan. */
+    public const SCORE_PRECISION = 2;
+
     public function authorize(): bool
     {
         return $this->user() !== null;
+    }
+
+    /**
+     * Terima koma sebagai pemisah desimal, bukan hanya titik.
+     *
+     * Responden Indonesia menulis "82,5" — itu penulisan yang benar dalam bahasa
+     * Indonesia, tetapi aturan `numeric` menolaknya karena is_numeric() hanya
+     * mengenal titik. Tanpa normalisasi ini, nilai desimal yang sah tertolak
+     * sebagai "bukan angka" dan responden tidak punya petunjuk apa yang salah.
+     *
+     * Yang dinormalisasi hanya kolom nilai; kolom lain dibiarkan apa adanya.
+     */
+    protected function prepareForValidation(): void
+    {
+        $normalize = static function ($value) {
+            if (! is_string($value)) {
+                return $value;
+            }
+
+            $value = trim($value);
+
+            // Hanya bentuk "angka koma angka" yang diubah. String lain dibiarkan
+            // supaya tetap gagal validasi dengan pesan yang benar.
+            return preg_match('/^-?\d+,\d+$/', $value) === 1
+                ? str_replace(',', '.', $value)
+                : $value;
+        };
+
+        $payload = [];
+
+        foreach (['rapor_semesters', 'subject_scores'] as $field) {
+            $input = $this->input($field);
+
+            if (is_array($input)) {
+                $payload[$field] = array_map($normalize, $input);
+            }
+        }
+
+        if ($payload !== []) {
+            $this->merge($payload);
+        }
     }
 
     /**
@@ -146,9 +190,9 @@ class StoreAssessmentRequest extends FormRequest
      */
     public function raporAverage(): float
     {
-        $scores = array_map('floatval', $this->validated('rapor_semesters'));
+        $scores = $this->raporSemesters();
 
-        return round(array_sum($scores) / count($scores), 2);
+        return round(array_sum($scores) / count($scores), self::SCORE_PRECISION);
     }
 
     /**
@@ -162,7 +206,10 @@ class StoreAssessmentRequest extends FormRequest
 
         $rows = [];
         foreach (Rapor::SEMESTERS as $semester) {
-            $rows[$semester] = (float) $input[$semester];
+            // Dibulatkan di sini, bukan dibiarkan dibulatkan diam-diam oleh kolom
+            // decimal(5,2), supaya angka yang tersimpan sama dengan angka yang
+            // dipakai menghitung rerata.
+            $rows[$semester] = round((float) $input[$semester], self::SCORE_PRECISION);
         }
 
         return $rows;
@@ -186,7 +233,9 @@ class StoreAssessmentRequest extends FormRequest
         $rows = [];
         foreach ($this->supportSubjectIds() as $subjectId) {
             $value = $input[$subjectId] ?? null;
-            $rows[$subjectId] = ($value === null || $value === '') ? null : (float) $value;
+            $rows[$subjectId] = ($value === null || $value === '')
+                ? null
+                : round((float) $value, self::SCORE_PRECISION);
         }
 
         foreach ($input as $subjectId => $value) {
@@ -196,7 +245,7 @@ class StoreAssessmentRequest extends FormRequest
                 continue;
             }
 
-            $rows[$subjectId] = (float) $value;
+            $rows[$subjectId] = round((float) $value, self::SCORE_PRECISION);
         }
 
         return $rows;

@@ -198,21 +198,21 @@
                     <table class="w-full table-fixed divide-y divide-black/5 text-sm dark:divide-white/10">
                         <thead class="bg-porcelain-50 text-left text-[10px] font-bold uppercase tracking-[0.14em] text-ink-500 dark:bg-ink-950/50 dark:text-porcelain-300/70">
                             <tr>
-                                <th class="w-[18%] px-3 py-3 sm:w-28 sm:px-6">Kode</th>
-                                <th class="w-[31%] px-3 py-3 sm:w-[24%] sm:px-6">Calon mahasiswa</th>
-                                <th class="w-[20%] px-3 py-3 sm:w-32 sm:px-6">Tanggal</th>
-                                <th class="w-[23%] px-3 py-3 sm:px-6">Rekomendasi</th>
-                                <th class="w-[8%] px-3 py-3 text-right sm:w-20 sm:px-6">Aksi</th>
+                                <th class="w-[16%] px-3 py-3 sm:px-6">Kode</th>
+                                <th class="w-[24%] px-3 py-3 sm:px-6">Calon mahasiswa</th>
+                                <th class="w-[15%] px-3 py-3 sm:px-6">Tanggal</th>
+                                <th class="w-[37%] px-3 py-3 sm:px-6">Rekomendasi</th>
+                                <th class="w-[8%] px-3 py-3 text-right sm:px-6">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-black/5 dark:divide-white/10">
                             @foreach ($recent as $assessment)
-                                <tr class="dashboard-history-row text-ink-700 dark:text-porcelain-200">
-                                    <td class="truncate px-3 py-4 font-mono text-xs sm:px-6" title="{{ $assessment->code }}">{{ $assessment->code }}</td>
-                                    <td class="truncate px-3 py-4 font-semibold sm:px-6" title="{{ $assessment->full_name }}">{{ $assessment->full_name }}</td>
-                                    <td class="truncate px-3 py-4 text-xs text-ink-500 dark:text-porcelain-300/70 sm:px-6 sm:text-sm" title="{{ $assessment->created_at->translatedFormat('d M Y') }}">{{ $assessment->created_at->translatedFormat('d M Y') }}</td>
-                                    <td class="truncate px-3 py-4 sm:px-6" title="{{ $assessment->recommendedProgram?->full_name ?? '-' }}">{{ $assessment->recommendedProgram?->full_name ?? '-' }}</td>
-                                    <td class="px-3 py-4 text-right sm:px-6"><x-icon-button :href="route('admin.recap.show', $assessment)" color="brand" title="Lihat detail tes"><x-icon.eye /></x-icon-button></td>
+                                <tr class="dashboard-history-row align-middle text-ink-700 dark:text-porcelain-200">
+                                    <td class="truncate px-3 py-3.5 font-mono text-xs sm:px-6" title="{{ $assessment->code }}">{{ $assessment->code }}</td>
+                                    <td class="truncate px-3 py-3.5 font-semibold sm:px-6" title="{{ $assessment->full_name }}">{{ $assessment->full_name }}</td>
+                                    <td class="whitespace-nowrap px-3 py-3.5 text-xs text-ink-500 dark:text-porcelain-300/70 sm:px-6 sm:text-sm" title="{{ $assessment->created_at->translatedFormat('d M Y') }}">{{ $assessment->created_at->translatedFormat('d M Y') }}</td>
+                                    <td class="px-3 py-3.5 sm:px-6"><span class="block max-w-full break-words leading-relaxed" title="{{ $assessment->recommendedProgram?->full_name ?? '-' }}">{{ $assessment->recommendedProgram?->full_name ?? '-' }}</span></td>
+                                    <td class="px-3 py-3.5 text-right sm:px-6"><x-icon-button :href="route('admin.recap.show', $assessment)" color="brand" title="Lihat detail tes"><x-icon.eye /></x-icon-button></td>
                                 </tr>
                             @endforeach
                         </tbody>

@@ -118,8 +118,12 @@
                         <div>
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Hasil Rekomendasi</h3>
                             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                Threshold {{ number_format($assessment->threshold_used, 2) }}
-                                (mode {{ $assessment->threshold_mode_used }})
+                                @if ($assessment->margin_to_runner_up !== null)
+                                    Margin ke peringkat 2 {{ number_format($assessment->margin_to_runner_up, 2) }} poin
+                                    (ambang {{ number_format($assessment->margin_threshold_used ?? 0, 2) }})
+                                @else
+                                    Margin tidak tercatat
+                                @endif
                                 &middot; &lambda; = {{ number_format($assessment->lambda_used, 2) }}
                             </p>
                         </div>
@@ -148,13 +152,21 @@
                                     <th class="px-4 py-3 text-right">S<sub>i</sub></th>
                                     <th class="px-4 py-3 text-right">P<sub>i</sub></th>
                                     <th class="px-4 py-3 text-right">K<sub>i</sub></th>
-                                    <th class="px-4 py-3 text-right">K ternormalisasi</th>
+                                    <th class="px-4 py-3 text-right" title="K dibagi K tertinggi pada sesi ini, dikali 100. Peringkat 1 karena itu selalu 100.">% thd. terbaik</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                                @php($tieGroups = $assessment->tieGroups())
                                 @foreach ($topResults as $result)
+                                    @php($tie = $tieGroups[$result->study_program_id] ?? null)
                                     <tr class="text-gray-700 dark:text-gray-300 {{ $result->study_program_id === $assessment->recommended_program_id ? 'bg-brand-50 dark:bg-brand-900/20' : '' }}">
-                                        <td class="px-4 py-3 font-semibold">{{ $result->ranking }}</td>
+                                        <td class="px-4 py-3 font-semibold">
+                                            {{ $result->ranking }}
+                                            @if ($tie)
+                                                <span class="ms-1 rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-400/15 dark:text-amber-100"
+                                                      title="Selisih skornya di bawah ambang praktis seri.">setara #{{ $tie['from'] }}&ndash;{{ $tie['to'] }}</span>
+                                            @endif
+                                        </td>
                                         <td class="px-4 py-3 text-gray-900 dark:text-gray-100">{{ $result->studyProgram?->full_name ?? '-' }}</td>
                                         <td class="px-4 py-3 text-right">{{ number_format($result->s_value, 4) }}</td>
                                         <td class="px-4 py-3 text-right">{{ number_format($result->p_value, 4) }}</td>

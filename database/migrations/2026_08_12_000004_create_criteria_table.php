@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Kriteria C1..C9 beserta bobot keputusan CoCoSo.
+     * Kriteria C1..C5 beserta bobot keputusan CoCoSo.
      *
      * `source` + `subject` dipakai DecisionMatrixBuilder untuk menentukan
      * dari mana nilai x_ij diambil, sehingga kriteria bersifat data-driven.

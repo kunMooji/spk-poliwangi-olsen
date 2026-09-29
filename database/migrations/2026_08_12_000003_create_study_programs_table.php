@@ -27,7 +27,7 @@ return new class extends Migration
             $table->decimal('indonesian_relevance', 3, 2)->default(0.50);
             $table->decimal('english_relevance', 3, 2)->default(0.50);
 
-            // Profil kepribadian RIASEC prodi (0 - 100) -> pembanding cosine similarity (C7)
+            // Profil kepribadian RIASEC prodi (0 - 100) -> pembanding korelasi Pearson (C3)
             $table->unsignedTinyInteger('riasec_r')->default(0);
             $table->unsignedTinyInteger('riasec_i')->default(0);
             $table->unsignedTinyInteger('riasec_a')->default(0);
@@ -35,7 +35,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('riasec_e')->default(0);
             $table->unsignedTinyInteger('riasec_c')->default(0);
 
-            // Tracer study / prospek kerja (C9)
+            // Tracer study / prospek kerja (C5)
             $table->decimal('employment_rate', 4, 3)->default(0.000);
             $table->unsignedInteger('alumni_count')->default(0);
             $table->unsignedInteger('employed_count')->default(0);

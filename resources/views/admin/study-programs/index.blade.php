@@ -30,13 +30,25 @@
                             <x-input-label for="q" value="Cari program studi" class="text-ink-600 dark:text-porcelain-200/70" />
                             <x-text-input id="q" name="q" type="search" class="mt-1 block w-full border-brand-200 bg-white text-ink-900 placeholder:text-ink-400 focus:border-brand-500 focus:ring-brand-500 dark:border-white/15 dark:bg-ink-950/50 dark:text-white dark:placeholder:text-porcelain-200/45" :value="request('q')" placeholder="Kode, nama, atau jurusan" />
                         </div>
-                        <div class="min-w-36">
+                        <div class="relative min-w-40" x-data="{ open: false, status: @js(request('status') ?? '') }" @keydown.escape.window="open = false">
                             <x-input-label for="status" value="Status" class="text-ink-600 dark:text-porcelain-200/70" />
-                            <select id="status" name="status" class="mt-1 block w-full rounded-md border-brand-200 bg-white text-sm text-ink-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-white/15 dark:bg-ink-950/50 dark:text-white">
-                                <option value="">Semua</option>
-                                <option value="aktif" @selected(request('status') === 'aktif')>Aktif</option>
-                                <option value="nonaktif" @selected(request('status') === 'nonaktif')>Nonaktif</option>
-                            </select>
+                            <input id="status" type="hidden" name="status" :value="status">
+                            <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-haspopup="listbox"
+                                    class="mt-1 flex w-full items-center justify-between gap-3 rounded-xl border border-brand-200 bg-white px-3.5 py-2.5 text-left text-sm font-medium text-ink-800 shadow-sm shadow-ink-950/5 transition hover:border-brand-400 hover:bg-brand-50/50 focus:outline-none focus:ring-2 focus:ring-brand-500/40 dark:border-white/15 dark:bg-ink-950/50 dark:text-porcelain-50 dark:hover:bg-white/[0.06]">
+                                <span x-text="status === 'aktif' ? 'Aktif' : (status === 'nonaktif' ? 'Nonaktif' : 'Semua')"></span>
+                                <x-heroicon-o-chevron-down class="h-4 w-4 shrink-0 text-brand-600 transition-transform duration-200 dark:text-brand-300" x-bind:class="open ? 'rotate-180' : ''" />
+                            </button>
+                            <div x-cloak x-show="open" x-transition.origin.top.left @click.outside="open = false"
+                                 class="absolute z-30 mt-2 w-full overflow-hidden rounded-xl border border-brand-100 bg-white p-1.5 shadow-xl shadow-ink-950/15 dark:border-white/10 dark:bg-ink-900">
+                                <template x-for="option in [{ value: '', label: 'Semua' }, { value: 'aktif', label: 'Aktif' }, { value: 'nonaktif', label: 'Nonaktif' }]" :key="option.value">
+                                    <button type="button" @click="status = option.value; open = false"
+                                            class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium text-ink-700 transition hover:bg-brand-50 hover:text-brand-700 dark:text-porcelain-200 dark:hover:bg-white/10 dark:hover:text-white"
+                                            x-bind:class="status === option.value ? 'bg-brand-600 text-white hover:bg-brand-600 hover:text-white dark:bg-brand-600' : ''">
+                                        <span x-text="option.label"></span>
+                                        <x-heroicon-o-check class="h-4 w-4" x-show="status === option.value" />
+                                    </button>
+                                </template>
+                            </div>
                         </div>
                         <button type="submit" class="rounded-lg bg-ink-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-ink-700 dark:bg-white dark:text-ink-950 dark:hover:bg-brand-50">Terapkan</button>
                         @if (request()->hasAny(['q', 'status']))

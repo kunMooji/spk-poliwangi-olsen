@@ -26,7 +26,9 @@
                 <dl class="mt-4 grid gap-4 sm:grid-cols-3">
                     @foreach ([
                         'Lambda (λ)' => number_format($assessment->lambda_used, 3),
-                        'Ambang kelayakan' => number_format($assessment->threshold_used, 2).' ('.$assessment->threshold_mode_used.')',
+                        'Margin ke peringkat 2' => $assessment->margin_to_runner_up === null
+                            ? 'Tidak tercatat'
+                            : number_format($assessment->margin_to_runner_up, 2).' poin (ambang '.number_format($assessment->margin_threshold_used ?? 0, 2).')',
                         'Jumlah alternatif' => $results->count().' program studi',
                     ] as $label => $value)
                         <div class="student-panel-muted rounded-lg p-4">
@@ -41,6 +43,12 @@
             <section class="student-panel overflow-hidden">
                 <div class="p-6 pb-0">
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Bobot Kriteria (snapshot)</h3>
+                    <p class="mt-2 max-w-3xl text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                        Kolom <strong>daya pisah</strong> menunjukkan seberapa besar sebuah kriteria benar-benar
+                        menggeser peringkat, yaitu bobotnya dikali rentang nilainya antar program studi.
+                        Kriteria yang nilainya nyaris sama untuk semua prodi tidak memisahkan apa pun
+                        meski bobotnya besar &mdash; jadi angka ini, bukan bobot, yang menyatakan pengaruh sebenarnya.
+                    </p>
                 </div>
                 <div class="mt-4 overflow-x-auto">
                     <table class="student-table min-w-full divide-y divide-black/5 text-sm dark:divide-white/10">
@@ -50,6 +58,7 @@
                                 <th class="px-6 py-3">Kriteria</th>
                                 <th class="px-6 py-3">Tipe</th>
                                 <th class="px-6 py-3 text-right">Bobot</th>
+                                <th class="px-6 py-3 text-right">Daya pisah</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 text-gray-700 dark:divide-gray-700 dark:text-gray-300">
@@ -59,6 +68,15 @@
                                     <td class="px-6 py-3">{{ $meta['name'] }}</td>
                                     <td class="px-6 py-3">{{ $meta['type'] }}</td>
                                     <td class="px-6 py-3 text-right tabular-nums">{{ number_format($meta['weight'], 6) }}</td>
+                                    <td class="px-6 py-3 text-right tabular-nums">
+                                        {{ number_format($influence[$code]['share'] ?? 0, 1) }}%
+                                        @if (($influence[$code]['share'] ?? 0) < 0.05)
+                                            <span class="ml-1 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-400/15 dark:text-amber-100"
+                                                  title="Nilainya sama untuk seluruh program studi pada sesi ini, sehingga tidak mengubah urutan peringkat.">
+                                                tidak memisahkan
+                                            </span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                             <tr class="bg-gray-50 font-semibold dark:bg-gray-900/50">
@@ -66,6 +84,7 @@
                                 <td class="px-6 py-3 text-right tabular-nums">
                                     {{ number_format(collect($weights)->sum('weight'), 6) }}
                                 </td>
+                                <td class="px-6 py-3 text-right tabular-nums">100,0%</td>
                             </tr>
                         </tbody>
                     </table>
@@ -137,13 +156,21 @@
                                 <th class="px-4 py-3 text-right">K<sub>ib</sub></th>
                                 <th class="px-4 py-3 text-right">K<sub>ic</sub></th>
                                 <th class="px-4 py-3 text-right">K<sub>i</sub></th>
-                                <th class="px-4 py-3 text-right">Skala 0&ndash;100</th>
+                                <th class="px-4 py-3 text-right" title="K dibagi K tertinggi pada sesi ini, dikali 100. Peringkat 1 karena itu selalu 100.">% thd. terbaik</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 text-gray-700 dark:divide-gray-700 dark:text-gray-300">
+                            @php($tieGroups = $assessment->tieGroups())
                             @foreach ($results as $result)
+                                @php($tie = $tieGroups[$result->study_program_id] ?? null)
                                 <tr class="{{ $result->study_program_id === $assessment->recommended_program_id ? 'bg-brand-50 dark:bg-brand-900/20' : '' }}">
-                                    <td class="px-4 py-2.5 font-semibold">{{ $result->ranking }}</td>
+                                    <td class="px-4 py-2.5 font-semibold">
+                                        {{ $result->ranking }}
+                                        @if ($tie)
+                                            <span class="ms-1 text-[10px] font-medium text-amber-600 dark:text-amber-300"
+                                                  title="Praktis seri dengan peringkat {{ $tie['from'] }}–{{ $tie['to'] }}.">≈</span>
+                                        @endif
+                                    </td>
                                     <td class="whitespace-nowrap px-4 py-2.5 font-medium text-gray-900 dark:text-gray-100">
                                         {{ $result->studyProgram->code }}
                                     </td>

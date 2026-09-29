@@ -47,15 +47,28 @@ final class DecisionMatrixBuilder
      * sehingga beda 11 poin diperlakukan seolah beda terburuk lawan terbaik dan
      * C5 mendominasi hasil jauh melebihi bobotnya.
      *
-     * `riasec` (C3) dan `priority` (C4) sengaja tidak masuk daftar ini. Cosine
-     * similarity tidak punya tafsir absolut — 69 bukan berarti "69% cocok" —
-     * dan urutan prioritas hanya bermakna relatif terhadap pilihan lain pada
-     * sesi tes yang sama. Untuk keduanya, perbandingan antar alternatif justru
-     * tafsir yang benar, sehingga min-max sampel dipertahankan.
+     * `riasec` (C3) — sejak kesesuaian dihitung dengan korelasi Pearson alih-alih
+     * cosine, skalanya punya tafsir absolut: 100 searah sempurna, 50 tidak
+     * berkorelasi, 0 berlawanan. Batas tetap 0..100 karena itu tepat, dan justru
+     * wajib. Selama C3 memakai batas sampel, rentangnya SELALU terentang ke 0..1
+     * penuh berapa pun sebaran aslinya, sehingga daya pisahnya selalu persis
+     * sebesar bobotnya — terukur 79% dari seluruh daya pisah pada data nyata,
+     * padahal bobotnya 0.35. Kriteria berbatas tetap hanya menyumbang sebesar
+     * rentang nyatanya, jadi mencampur kedua perlakuan membuat angka pada kolom
+     * `weight` berhenti mewakili pengaruh yang sebenarnya.
+     *
+     * `priority` (C4) — nilainya memang dibangkitkan pada skala 0..100 oleh
+     * priorityValue(), jadi batas tetap itu sekadar menyatakan skala yang sudah
+     * ada. Manfaatnya pada ketahanan: bila admin mengubah
+     * `unselected_priority_score` menjadi mis. 30, batas sampel akan merentangkan
+     * 30..100 kembali menjadi 0..1 penuh dan diam-diam mengembalikan pengaruh C4
+     * ke ukuran semula.
      */
     private const FIXED_BOUNDS = [
         'rapor_average' => ['min' => 0.0, 'max' => 100.0],
         'support_subject' => ['min' => 0.0, 'max' => 100.0],
+        'riasec' => ['min' => 0.0, 'max' => 100.0],
+        'priority' => ['min' => 0.0, 'max' => 100.0],
         'tracer' => ['min' => 0.0, 'max' => 1.0],
     ];
 
@@ -92,7 +105,6 @@ final class DecisionMatrixBuilder
     public function build(Assessment $assessment, Collection $programs, Collection $criteria): array
     {
         $raporAverage = (float) $assessment->rapor_average;
-        $lowestSemesterAverage = (float) $assessment->raporSemesters->min('average_score');
         $subjectScores = $assessment->subjectScoreMap();
         $studentVector = $assessment->riasecPercentages();
         $priorityRanks = $this->priorityRanks($assessment);
@@ -103,15 +115,12 @@ final class DecisionMatrixBuilder
 
         foreach ($programs as $program) {
             $row = [];
-            $isPriority = isset($priorityRanks[$program->id]);
 
             foreach ($criteria as $criterion) {
                 $row[$criterion->code] = $this->resolve(
                     $criterion,
                     $program,
                     $raporAverage,
-                    $lowestSemesterAverage,
-                    $isPriority,
                     $subjectScores,
                     $studentVector,
                     $priorityRanks,
@@ -137,8 +146,6 @@ final class DecisionMatrixBuilder
         Criteria $criterion,
         StudyProgram $program,
         float $raporAverage,
-        float $lowestSemesterAverage,
-        bool $isPriority,
         array $subjectScores,
         array $studentVector,
         array $priorityRanks,
@@ -157,14 +164,12 @@ final class DecisionMatrixBuilder
             'support_subject' => $this->supportSubjectValue(
                 $program,
                 $raporAverage,
-                $lowestSemesterAverage,
-                $isPriority,
                 $subjectScores,
                 $educationLevel,
                 $schoolMajor,
             ),
 
-            // C3 — cosine similarity vektor RIASEC.
+            // C3 — korelasi Pearson vektor RIASEC, dipetakan ke skala 0..100.
             'riasec' => $this->riasec->compatibility($studentVector, $program->riasecVector()),
 
             // C4 — konversi urutan prioritas menjadi skor 0-100.
@@ -180,44 +185,36 @@ final class DecisionMatrixBuilder
     /**
      * Rerata nilai responden pada mata pelajaran pendukung prodi.
      *
-     * Formulir hanya menanyakan mapel pendukung milik prodi yang responden
-     * jadikan prioritas — bukan gabungan seluruh prodi aktif seperti dulu.
-     * Konsekuensinya, C2 punya dua jalur nilai yang sengaja berbeda:
+     * Dihitung dengan cara yang sama untuk setiap prodi, dipilih responden atau
+     * tidak. Yang dirata-ratakan hanya mapel yang benar-benar ditempuh oleh
+     * jenjang dan jurusan responden — lihat Rapor::appliesTo() — sehingga jumlah
+     * mapel penilai per responden tetap paling banyak dua sesuai aturan SNBP.
+     * Mapel yang relevan tetapi dikosongkan responden jatuh ke rerata rapor:
+     * pertanyaannya diajukan, hanya tidak dijawab, jadi diperlakukan netral.
      *
-     * **Prodi prioritas** — dihitung dari nilai asli, dengan mapel yang
-     * relevan tetapi kosong (responden melewatkan isiannya) jatuh ke rerata
-     * rapor. Ini "data hilang secara tidak sengaja": responden memang ditanya,
-     * hanya lupa mengisi, sehingga wajar diperlakukan netral.
-     *
-     * **Prodi non-prioritas** — nilainya diganti nilai semester terendah
-     * responden, bukan rerata. Ini bukan "data hilang", tapi "memang tidak
-     * dievaluasi": responden tidak pernah ditanya mapel pendukung prodi ini
-     * sama sekali. Menerapkan kriteria maximin (Wald) — mengambil skenario
-     * paling konservatif saat tidak ada informasi — mencegah prodi yang tidak
-     * dipertimbangkan responden diam-diam diuntungkan rerata yang belum tentu
-     * benar, sehingga prodi prioritas tidak kalah bersaing hanya karena
-     * lemah di satu mapel spesifik. Penaltinya otomatis proporsional: kalau
-     * nilai responden stabil antarsemester, semester terendah hampir sama
-     * dengan reratanya; kalau timpang, penaltinya lebih terasa.
-     *
-     * Yang dirata-ratakan untuk prodi prioritas hanya mapel yang benar-benar
-     * ditempuh oleh jenjang dan jurusan responden — lihat Rapor::appliesTo().
+     * **Catatan atas perilaku sebelumnya.** Prodi non-prioritas dulu langsung
+     * diberi nilai semester terendah responden dengan alasan maximin (Wald) —
+     * bertindak konservatif saat tidak ada informasi. Alasan itu bertumpu pada
+     * premis bahwa formulir hanya menanyakan mapel pendukung prodi prioritas.
+     * Premisnya tidak benar: AssessmentController memuat Rapor::supportSubjects(),
+     * yaitu gabungan mapel pendukung SELURUH prodi aktif, dan
+     * StoreAssessmentRequest menyimpan nilainya untuk semua mapel itu. Pada data
+     * nyata sistem ini, 10 sampai 17 prodi non-prioritas per sesi memang punya
+     * nilai yang sudah terkumpul. Maximin karena itu bukan menghadapi ketiadaan
+     * informasi, melainkan membuang informasi yang ada dan menggantinya dengan
+     * penalti tetap — yang membuat C2 sebagian besar mengukur "apakah prodi ini
+     * dipilih responden", bukan prestasi akademik responden pada prodi itu, dan
+     * menghitung minat dua kali bersama C4.
      *
      * @param  array<int, float|null>  $subjectScores
      */
     private function supportSubjectValue(
         StudyProgram $program,
         float $raporAverage,
-        float $lowestSemesterAverage,
-        bool $isPriority,
         array $subjectScores,
         ?string $educationLevel,
         ?string $schoolMajor,
     ): float {
-        if (! $isPriority) {
-            return $lowestSemesterAverage;
-        }
-
         $subjects = $program->supportSubjects
             ->filter(fn (Subject $subject) => Rapor::appliesTo($subject, $educationLevel, $schoolMajor));
 

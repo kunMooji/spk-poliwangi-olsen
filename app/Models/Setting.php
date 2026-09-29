@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Parameter algoritma yang dapat diubah admin (threshold, lambda, epsilon, dll).
+ * Parameter algoritma yang dapat diubah admin (ambang margin, lambda, epsilon, dll).
  *
  * @property string $key
  * @property string|null $value
@@ -25,8 +25,8 @@ class Setting extends Model
 
     /** Nilai bawaan bila baris pengaturan belum ada di database. */
     public const DEFAULTS = [
-        'threshold' => 70.0,
-        'threshold_mode' => 'normal',
+        'margin_threshold' => 10.0,
+        'tie_threshold' => 0.5,
         'lambda' => 0.5,
         'epsilon' => 0.000001,
         'unselected_priority_score' => 0.0,

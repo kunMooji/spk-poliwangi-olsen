@@ -49,7 +49,7 @@ class StudyProgramRequest extends FormRequest
             Rule::exists('subjects', 'id')->where('is_active', true),
         ];
 
-        // Profil RIASEC prodi (C3): pembanding cosine similarity, skala 0-100.
+        // Profil RIASEC prodi (C3): pembanding korelasi Pearson, skala 0-100.
         foreach (Riasec::DIMENSIONS as $dimension) {
             $rules['riasec_'.strtolower($dimension)] = ['required', 'integer', 'between:0,100'];
         }

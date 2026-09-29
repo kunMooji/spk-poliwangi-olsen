@@ -5,23 +5,28 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CriteriaRequest;
 use App\Models\Criteria;
+use App\Services\CriteriaInfluenceService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 /**
- * Pengelolaan kriteria C1..C9 beserta bobotnya.
+ * Pengelolaan kriteria C1..C5 beserta bobotnya.
  *
  * Perubahan di sini hanya memengaruhi tes berikutnya — hasil lama memakai
  * `assessments.weights_snapshot` sehingga tetap dapat ditelusuri.
  */
 class CriteriaController extends Controller
 {
-    public function index(): View
+    public function index(CriteriaInfluenceService $influence): View
     {
         return view('admin.criteria.index', [
             'criteria' => Criteria::query()->ordered()->get(),
             'totalWeight' => Criteria::totalActiveWeight(),
             'raporShare' => Criteria::raporComponentShare(),
+            // Bobot menyatakan niat; daya pisah menyatakan pengaruh yang benar-benar
+            // terjadi pada responden. Keduanya kerap berbeda jauh, jadi ditampilkan
+            // berdampingan di halaman tempat bobot disetel.
+            'influence' => $influence->recentAverage(),
             'criterion' => new Criteria([
                 'type' => 'benefit',
                 'source' => 'rapor_average',

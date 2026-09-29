@@ -7,6 +7,7 @@ use App\Models\Assessment;
 use App\Models\AssessmentPriority;
 use App\Models\Period;
 use App\Models\StudyProgram;
+use App\Services\ReliabilityService;
 use App\Support\Riasec;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -43,7 +44,7 @@ class StatisticsController extends Controller
     /** Kesesuaian dengan pilihan pertama ("1"/"0") yang sedang disaring. */
     private ?string $matchesPreference = null;
 
-    public function __invoke(Request $request): View
+    public function __invoke(Request $request, ReliabilityService $reliability): View
     {
         $this->periodId = $request->input('period') ?: null;
         $this->programId = $request->input('program') ?: null;
@@ -72,8 +73,15 @@ class StatisticsController extends Controller
             'interestGap' => $this->interestGap(),
             'dominantDistribution' => $this->distribution('dominant_type'),
             'dimensionLabels' => Riasec::LABELS,
+            // Reliabilitas dihitung dari seluruh sesi selesai, tidak ikut disaring
+            // gelombang: yang diukur adalah instrumennya, bukan angkatannya.
+            'reliability' => $reliability->riasec(),
             'raporAverage' => round((float) $this->base()->avg('rapor_average'), 2),
-            'averageFit' => round((float) $this->base()->avg('recommended_k_normal'), 2),
+            // Bukan rata-rata `recommended_k_normal`: nilai itu selalu tepat 100
+            // karena diskalakan terhadap K tertinggi sesi itu sendiri, sehingga
+            // rata-ratanya juga selalu 100 dan tidak membedakan apa pun. Margin
+            // ke peringkat 2 mengukur seberapa tegas rekomendasi rata-rata.
+            'averageMargin' => round((float) $this->base()->avg('margin_to_runner_up'), 2),
             'matchRatio' => $totalCompleted > 0
                 ? round($this->base()->where('matches_preference', true)->count() / $totalCompleted * 100, 1)
                 : 0.0,
@@ -105,7 +113,7 @@ class StatisticsController extends Controller
     {
         return $this->base()
             ->whereNotNull('school_name')
-            ->selectRaw('school_name, count(*) as total, avg(recommended_k_normal) as average_fit')
+            ->selectRaw('school_name, count(*) as total, avg(margin_to_runner_up) as average_margin')
             ->groupBy('school_name')
             ->orderByDesc('total')
             ->take(10)

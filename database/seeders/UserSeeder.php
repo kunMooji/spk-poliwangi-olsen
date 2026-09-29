@@ -20,9 +20,9 @@ class UserSeeder extends Seeder
         );
 
         User::query()->updateOrCreate(
-            ['email' => 'siswa@example.com'],
+            ['email' => 'dewiratna@gmail.com'],
             [
-                'name' => 'Calon Mahasiswa Uji',
+                'name' => 'Dewi Ratna',
                 'password' => 'password',
                 'role' => User::ROLE_MAHASISWA,
                 'email_verified_at' => now(),

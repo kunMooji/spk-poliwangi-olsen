@@ -74,7 +74,7 @@ class AssessmentRecapController extends Controller
                 ...$supportSubjects->pluck('name')->all(),
                 'Kode Holland', 'Tipe Dominan',
                 'Pilihan Pertama', 'Prodi Rekomendasi', 'Nilai K', 'Nilai K Ternormalisasi',
-                'Sesuai Pilihan', 'Ambang Batas', 'Status', 'Tanggal Selesai',
+                'Sesuai Pilihan', 'Margin #1 vs #2', 'Status', 'Tanggal Selesai',
             ]);
 
             $query->chunk(200, function ($rows) use ($handle, $supportSubjects) {
@@ -113,7 +113,7 @@ class AssessmentRecapController extends Controller
                         $assessment->recommended_k_value !== null ? number_format($assessment->recommended_k_value, 6, ',', '') : '-',
                         $assessment->recommended_k_normal !== null ? number_format($assessment->recommended_k_normal, 4, ',', '') : '-',
                         $assessment->matches_preference === null ? '-' : ($assessment->matches_preference ? 'Sesuai' : 'Tidak sesuai'),
-                        $assessment->threshold_used !== null ? number_format($assessment->threshold_used, 2, ',', '') : '-',
+                        $assessment->margin_to_runner_up !== null ? number_format($assessment->margin_to_runner_up, 4, ',', '') : '-',
                         $assessment->isCompleted() ? 'Selesai' : 'Belum selesai',
                         $assessment->completed_at?->format('d/m/Y H:i') ?? '-',
                     ]);

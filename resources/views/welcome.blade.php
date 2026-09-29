@@ -175,7 +175,7 @@
 
             {{-- Apa saja yang dinilai — teks & daftar kriteria di kiri, foto di kanan
                  (mengikuti pola dua-kolom "buy & trade" milik nefa). --}}
-            <section id="cara-kerja" class="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+            <section id="cara-kerja" class="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20 lg:px-8">
                 <div class="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
                     <div class="reveal lg:col-span-6">
                         <span class="font-mono text-xs uppercase tracking-[0.2em] text-brand-600">Neraca penilaian</span>
@@ -211,10 +211,10 @@
                         </ul>
                     </div>
 
-                    <div class="reveal lg:col-span-6">
-                        <div class="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] shadow-xl shadow-ink-950/10">
-                            <img src="{{ asset('images/perpustakaan.webp') }}" alt="" class="absolute inset-0 h-full w-full object-cover" loading="lazy">
-                            <div class="absolute inset-0 bg-gradient-to-t from-ink-950/60 via-transparent to-transparent"></div>
+                    <div class="reveal lg:col-span-6 lg:self-end">
+                        <div class="relative aspect-[9/8] w-full overflow-hidden rounded-[2rem] shadow-xl shadow-ink-950/10">
+                            <img src="{{ asset('images/cewek_perhotelan.png') }}" alt="Mahasiswi Poliwangi membawa map di area kampus" class="absolute inset-0 h-full w-full object-cover object-center" loading="lazy">
+                            <div class="absolute inset-0 bg-gradient-to-t from-ink-950/25 via-transparent to-transparent"></div>
                         </div>
                     </div>
                 </div>
@@ -240,8 +240,8 @@
 
             {{-- RIASEC: intro di atas, mosaik interaktif + panel deskripsi di bawah
                  (deck ala "credit card" section nefa, tapi memakai widget nyata). --}}
-            <section id="riasec" class="overflow-hidden py-16 sm:py-24">
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <section id="riasec" class="overflow-hidden py-12 sm:py-16">
+                <div class="mx-auto max-w-[84rem] px-4 sm:px-6 lg:px-8">
                     <div class="reveal max-w-2xl">
                         <span class="font-mono text-xs uppercase tracking-[0.2em] text-brand-600">Profil kepribadian</span>
                         <h2 data-split-reveal class="mt-2 font-display text-3xl font-extrabold uppercase tracking-tight text-ink-900">Enam dimensi RIASEC</h2>
@@ -254,16 +254,16 @@
 
                 @php($riasecWeight = ['R' => 27, 'I' => 46, 'A' => 27, 'S' => 30, 'E' => 44, 'C' => 26])
 
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div class="mx-auto max-w-[84rem] px-4 sm:px-6 lg:px-8">
                 <div x-data="{
                         open: null,
                         select(code) {
                             this.open = (this.open === code ? null : code);
                             this.$nextTick(() => window.riasecReveal && window.riasecReveal(this.open));
                         },
-                     }" class="reveal mt-12 flex flex-col gap-6 lg:flex-row lg:items-stretch">
+                     }" class="reveal mt-8 flex flex-col gap-6 lg:flex-row lg:items-stretch lg:justify-center">
 
-                    <div class="w-full lg:min-w-0 lg:flex-1">
+                    <div class="w-full lg:w-[min(100%,52rem)] lg:shrink-0">
                         <div class="relative isolate flex h-[460px] flex-col overflow-hidden rounded-[1.75rem] shadow-xl shadow-ink-950/20 sm:h-[560px] lg:h-[620px]">
                             <img src="{{ asset('images/perpustakaan.webp') }}" alt=""
                                  class="riasec-bg absolute inset-0 -z-20 h-full w-full object-cover" loading="lazy">
@@ -271,12 +271,14 @@
                             <div class="absolute inset-0 -z-10 bg-grain opacity-20 mix-blend-overlay"></div>
                             <div class="pointer-events-none absolute inset-0 -z-10 rounded-[1.75rem] ring-1 ring-inset ring-white/10"></div>
 
-                            <div class="relative flex h-full flex-col p-8">
+                            <div class="relative flex h-full flex-col p-7 sm:p-10 lg:p-12">
                                 <div x-show="!open" data-riasec-panel="default" class="flex h-full flex-col items-start justify-center">
-                                    <span class="font-display text-5xl font-black tracking-tight text-white/10 sm:text-6xl">R&middot;I&middot;A&middot;S&middot;E&middot;C</span>
-                                    <p class="mt-4 max-w-sm text-porcelain-200/70">
-                                        Ketuk salah satu blok di sebelah kanan. Penjelasan dimensinya akan tampil
-                                        di sini.
+                                    <span class="font-mono text-xs font-bold uppercase tracking-[0.24em] text-porcelain-200/60">Jelajahi profil Anda</span>
+                                    <h3 class="mt-4 max-w-lg font-display text-4xl font-extrabold uppercase leading-[0.92] tracking-tight text-white sm:text-5xl lg:text-6xl">R&middot;I&middot;A&middot;S&middot;E&middot;C</h3>
+                                    <div class="mt-7 h-px w-16 bg-white/35"></div>
+                                    <p class="mt-6 max-w-md text-base leading-relaxed text-porcelain-200/85 sm:text-lg">
+                                        Pilih satu dimensi di sebelah kanan untuk memahami kecenderungan minat,
+                                        cara belajar, dan lingkungan kerja yang paling cocok untuk Anda.
                                     </p>
                                 </div>
 
@@ -284,9 +286,10 @@
                                     <div x-show="open === '{{ $code }}'"
                                          x-cloak
                                          data-riasec-panel="{{ $code }}"
-                                         class="flex h-full flex-col">
+                                         class="flex h-full flex-col justify-center">
+                                        <div class="max-w-xl">
                                         <div class="flex items-start justify-between gap-4">
-                                            <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl font-display text-2xl font-extrabold text-white shadow-lg"
+                                            <span class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl font-display text-3xl font-extrabold text-white shadow-lg sm:h-20 sm:w-20 sm:text-4xl"
                                                   style="background-color: {{ Riasec::color($code) }};">
                                                 {{ $code }}
                                             </span>
@@ -295,18 +298,20 @@
                                                 <x-heroicon-o-x-mark class="h-5 w-5" />
                                             </button>
                                         </div>
-                                        <span class="mt-5 font-mono text-xs uppercase tracking-widest text-porcelain-200/50">Dimensi {{ $loop->iteration }} dari 6</span>
-                                        <h3 class="mt-1 font-display text-2xl font-extrabold uppercase tracking-tight text-porcelain-50">{{ $label }}</h3>
-                                        <p class="mt-4 flex-1 overflow-y-auto text-sm leading-relaxed text-porcelain-200/80">
+                                        <span class="mt-8 block font-mono text-xs font-bold uppercase tracking-[0.2em] text-porcelain-200/60">Dimensi {{ $loop->iteration }} dari 6</span>
+                                        <h3 class="mt-3 font-display text-4xl font-extrabold uppercase leading-none tracking-tight text-porcelain-50 sm:text-5xl">{{ $label }}</h3>
+                                        <div class="mt-6 h-px w-16 bg-white/35"></div>
+                                        <p class="mt-6 max-h-56 overflow-y-auto pr-2 text-base leading-relaxed text-porcelain-200/90 sm:text-lg">
                                             {{ $descriptions[$code] }}
                                         </p>
+                                        </div>
                                     </div>
                                 @endforeach
                             </div>
                         </div>
                     </div>
 
-                    <div class="w-full lg:w-[300px] lg:shrink-0 xl:w-[360px]" data-riasec-deck>
+                    <div class="w-full lg:w-[380px] lg:shrink-0 xl:w-[440px]" data-riasec-deck>
                         <div class="flex h-[460px] gap-[3px] overflow-hidden rounded-[1.75rem] border-[10px] border-ink-950 bg-ink-950 sm:h-[560px] lg:h-[620px]">
                             @foreach ([['R', 'I', 'A'], ['S', 'E', 'C']] as $column)
                                 <div class="flex flex-1 flex-col gap-[3px]">
@@ -336,7 +341,7 @@
                 <div class="absolute inset-0 bg-[radial-gradient(ellipse_70%_70%_at_80%_0%,rgba(63,174,196,0.22),transparent)]"></div>
                 <div class="absolute inset-0 bg-grain opacity-20 mix-blend-overlay"></div>
 
-                <div class="relative mx-auto grid max-w-6xl grid-cols-1 gap-12 px-6 py-16 sm:px-10 sm:py-24 lg:grid-cols-12">
+                <div class="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 px-6 py-12 sm:px-10 sm:py-16 lg:grid-cols-12">
                     <div class="reveal lg:col-span-5">
                         <span class="font-mono text-xs uppercase tracking-[0.2em] text-brand-300">Alur &middot; 3 langkah</span>
                         <h2 data-split-reveal class="mt-2 font-display text-2xl font-extrabold uppercase tracking-tight text-porcelain-50 sm:text-3xl">Bagaimana cara kerjanya?</h2>
@@ -385,7 +390,7 @@
             </section>
 
             {{-- Program studi --}}
-            <section id="prodi" class="py-16 text-ink-900 sm:py-24">
+            <section id="prodi" class="py-12 text-ink-900 sm:py-16">
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="reveal max-w-2xl">
                         <span class="font-mono text-xs uppercase tracking-[0.2em] text-brand-600">Katalog</span>
@@ -492,7 +497,7 @@
             </section>
 
             {{-- FAQ — image di kiri, accordion Alpine di kanan (ala section FAQ nefa). --}}
-            <section id="faq" class="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
+            <section id="faq" class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
                 <div class="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
                     <div class="reveal lg:col-span-5">
                         <div class="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] shadow-xl shadow-ink-950/10">
@@ -542,8 +547,8 @@
             </section>
 
             {{-- Ajakan --}}
-            <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 lg:px-8">
-                <div class="reveal relative overflow-hidden rounded-[2rem] px-6 py-16 text-center text-white shadow-2xl sm:px-12 sm:py-20">
+            <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
+                <div class="reveal relative overflow-hidden rounded-[2rem] px-6 py-12 text-center text-white shadow-2xl sm:px-12 sm:py-16">
                     <img src="{{ asset('images/poliwangi-kampus.png') }}"
                          alt="Gedung kampus Politeknik Negeri Banyuwangi"
                          class="absolute inset-0 h-full w-full object-cover" loading="lazy">
@@ -592,7 +597,7 @@
             </section>
 
             {{-- Kembali ke atas — sentuhan kecil ala nefa. --}}
-            <div class="mb-16 flex w-full justify-center">
+            <div class="mb-10 flex w-full justify-center">
                 <a href="#navbar"
                    class="flex items-center space-x-2 rounded-full border border-black/10 bg-white px-6 py-3 text-sm text-ink-600 shadow-sm transition hover:border-brand-500/40 hover:text-brand-600 hover:shadow-md">
                     <span>Kembali ke atas</span>
@@ -603,56 +608,38 @@
 
         {{-- Footer — struktur 4 kolom ala nefa, diisi tautan & info yang sungguhan ada. --}}
         <footer class="border-t border-black/5 bg-porcelain-50">
-            <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div class="grid grid-cols-1 gap-10 border-t border-black/10 py-12 sm:grid-cols-2 lg:grid-cols-4">
-                    <div>
-                        <a href="{{ url('/') }}" class="flex items-center gap-2">
-                            <img src="{{ asset('images/poliwangi_logo.png') }}" alt="Logo Politeknik Negeri Banyuwangi" class="h-9 w-9 object-contain">
-                            <span class="font-display text-sm font-extrabold uppercase tracking-wide text-ink-900">
-                                SPK <span class="text-brand-600">Poliwangi</span>
-                            </span>
-                        </a>
-                        <p class="mt-4 max-w-xs text-sm leading-relaxed text-ink-500">
-                            Sistem pendukung keputusan pemilihan program studi, menggabungkan tes minat bakat RIASEC
-                            dengan metode Combined Compromise Solution (CoCoSo).
-                        </p>
-                    </div>
+            <section class="mx-2 my-4 grid overflow-hidden rounded-[2rem] bg-white shadow-xl shadow-ink-950/[0.06] sm:mx-6 lg:grid-cols-2">
+                <div class="flex items-center px-6 py-14 sm:px-12 lg:px-20 xl:px-28">
+                    <div class="w-full max-w-md">
+                        <span class="font-mono text-xs uppercase tracking-[0.2em] text-brand-600">Suara Anda</span>
+                        <h2 class="mt-2 font-display text-3xl font-extrabold tracking-tight text-ink-900 sm:text-4xl">Berikan testimonial kepada kami</h2>
+                        <p class="mt-4 text-sm leading-relaxed text-ink-600 sm:text-base">Ceritakan pengalaman Anda menggunakan SPK Poliwangi. Masukan Anda membantu kami membuat layanan ini lebih baik.</p>
 
-                    <div>
-                        <h5 class="font-mono text-xs uppercase tracking-widest text-ink-400">Jelajahi</h5>
-                        <ul class="mt-4 space-y-3 text-sm text-ink-600">
-                            <li><a href="#cara-kerja" class="transition hover:text-brand-600">Cara Kerja</a></li>
-                            <li><a href="#riasec" class="transition hover:text-brand-600">RIASEC</a></li>
-                            <li><a href="#prodi" class="transition hover:text-brand-600">Program Studi</a></li>
-                            <li><a href="#faq" class="transition hover:text-brand-600">FAQ</a></li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h5 class="font-mono text-xs uppercase tracking-widest text-ink-400">Akun</h5>
-                        <ul class="mt-4 space-y-3 text-sm text-ink-600">
-                            @auth
-                                <li><a href="{{ route('dashboard') }}" class="transition hover:text-brand-600">Dasbor</a></li>
-                            @else
-                                <li><a href="{{ route('login') }}" class="transition hover:text-brand-600">Masuk</a></li>
-                                <li><a href="{{ route('register') }}" class="transition hover:text-brand-600">Daftar</a></li>
-                            @endauth
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h5 class="font-mono text-xs uppercase tracking-widest text-ink-400">Metode</h5>
-                        <p class="mt-4 text-sm leading-relaxed text-ink-600">
-                            Combined Compromise Solution (CoCoSo) &amp; RIASEC &mdash; bobot kriteria ditetapkan
-                            bersama pihak akademik Politeknik Negeri Banyuwangi.
-                        </p>
+                        <form class="mt-7 space-y-3" x-data="{ sent: false }" @submit.prevent="sent = true">
+                            <label class="sr-only" for="contact-name">Nama</label>
+                            <input id="contact-name" type="text" required placeholder="Nama Anda" class="block w-full border-0 bg-porcelain-50 px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 focus:ring-2 focus:ring-brand-500">
+                            <label class="sr-only" for="contact-email">Email</label>
+                            <input id="contact-email" type="email" required placeholder="Email Anda" class="block w-full border-0 bg-porcelain-50 px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 focus:ring-2 focus:ring-brand-500">
+                            <label class="sr-only" for="contact-message">Testimonial</label>
+                            <textarea id="contact-message" rows="4" required placeholder="Tuliskan testimonial Anda" class="block w-full resize-none border-0 bg-porcelain-50 px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 focus:ring-2 focus:ring-brand-500"></textarea>
+                            <button type="submit" class="inline-flex bg-brand-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 active:scale-[0.98]">Kirim testimonial</button>
+                            <p x-cloak x-show="sent" x-transition class="text-sm text-brand-700" role="status">Terima kasih atas testimonial Anda.</p>
+                        </form>
                     </div>
                 </div>
 
-                <div class="flex flex-col items-center justify-between gap-4 border-t border-black/5 py-8 font-mono text-xs text-ink-500 sm:flex-row">
-                    <p>&copy; {{ date('Y') }} {{ config('app.name') }} &middot; Politeknik Negeri Banyuwangi</p>
-                    <p>Combined Compromise Solution (CoCoSo) &amp; RIASEC</p>
+                <div class="min-h-72 bg-porcelain-100 lg:min-h-full">
+                    <iframe title="Peta lokasi Politeknik Negeri Banyuwangi"
+                            src="https://www.google.com/maps?q=Politeknik+Negeri+Banyuwangi%2C+Jl.+Raya+Jember+KM+13%2C+Labanasem%2C+Kabat%2C+Banyuwangi%2C+Jawa+Timur+68461&amp;output=embed"
+                            class="h-full min-h-72 w-full border-0"
+                            loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"></iframe>
                 </div>
+            </section>
+
+            <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-7 font-mono text-xs text-ink-500 sm:px-6 sm:flex-row lg:px-8">
+                <p>&copy; {{ date('Y') }} {{ config('app.name') }} &middot; Politeknik Negeri Banyuwangi</p>
+                <p>Combined Compromise Solution (CoCoSo) &amp; RIASEC</p>
             </div>
         </footer>
     </body>

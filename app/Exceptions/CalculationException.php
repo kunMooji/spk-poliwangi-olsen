@@ -31,4 +31,11 @@ class CalculationException extends RuntimeException
     {
         return new self('Total bobot kriteria aktif bernilai 0. Perbarui bobot pada menu Kriteria.');
     }
+
+    public static function negativeWeight(string $code): self
+    {
+        return new self(
+            "Bobot kriteria {$code} bernilai negatif. Perbarui bobot pada menu Kriteria."
+        );
+    }
 }

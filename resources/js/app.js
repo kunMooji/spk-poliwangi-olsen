@@ -26,12 +26,18 @@ function renderRiasecCharts() {
         const { labels, values, colors } = JSON.parse(canvas.dataset.riasecChart);
         const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+        if (!reduceMotion) {
+            document.documentElement.classList.add('riasec-motion-ready');
+            canvas.classList.add('riasec-chart-enter');
+        }
+
         // Warna teks mengikuti tema terang/gelap yang sedang aktif.
         const dark = document.documentElement.classList.contains('dark');
         const tick = dark ? '#cbd5e1' : '#475569';
         const grid = dark ? 'rgba(148,163,184,0.2)' : 'rgba(100,116,139,0.15)';
 
-        const createChart = () => new Chart(canvas, {
+        const createChart = () => {
+            const chart = new Chart(canvas, {
             type: 'bar',
             data: {
                 labels,
@@ -40,7 +46,11 @@ function renderRiasecCharts() {
                     data: values,
                     backgroundColor: colors,
                     borderRadius: 6,
-                    maxBarThickness: 64,
+                    // Batang sengaja lebih tebal agar enam dimensi terasa
+                    // sebagai satu kelompok, bukan tersebar di bidang kosong.
+                    categoryPercentage: 0.92,
+                    barPercentage: 0.96,
+                    maxBarThickness: 88,
                 }],
             },
             options: {
@@ -50,10 +60,10 @@ function renderRiasecCharts() {
                 // sebaran skor lebih mudah dibaca. Interaksi berikutnya tetap
                 // langsung, dan pengguna reduced-motion tidak mendapat gerak.
                 animation: reduceMotion ? false : {
-                    duration: 300,
+                    duration: 280,
                     easing: 'easeOutQuart',
                     delay: (context) => (context.type === 'data' && context.mode === 'default')
-                        ? context.dataIndex * 50
+                        ? context.dataIndex * 70
                         : 0,
                 },
                 plugins: {
@@ -78,6 +88,15 @@ function renderRiasecCharts() {
                 },
             },
         });
+
+            // Kanvas masuk bersamaan dengan batang pertama mulai tumbuh;
+            // requestAnimationFrame mencegah browser melewatkan state awal.
+            if (!reduceMotion) {
+                requestAnimationFrame(() => canvas.classList.add('is-visible'));
+            }
+
+            return chart;
+        };
 
         // Bagian hasil biasanya berada di bawah kartu rekomendasi. Menunggu
         // sampai grafik terlihat memastikan animasi tidak habis sebelum siswa
@@ -547,8 +566,110 @@ function initPageLoader() {
     }
 }
 
+/**
+ * Mengganti select bawaan browser dengan menu yang mengikuti bahasa visual
+ * filter Program Studi. Nilai asli tetap berada di elemen <select>, sehingga
+ * submit form, validasi, dan binding Alpine yang sudah ada tidak berubah.
+ */
+function initSelectMenus() {
+    document.querySelectorAll('select:not([multiple])').forEach((select, index) => {
+        if (select.dataset.selectMenuReady === 'true') return;
+
+        select.dataset.selectMenuReady = 'true';
+        select.classList.add('app-select-native');
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'app-select';
+        select.parentNode.insertBefore(wrapper, select);
+        wrapper.append(select);
+
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'app-select-trigger';
+        button.setAttribute('aria-haspopup', 'listbox');
+        button.setAttribute('aria-expanded', 'false');
+        button.setAttribute('aria-controls', `app-select-menu-${index}`);
+
+        const label = document.createElement('span');
+        label.className = 'app-select-label';
+        const chevron = document.createElement('span');
+        chevron.className = 'app-select-chevron';
+        chevron.setAttribute('aria-hidden', 'true');
+        chevron.innerHTML = '&#8964;';
+        button.append(label, chevron);
+
+        const menu = document.createElement('div');
+        menu.id = `app-select-menu-${index}`;
+        menu.className = 'app-select-menu';
+        menu.setAttribute('role', 'listbox');
+        menu.hidden = true;
+
+        const close = () => {
+            menu.hidden = true;
+            button.setAttribute('aria-expanded', 'false');
+            wrapper.classList.remove('is-open');
+        };
+
+        const sync = () => {
+            const selected = select.options[select.selectedIndex];
+            label.textContent = selected?.textContent?.trim() || 'Pilih opsi';
+            button.disabled = select.disabled;
+            menu.querySelectorAll('[role="option"]').forEach((option) => {
+                const active = option.dataset.value === select.value;
+                option.classList.toggle('is-selected', active);
+                option.setAttribute('aria-selected', active ? 'true' : 'false');
+            });
+        };
+
+        const renderOptions = () => {
+            menu.replaceChildren();
+            Array.from(select.options).forEach((option) => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'app-select-option';
+                item.dataset.value = option.value;
+                item.setAttribute('role', 'option');
+                item.textContent = option.textContent.trim();
+                item.disabled = option.disabled;
+                item.addEventListener('click', () => {
+                    select.value = option.value;
+                    select.dispatchEvent(new Event('input', { bubbles: true }));
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                    sync();
+                    close();
+                    button.focus();
+                });
+                menu.append(item);
+            });
+            sync();
+        };
+
+        button.addEventListener('click', () => {
+            if (button.disabled) return;
+            const willOpen = menu.hidden;
+            document.querySelectorAll('.app-select.is-open').forEach((openSelect) => openSelect.querySelector('.app-select-trigger')?.click());
+            menu.hidden = !willOpen;
+            button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            wrapper.classList.toggle('is-open', willOpen);
+        });
+        select.addEventListener('change', sync);
+        select.addEventListener('input', sync);
+        wrapper.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') close();
+        });
+        document.addEventListener('click', (event) => {
+            if (!wrapper.contains(event.target)) close();
+        });
+        new MutationObserver(renderOptions).observe(select, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled', 'selected'] });
+
+        wrapper.append(button, menu);
+        renderOptions();
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initPageLoader();
+    initSelectMenus();
     renderRiasecCharts();
     renderAssessmentHistoryCharts();
     initResultExplanationAnimation();

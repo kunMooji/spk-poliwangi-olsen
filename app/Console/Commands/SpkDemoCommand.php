@@ -293,20 +293,22 @@ class SpkDemoCommand extends Command
         $this->newLine();
         $this->line('<fg=black;bg=cyan> KESIMPULAN </>');
 
-        $threshold = (float) Setting::get('threshold');
-        $mode = (string) Setting::get('threshold_mode');
-        $scale = $mode === 'raw' ? $calculation['k'] : $calculation['k_normal'];
+        $marginThreshold = (float) Setting::get('margin_threshold');
 
         $primaryId = $assessment->primary_program_id;
-        $primaryValue = $primaryId !== null ? ($scale[$primaryId] ?? null) : null;
+        $primaryValue = $primaryId !== null ? ($calculation['k_normal'][$primaryId] ?? null) : null;
+
+        $margin = $assessment->margin_to_runner_up;
 
         $this->table([], array_filter([
             ['Pilihan utama', $assessment->primaryProgram?->full_name ?? '-'],
-            ['Nilai pilihan utama', $primaryValue !== null ? number_format($primaryValue, 4) : '-'],
-            ['Ambang batas', number_format($threshold, 4)." (mode: {$mode})"],
+            ['Skor pilihan utama', $primaryValue !== null ? number_format($primaryValue, 4).' dari 100' : '-'],
+            ['Margin #1 vs #2', $margin !== null
+                ? number_format($margin, 4).' poin (ambang '.number_format($marginThreshold, 4).')'
+                : '-'],
             ['Status', $assessment->matches_preference
-                ? 'Pilihan utama MEMENUHI ambang batas'
-                : 'Pilihan utama TIDAK memenuhi ambang batas — dialihkan ke prodi dengan K tertinggi'],
+                ? 'Pilihan utama menempati peringkat 1'
+                : 'Pilihan utama bukan peringkat 1 — rekomendasi mengikuti K tertinggi'],
             ['Rekomendasi', $assessment->recommendedProgram?->full_name ?? '-'],
             ['Nilai K rekomendasi', number_format((float) $assessment->recommended_k_value, 6)
                 .'  ('.number_format((float) $assessment->recommended_k_normal, 2).' dari 100)'],

@@ -2,10 +2,16 @@
 
 Sistem Pendukung Keputusan rekomendasi program studi Politeknik Negeri Banyuwangi.
 Menggabungkan profil kepribadian **RIASEC** dengan metode perangkingan
-**CoCoSo** (Combined Compromise Solution) atas sembilan kriteria.
+**CoCoSo** (Combined Compromise Solution) atas lima kriteria.
 
-Dokumen ini menjelaskan *bentuk* dan *alasan* rancangan. Untuk peta berkas dan
-cara menambah sesuatu, lihat [code.md](code.md).
+Dokumen ini menjelaskan *bentuk* dan *alasan* rancangan.
+
+| Dokumen | Isi |
+|---|---|
+| [code.md](code.md) | Peta berkas, konvensi, cara menambah sesuatu, titik rawan |
+| [kriteria/](kriteria/) | Rincian tiap kriteria C1–C5: rumus, normalisasi, daya pisah, keterbatasan |
+| [perubahan-sistem.md](perubahan-sistem.md) | Riwayat perubahan metodologis beserta angka pengukurannya |
+| [research-criteria.md](research-criteria.md) | Dasar penelitian pemilihan kriteria rapor |
 
 ---
 
@@ -74,7 +80,7 @@ activity_logs  (mandiri — jejak perubahan data master)
 | `subjects` | Master mata pelajaran rapor: nama, jenjang SMA/SMK, kelompok peminatan atau rumpun keahlian |
 | `criteria` | Definisi C1..C5: kode, nama, bobot, jenis benefit/cost, sumber nilai |
 | `riasec_questions` | Butir pernyataan kuesioner beserta dimensinya |
-| `settings` | Parameter algoritma: threshold, lambda, epsilon, skala Likert, jumlah minimal prioritas |
+| `settings` | Parameter algoritma: ambang margin, ambang praktis seri, lambda, epsilon, skala Likert, jumlah minimal prioritas |
 | `periods` | Gelombang PMB: nama, tahun akademik, rentang tanggal, penanda aktif |
 
 **Data transaksi** — jejak satu sesi tes, tidak pernah diubah admin:
@@ -112,8 +118,12 @@ Empat prinsip berikut menjelaskan sebagian besar keputusan teknis di sistem ini.
 ### 3.1 Hasil yang sudah selesai bersifat beku
 
 Saat perhitungan berhasil, parameter yang dipakai **disalin** ke baris
-`assessments`: `weights_snapshot`, `threshold_used`, `threshold_mode_used`,
+`assessments`: `weights_snapshot`, `margin_threshold_used`, `margin_to_runner_up`,
 `lambda_used`.
+
+`weights_snapshot` menyimpan dua angka per kriteria: `weight` (bobot yang
+benar-benar dipakai CoCoSo, sudah diskalakan agar berjumlah 1) dan `weight_raw`
+(angka asli dari tabel `criteria`), sehingga penskalaannya dapat ditelusuri.
 
 Konsekuensinya: admin boleh mengubah bobot kapan saja tanpa merusak hasil yang
 sudah terbit. Tes lama tetap dapat dipertanggungjawabkan karena parameternya
@@ -130,7 +140,7 @@ keduanya membaca angka tersimpan, tidak pernah menghitung ulang dari data master
 |---|---|---|
 | `rapor_average` | `assessments.rapor_average` — sama untuk seluruh prodi | C1 |
 | `support_subject` | Rerata nilai siswa pada mapel pendukung prodi terkait | C2 |
-| `riasec` | Cosine similarity vektor RIASEC siswa vs prodi, × 100 | C3 |
+| `riasec` | Korelasi Pearson vektor RIASEC siswa vs prodi, dipetakan ke 0–100 | C3 |
 | `priority` | Konversi urutan prioritas menjadi skor 0–100 | C4 |
 | `tracer` | `study_programs.employment_rate` (0.00–1.00) | C5 |
 
@@ -153,7 +163,24 @@ Karena itu penghapusan diblokir bila datanya sudah terpakai; admin diarahkan
 menonaktifkan (`is_active = false`) agar data lama utuh sementara tes baru tidak
 lagi memakainya.
 
-### 3.4 Lapisan perhitungan tidak menyentuh basis data
+### 3.4 Sistem tidak mengklaim ketelitian yang tidak dimilikinya
+
+Prinsip ini menyatukan beberapa keputusan yang tampak terpisah: penanda margin
+(§10), penanda peringkat praktis seri (§10), kolom daya pisah (§5.5), dan label
+"% thd. terbaik" menggantikan "skor kecocokan".
+
+Semuanya menjawab satu godaan yang sama. Sistem pendukung keputusan menghasilkan
+angka dengan banyak desimal, dan angka semacam itu terbaca lebih pasti daripada
+data yang membentuknya. Ketika prodi peringkat 11 dan 12 hanya berselisih 0,003
+poin, menampilkannya sebagai dua peringkat berbeda tanpa keterangan adalah
+pernyataan yang tidak dapat dipertanggungjawabkan — selisih itu berada di bawah
+presisi masukannya.
+
+Karena itu di seluruh sistem, angka yang tidak punya makna absolut **dilabeli
+sebagai angka relatif**, dan kedekatan yang tidak dapat dibedakan **ditandai
+sebagai kedekatan**, bukan disembunyikan di balik urutan.
+
+### 3.5 Lapisan perhitungan tidak menyentuh basis data
 
 `RiasecService`, `CocosoService`, `ExplanationService`, dan `SensitivityService`
 menerima dan mengembalikan array biasa. Tidak ada query, tidak ada model
@@ -187,7 +214,7 @@ kode Holland    per kriteria             peringkat
         assessment_results + snapshot parameter
                              │
                              ▼
-              Aturan rekomendasi (threshold)
+              Aturan rekomendasi (K tertinggi)
 ```
 
 ### Tahapan CoCoSo
@@ -216,8 +243,15 @@ maupun kesesuaian kepribadiannya.
 `matches_preference` menandai apakah pilihan pertama kebetulan menempati
 peringkat 1 — murni informasi pada lembar hasil, bukan aturan keputusan.
 
-Pengaturan `threshold` dipertahankan sebagai **ambang kelayakan** yang
-ditampilkan pada lembar hasil, bukan penentu prodi mana yang direkomendasikan.
+Yang ditampilkan sebagai penanda keyakinan bukan "ambang kelayakan", melainkan
+**margin peringkat 1 terhadap peringkat 2** (`margin_to_runner_up`) yang
+dibandingkan terhadap pengaturan `margin_threshold`. Alasannya di 5.3: `k_normal`
+peringkat 1 selalu tepat 100, sehingga ambang kelayakan berapa pun tidak pernah
+mengikat padanya.
+
+Pengaturan `tie_threshold` menandai kelompok prodi yang selisih skornya terlalu
+kecil untuk dianggap berbeda. Ini penanda tampilan — peringkat dan rekomendasi
+tidak berubah karenanya.
 
 ### Pembagian bobot kriteria
 
@@ -248,9 +282,10 @@ instrumen. Dengan pembagian ini tidak ada kriteria tunggal yang melewati 0.35.
 
 ---
 
-## 5. Tiga Koreksi Matematis Wajib
+## 5. Koreksi Matematis Wajib
 
-Ketiganya bukan hiasan: tanpa salah satunya perhitungan gagal atau menyesatkan.
+Lima hal berikut bukan hiasan: tanpa salah satunya perhitungan gagal, atau
+menghasilkan angka yang menyesatkan tanpa memberi tanda apa pun.
 
 ### 5.1 Kolom konstan pada nilai rapor
 
@@ -289,12 +324,21 @@ besarannya bermakna absolut karena itu dinormalisasi terhadap **skala bakunya**:
 |---|---|---|
 | C1 `rapor_average` | 0 – 100 | kolom konstan; tanpa batas tetap seluruh alternatif bernilai 1.0 dan rapor tidak terbaca sama sekali |
 | C2 `support_subject` | 0 – 100 | rerata nilai mapel, berskala sama dengan rapor aslinya |
+| C3 `riasec` | 0 – 100 | korelasi Pearson punya tafsir absolut: 100 pola searah sempurna, 50 tidak berkorelasi, 0 berlawanan |
+| C4 `priority` | 0 – 100 | skala yang memang dibangkitkan `priorityValue()`; batas tetap membuatnya kebal terhadap perubahan `unselected_priority_score` |
 | C5 `tracer` | 0.00 – 1.00 | rasio keterserapan bermakna apa adanya — 0.80 berarti 80% alumni terserap |
 
-C3 (`riasec`) dan C4 (`priority`) tetap memakai min–max sampel. Cosine similarity
-tidak punya tafsir absolut — 69 bukan berarti "69% cocok" — dan urutan prioritas
-hanya bermakna relatif terhadap pilihan lain pada sesi yang sama; untuk keduanya
-perbandingan antar alternatif justru tafsir yang benar.
+**Seluruh kriteria kini memakai batas tetap.** Ini koreksi atas rancangan
+sebelumnya, yang membiarkan C3 dan C4 memakai min–max sampel. Perlakuan campuran
+itu ternyata membuat angka pada kolom `weight` berhenti mewakili pengaruh yang
+sebenarnya: kriteria berbatas sampel **selalu** terentang ke 0–1 penuh berapa pun
+sebaran aslinya, sehingga daya pisahnya selalu persis sebesar bobotnya, sementara
+kriteria berbatas tetap hanya menyumbang sebesar rentang nyatanya.
+
+Terukur pada data nyata, C3 memegang **79% daya pisah** dengan bobot 0.35
+sementara C1 berbobot 0.25 memegang **0%**. Setelah C3 dipindah ke batas tetap
+dan ukurannya diganti korelasi Pearson, angkanya turun ke 68% dan C2 naik dari
+5,7% ke 12,6%.
 
 Tanpa batas tetap pada C5, selisih nyata yang kecil (mis. 0.78–0.89) direntangkan
 menjadi 0–1 penuh, sehingga beda 11 poin diperlakukan seolah beda terburuk lawan
@@ -326,9 +370,66 @@ pengaman terakhir pada seluruh penyebut.
 mengikuti jumlah alternatif. Nilainya tidak dapat dibandingkan antar sesi tes.
 
 **Penyelesaian.** Simpan keduanya: `k_value` (mentah, untuk lampiran laporan) dan
-`k_normal = K_i / max(K_i) × 100` sebagai angka yang ditampilkan. Ambang
-kelayakan dibandingkan terhadap `k_normal`; pengaturan `threshold_mode`
-(`normal` | `raw`) tersedia bila pembimbing meminta versi mentah.
+`k_normal = K_i / max(K_i) × 100` sebagai angka yang ditampilkan.
+
+**Yang perlu ditegaskan: `k_normal` bukan skor kelayakan absolut.** K_ia, K_ib,
+dan K_ic ketiganya didefinisikan relatif terhadap alternatif lain pada sesi yang
+sama (Σ(P+S), min S, min P, max S, max P), sehingga K tidak punya titik nol
+maupun titik sempurna yang tetap. Akibat langsungnya, alternatif peringkat 1
+**selalu** bernilai tepat 100 — itu definisinya, bukan pertanda ia sempurna.
+
+Karena itu tidak ada ambang kelayakan yang bermakna terhadap `k_normal`. Yang
+sebanding antar sesi adalah **jarak peringkat 1 terhadap peringkat 2**, yang
+disimpan sebagai `margin_to_runner_up` dan dibandingkan terhadap
+`margin_threshold`. Margin lebar berarti rekomendasi meyakinkan; margin tipis
+berarti kedua prodi teratas praktis setara.
+
+### 5.4 Total bobot yang bukan 1
+
+**Masalah.** CoCoSo mencampur dua agregasi yang memperlakukan bobot secara
+berbeda. `S_i = Σ(w_j · r_ij)` tumbuh linear terhadap total bobot, sedangkan
+`P_i = Σ(r_ij ^ w_j)` tidak. Ketika `Σw ≠ 1`, keduanya bergeser pada skala yang
+tidak sebanding, sehingga `K_ib = S/min(S) + P/min(P)` dan `K_ic` yang mencampur
+keduanya kehilangan makna.
+
+Yang berbahaya: perhitungan **tetap menghasilkan angka**. Tidak ada error, tidak
+ada peringatan — hanya peringkat yang tidak lagi mencerminkan bobot yang
+dimaksud admin.
+
+**Penyelesaian.** `RecommendationService::normalizeWeights()` menskalakan bobot
+sebelum masuk CoCoSo. Penskalaan mempertahankan seluruh perbandingan antar bobot,
+jadi maksud admin tidak berubah: 0.50 dan 0.25 tetap berbanding 2:1 setelah
+menjadi 0.4 dan 0.2. Total nol dan bobot negatif ditolak dengan
+`CalculationException`.
+
+`weights_snapshot` menyimpan keduanya — `weight` yang benar-benar dipakai dan
+`weight_raw` dari tabel `criteria` — sehingga penskalaannya dapat ditelusuri.
+
+### 5.5 Bobot bukan pengaruh
+
+**Masalah.** Angka pada kolom `weight` mudah dibaca sebagai "berapa persen
+kriteria ini menentukan hasil". Itu tidak benar.
+
+Sumbangan sebuah kriteria terhadap **selisih** antar alternatif adalah
+`bobot × rentang nilai ternormalisasinya`, bukan bobotnya saja. Kriteria yang
+nilainya nyaris sama untuk seluruh prodi tidak memisahkan apa pun betapapun besar
+bobotnya — C1 adalah contoh ekstremnya, rentangnya selalu nol.
+
+Sebaliknya, kriteria yang memakai batas min–maks sampel **selalu** terentang ke
+0–1 penuh berapa pun sebaran aslinya, sehingga daya pisahnya selalu persis
+sebesar bobotnya. Perlakuan campuran antara batas sampel dan batas tetap itulah
+yang dulu membuat C3 memegang 79% daya pisah dengan bobot 0.35, sementara C1
+berbobot 0.25 memegang 0%.
+
+**Penyelesaian.** Dua hal. Pertama, seluruh kriteria dipindah ke batas tetap
+(§5.1) sehingga perlakuannya seragam. Kedua, daya pisah dihitung
+`CriteriaInfluenceService` dan **ditampilkan berdampingan dengan bobot** —
+di halaman rincian perhitungan bagi responden, dan di menu Kriteria bagi admin
+yang sedang menyetel bobot, lengkap dengan peringatan untuk kriteria berbobot
+yang daya pisahnya nol.
+
+Angka ini tidak mengubah perhitungan sama sekali. Ia mencegah kesenjangan antara
+bobot yang tertulis dan pengaruh yang sebenarnya tersembunyi seperti sebelumnya.
 
 ---
 
@@ -504,7 +605,47 @@ dan `assessments.weights_snapshot` yang memang sudah tersimpan.
 
 ---
 
-## 10. Statistik Institusional
+## 10. Penanda Keyakinan Hasil
+
+Dua penanda melengkapi peringkat. Keduanya **tidak mengubah urutan maupun prodi
+yang direkomendasikan** — perannya menyatakan seberapa jauh urutan itu boleh
+dipercaya.
+
+### Margin peringkat 1 terhadap peringkat 2
+
+Disimpan sebagai `assessments.margin_to_runner_up`, dibandingkan terhadap
+pengaturan `margin_threshold`. Margin lebar berarti rekomendasi meyakinkan;
+margin tipis berarti kedua prodi teratas praktis setara dan responden diarahkan
+menimbang keduanya.
+
+Angka ini menggantikan "ambang kelayakan" yang dulu dibandingkan terhadap
+`k_normal`. Alasannya di §5.3: `k_normal` peringkat 1 selalu tepat 100, sehingga
+ambang berapa pun tidak pernah mengikat padanya.
+
+Margin juga **sebanding antar sesi**, tidak seperti `k_normal`. Karena itu ia
+yang dipakai pada perbandingan antar sesi (§17) dan pada rata-rata di statistik
+institusional — menggantikan rata-rata `recommended_k_normal` yang selalu
+bernilai 100.
+
+### Kelompok peringkat praktis seri
+
+`Assessment::tieGroups()` mengelompokkan prodi bersebelahan yang selisih
+`k_normal`-nya di bawah pengaturan `tie_threshold`. Pengelompokannya berantai:
+bila #9 dekat #10 dan #10 dekat #11, ketiganya satu kelompok.
+
+Ini menjawab kondisi nyata data, bukan kemungkinan teoretis. Setiap sesi memuat
+5 sampai 12 pasang prodi bersebelahan yang berselisih di bawah 0,5 poin dari 100,
+beberapa hanya 0,003. Pada selisih sekecil itu urutan ditentukan pembulatan, dan
+ketika benar-benar sama, ditentukan urutan kode prodi secara alfabetis
+(`CocosoService::rank()` memakai posisi awal sebagai pemecah seri agar hasilnya
+deterministik).
+
+Penandanya muncul di empat tabel peringkat: lembar hasil, lembar cetak, rincian
+perhitungan, dan rekap admin.
+
+---
+
+## 11. Statistik Institusional
 
 Melayani pertanyaan kampus, bukan pertanyaan perorangan.
 
@@ -514,15 +655,43 @@ benar-benar direkomendasikan. Selisih positif besar menandakan prodi banyak
 diminati namun jarang cocok — kesenjangan antara persepsi calon mahasiswa dan
 profil yang sesungguhnya dituntut prodi tersebut.
 
-Selebihnya: asal sekolah teratas beserta rata-rata kecocokannya, rata-rata nilai
+Selebihnya: asal sekolah teratas beserta rata-rata marginnya, rata-rata nilai
 rapor beserta rata-rata tiap mapel pendukung, sebaran tipe RIASEC, jurusan sekolah, jenis kelamin,
 dan tren tes per bulan.
+
+> **Yang diukur adalah margin, bukan kecocokan.** Metrik ini dulu berupa
+> `avg(recommended_k_normal)` — rata-rata dari konstanta 100, sehingga selalu
+> menampilkan 100,0 baik secara keseluruhan maupun per sekolah. Lihat §5.3.
+
+### Reliabilitas instrumen
+
+`ReliabilityService` menghitung **Cronbach's alpha** per dimensi RIASEC dan untuk
+seluruh instrumen:
+
+```
+alpha = k/(k−1) × (1 − Σ varian tiap butir / varian skor total)
+```
+
+Ini satu-satunya metrik di halaman ini yang mengukur **alat ukurnya**, bukan
+respondennya. Kesesuaian RIASEC memegang bagian terbesar daya pisah keputusan,
+sehingga panjang dan mutu instrumen perlu dinilai dengan angka, bukan dugaan.
+
+Dua keputusan rancangan:
+
+| Keputusan | Alasan |
+|---|---|
+| Hanya responden yang menjawab **lengkap** butir aktif yang dihitung | Mengisi kekosongan dengan rerata menekan varian dan menaikkan alpha secara semu. Instrumen juga pernah berubah dari 42 ke 24 butir, sehingga mencampur responden dua versi berarti menghitung varian atas kolom yang tidak sebanding |
+| Di bawah 30 responden ditandai **belum memadai untuk dilaporkan** | Alpha bisa dihitung dari 2 responden, tetapi angkanya tidak stabil. Ditampilkan agar dapat dipantau, ditandai agar tidak diam-diam masuk ke laporan |
+
+Alpha negatif tidak dijepit ke nol — itu hasil yang sah dan informatif, pertanda
+butir-butirnya justru berlawanan arah. Alpha seluruh instrumen wajar lebih rendah
+daripada per dimensi, karena RIASEC memang mengukur enam hal berbeda.
 
 > **Ketergantungan.** Tren bulanan memakai `DATE_FORMAT` sehingga terikat MySQL.
 
 ---
 
-## 11. Penetapan Bobot
+## 12. Penetapan Bobot
 
 Bobot bawaan C1–C5:
 
@@ -538,13 +707,21 @@ Penetapannya dilakukan melalui **wawancara dengan pihak akademik Politeknik
 Negeri Banyuwangi**. Dasar penetapan tiap kriteria dicatat pada kolom
 `criteria.description` agar sumbernya melekat pada datanya.
 
-Sistem tidak memaksa Σ bobot = 1, namun memberi peringatan mencolok di halaman
-Kriteria dan dasbor admin bila totalnya menyimpang. Perhitungan hanya ditolak
-bila total bobot benar-benar nol.
+Sejak `RecommendationService::normalizeWeights()`, bobot **diskalakan otomatis**
+agar berjumlah 1 sebelum masuk CoCoSo. Ini bukan kemudahan, melainkan syarat:
+S_i = Σ(w_j · r_ij) tumbuh linear terhadap total bobot sedangkan
+P_i = Σ(r_ij ^ w_j) tidak, sehingga ketika Σw ≠ 1 keduanya bergeser pada skala
+yang tidak sebanding dan K_ib maupun K_ic yang mencampur keduanya kehilangan
+makna. Penskalaan mempertahankan seluruh perbandingan antar bobot, jadi maksud
+admin tidak berubah.
+
+Halaman Kriteria tetap memberi peringatan bila totalnya menyimpang, karena
+angka yang tersimpan pada `weights_snapshot` adalah bobot setelah diskalakan.
+Perhitungan ditolak hanya bila total bobot nol atau ada bobot negatif.
 
 ---
 
-## 12. Gelombang Penerimaan
+## 13. Gelombang Penerimaan
 
 Sesi tes **menyalin** gelombang yang aktif saat tes dibuat ke
 `assessments.period_id`, bukan membacanya ulang saat rekap disusun. Prinsipnya
@@ -561,7 +738,7 @@ penandaannya tidak dapat dipulihkan.
 
 ---
 
-## 13. Catatan Perubahan
+## 14. Catatan Perubahan
 
 `activity_logs` menjawab pertanyaan yang selalu muncul saat hasil dipersoalkan:
 *siapa mengubah bobot C3, kapan, dari berapa ke berapa.*
@@ -582,7 +759,7 @@ berguna sebagai bukti telusur.
 
 ---
 
-## 14. Keluaran untuk Dibawa Pulang
+## 15. Keluaran untuk Dibawa Pulang
 
 ### Lembar cetak calon mahasiswa
 
@@ -605,7 +782,7 @@ Ditulis dengan BOM UTF-8 agar Excel di Windows tidak salah membaca huruf berakse
 
 ---
 
-## 15. Simpan Sebagian Jawaban
+## 16. Simpan Sebagian Jawaban
 
 Kuesioner menyimpan jawaban di **dua lapis**:
 
@@ -628,7 +805,7 @@ Perhitungan **tidak pernah** dijalankan dari jawaban sebagian — hanya
 
 ---
 
-## 16. Perbandingan Antar Sesi
+## 17. Perbandingan Antar Sesi
 
 Calon mahasiswa yang mengulang tes ingin tahu apa yang berubah. Halaman
 `/tes/bandingkan` menyandingkan dua sesi: pergeseran persentase RIASEC per
@@ -643,7 +820,21 @@ memperkuat keyakinan bahwa prodi tersebut memang sesuai, bukan hasil kebetulan.
 
 ---
 
-## 17. Batasan yang Diketahui
+## 18. Batasan yang Diketahui
+
+### Batasan metodologis
+
+Empat hal berikut memengaruhi **kualitas kesimpulan**, bukan sekadar kenyamanan
+pemakaian. Semuanya perlu disebut sebagai keterbatasan penelitian.
+
+| Batasan | Keterangan |
+|---|---|
+| **Profil RIASEC prodi dan data tracer masih data contoh** | Ke-19 prodi memakai angka bawaan `StudyProgramSeeder`; log aktivitas penyuntingan kosong. Padahal C3 dan C5 bersama memegang sekitar 78% daya pisah keputusan. Harus diganti data sebenarnya lewat menu Program Studi dan Tracer Study sebelum hasil dipakai mengambil kesimpulan |
+| **Bobot bukan dari metode pembobotan formal** | Penetapannya lewat wawancara akademik, bukan AHP atau Entropy, sehingga tidak ada uji konsistensi (CR). Analisis sensitivitas (§8) memberi argumen ketahanan, bukan argumen penetapan |
+| **Resolusi instrumen terbatas** | 4 butir per dimensi pada skala Likert 1–5 hanya menghasilkan 17 tingkat nilai, bergerak dalam langkah 6,25 poin. Ikut menyumbang kedekatan nilai antar alternatif yang ditandai §10 |
+| **Nilai rapor tidak terverifikasi** | Dilaporkan sendiri responden dengan validasi `numeric between:0,100`. Wajar untuk alat rekomendasi; perlu verifikasi bila dipakai untuk keputusan yang mengikat |
+
+### Batasan teknis
 
 | Batasan | Keterangan |
 |---|---|

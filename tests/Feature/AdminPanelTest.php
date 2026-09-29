@@ -583,13 +583,13 @@ class AdminPanelTest extends TestCase
 
         $this->actingAs($this->admin)
             ->put(route('admin.settings.update'), [
-                'settings' => array_merge($current, ['threshold' => 80, 'lambda' => 0.4]),
+                'settings' => array_merge($current, ['margin_threshold' => 8, 'lambda' => 0.4]),
             ])
             ->assertRedirect(route('admin.settings.edit'));
 
         Setting::forgetCache();
 
-        $this->assertSame(80.0, (float) Setting::get('threshold'));
+        $this->assertSame(8.0, (float) Setting::get('margin_threshold'));
         $this->assertSame(0.4, (float) Setting::get('lambda'));
 
         $this->actingAs($this->admin)
@@ -604,7 +604,7 @@ class AdminPanelTest extends TestCase
         $old = $this->completeAssessment();
         $oldSnapshot = $old->weights_snapshot;
         $oldK = $old->recommended_k_value;
-        $oldThreshold = $old->threshold_used;
+        $oldThreshold = $old->margin_threshold_used;
 
         $criterion = Criteria::query()->where('code', 'C3')->firstOrFail();
 
@@ -619,7 +619,7 @@ class AdminPanelTest extends TestCase
         ]);
 
         $this->actingAs($this->admin)->put(route('admin.settings.update'), [
-            'settings' => array_merge(Setting::values(), ['threshold' => 85]),
+            'settings' => array_merge(Setting::values(), ['margin_threshold' => 15]),
         ]);
 
         Setting::forgetCache();
@@ -628,12 +628,105 @@ class AdminPanelTest extends TestCase
         $old->refresh();
         $this->assertSame($oldSnapshot, $old->weights_snapshot);
         $this->assertSame($oldK, $old->recommended_k_value);
-        $this->assertSame($oldThreshold, $old->threshold_used);
+        $this->assertSame($oldThreshold, $old->margin_threshold_used);
 
         // Tes baru wajib memakai parameter yang sudah diperbarui.
         $new = $this->completeAssessment(User::factory()->create(['role' => User::ROLE_MAHASISWA]));
 
         $this->assertSame(0.35, (float) $new->weights_snapshot['C3']['weight']);
-        $this->assertSame(85.0, (float) $new->threshold_used);
+        $this->assertSame(15.0, (float) $new->margin_threshold_used);
+    }
+
+    public function test_halaman_kriteria_menampilkan_daya_pisah_dan_menandai_kriteria_yang_tidak_memisahkan(): void
+    {
+        // Perlu minimal satu sesi selesai supaya daya pisah punya bahan hitung.
+        $this->completeAssessment();
+
+        $response = $this->actingAs($this->admin)->get(route('admin.criteria.index'))->assertOk();
+
+        $influence = $response->viewData('influence');
+
+        // C1 berbobot besar tetapi kolomnya konstan untuk seluruh prodi.
+        $this->assertGreaterThan(0.0, $influence['C1']['weight']);
+        $this->assertSame(0.0, $influence['C1']['spread']);
+        $this->assertSame(0.0, $influence['C1']['share']);
+
+        // Fixture ini menjawab seragam, sehingga profil RIASEC-nya datar dan C3 ikut
+        // netral. Yang penting: ada kriteria yang memisahkan, dan totalnya 100%.
+        $this->assertGreaterThan(0.0, $influence['C4']['share']);
+        $this->assertEqualsWithDelta(100.0, array_sum(array_column($influence, 'share')), 1e-6);
+
+        $response->assertSee('Daya pisah')
+            ->assertSee('tidak memisahkan apa pun', false);
+    }
+
+    public function test_daya_pisah_kosong_saat_belum_ada_tes_selesai(): void
+    {
+        // Halaman tidak boleh error hanya karena belum ada data.
+        $response = $this->actingAs($this->admin)->get(route('admin.criteria.index'))->assertOk();
+
+        $this->assertSame([], $response->viewData('influence'));
+    }
+
+    public function test_statistik_menampilkan_reliabilitas_instrumen(): void
+    {
+        $this->completeAssessment();
+
+        $response = $this->actingAs($this->admin)->get(route('admin.statistics'))->assertOk();
+
+        $reliability = $response->viewData('reliability');
+
+        $this->assertSame(24, $reliability['overall']['items']);
+        $this->assertCount(6, $reliability['dimensions']);
+
+        foreach ($reliability['dimensions'] as $row) {
+            $this->assertSame(4, $row['items']);
+        }
+
+        // Satu responden belum cukup untuk menghitung varian antar responden.
+        $this->assertSame(1, $reliability['respondents']);
+        $this->assertFalse($reliability['sufficient']);
+        $this->assertNull($reliability['overall']['alpha']);
+
+        $response->assertSee('Cronbach', false)
+            ->assertSee('Belum memadai untuk dilaporkan', false);
+    }
+
+    public function test_reliabilitas_hanya_menghitung_responden_yang_lengkap(): void
+    {
+        // Responden yang butirnya tidak lengkap harus dilewati: mengisi
+        // kekosongan akan menekan varian dan menaikkan alpha secara semu.
+        $lengkap = $this->completeAssessment();
+
+        $sebagian = Assessment::query()->create([
+            'user_id' => User::factory()->create(['role' => User::ROLE_MAHASISWA])->id,
+            'full_name' => 'Jawaban Sebagian',
+            'rapor_average' => 80,
+            'status' => 'completed',
+            'completed_at' => now(),
+        ]);
+
+        foreach (RiasecQuestion::query()->active()->take(5)->get() as $question) {
+            $sebagian->answers()->create([
+                'riasec_question_id' => $question->id,
+                'dimension' => $question->dimension,
+                'score' => 4,
+            ]);
+        }
+
+        $reliability = $this->actingAs($this->admin)
+            ->get(route('admin.statistics'))->assertOk()->viewData('reliability');
+
+        $this->assertSame(1, $reliability['respondents'], 'Sesi berjawaban sebagian tidak boleh ikut dihitung.');
+        $this->assertNotNull($lengkap->id);
+    }
+
+    public function test_statistik_aman_saat_belum_ada_jawaban(): void
+    {
+        $reliability = $this->actingAs($this->admin)
+            ->get(route('admin.statistics'))->assertOk()->viewData('reliability');
+
+        $this->assertSame(0, $reliability['respondents']);
+        $this->assertNull($reliability['overall']['alpha']);
     }
 }

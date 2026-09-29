@@ -214,11 +214,21 @@ class AssessmentController extends Controller
             return redirect()->route('assessments.result', $assessment);
         }
 
+        $likertMin = (int) Setting::get('likert_min');
+        $likertMax = (int) Setting::get('likert_max');
+
         return view('assessments.questionnaire', [
             'assessment' => $assessment,
             'questions' => RiasecQuestion::query()->active()->ordered()->get(),
             'saved' => $assessment->answers()->pluck('score', 'riasec_question_id'),
-            'likert' => Riasec::LIKERT_LABELS,
+            // Skala dibaca dari pengaturan, bukan dipatok 1-5. Tanpa ini, mengubah
+            // `likert_max` hanya mengubah pembagi pada RiasecService sementara
+            // layar tetap menampilkan lima tombol — responden yang menjawab
+            // setinggi mungkin akan tercatat di bawah 100% tanpa peringatan.
+            'likert' => Riasec::likertScale($likertMin, $likertMax),
+            'likertShort' => Riasec::likertScale($likertMin, $likertMax, short: true),
+            'likertMin' => $likertMin,
+            'likertMax' => $likertMax,
         ]);
     }
 
@@ -275,6 +285,23 @@ class AssessmentController extends Controller
         Assessment $assessment,
         RecommendationService $recommendation,
     ): RedirectResponse {
+        // Sesi yang sudah selesai tidak boleh dihitung ulang lewat pengiriman baru.
+        //
+        // Halaman kuesioner memang mengalihkan sesi selesai ke lembar hasil dan
+        // autosave menolaknya dengan 409, tetapi endpoint ini tidak punya penjaga
+        // yang sama — sehingga pengiriman langsung akan menimpa hasil di tempat.
+        // Akibatnya dua-duanya buruk: rekomendasi yang sudah dilihat dan dicetak
+        // responden berubah tanpa jejak, dan riwayat sesi kehilangan versi lamanya
+        // sehingga fitur perbandingan antar sesi tidak punya bahan pembanding.
+        //
+        // Mengulang tes tetap boleh — caranya membuat sesi baru, yang justru
+        // menyimpan keduanya sehingga perubahannya bisa ditelusuri.
+        if ($assessment->isCompleted()) {
+            return redirect()
+                ->route('assessments.result', $assessment)
+                ->with('info', 'Tes ini sudah selesai dan hasilnya tidak dapat dihitung ulang. Mulai tes baru bila ingin mengisi kuesioner lagi — hasil lamanya tetap tersimpan untuk dibandingkan.');
+        }
+
         $questions = RiasecQuestion::query()->active()->pluck('dimension', 'id');
 
         DB::transaction(function () use ($request, $assessment, $questions) {

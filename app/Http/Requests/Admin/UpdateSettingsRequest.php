@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Admin;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class UpdateSettingsRequest extends FormRequest
 {
@@ -19,8 +18,8 @@ class UpdateSettingsRequest extends FormRequest
     {
         return [
             'settings' => ['required', 'array'],
-            'settings.threshold' => ['required', 'numeric', 'between:0,100'],
-            'settings.threshold_mode' => ['required', Rule::in(['normal', 'raw'])],
+            'settings.margin_threshold' => ['required', 'numeric', 'between:0,100'],
+            'settings.tie_threshold' => ['required', 'numeric', 'between:0,100'],
             'settings.lambda' => ['required', 'numeric', 'between:0,1'],
             // Epsilon menahan nilai ternormalisasi agar tidak nol; terlalu besar
             // akan mengaburkan selisih antar alternatif.
@@ -38,11 +37,11 @@ class UpdateSettingsRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'settings.threshold' => 'ambang batas rekomendasi',
-            'settings.threshold_mode' => 'mode pembanding threshold',
+            'settings.margin_threshold' => 'ambang margin rekomendasi',
+            'settings.tie_threshold' => 'ambang peringkat praktis seri',
             'settings.lambda' => 'nilai lambda',
             'settings.epsilon' => 'epsilon',
-            'settings.unselected_priority_score' => 'skor C8 prodi tak dipilih',
+            'settings.unselected_priority_score' => 'skor C4 prodi tak dipilih',
             'settings.likert_min' => 'skala Likert minimum',
             'settings.likert_max' => 'skala Likert maksimum',
             'settings.min_priorities' => 'jumlah minimal prioritas',

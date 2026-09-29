@@ -22,14 +22,14 @@ class RegistrationTest extends TestCase
     {
         $this->post('/register', [
             'name' => 'Calon Mahasiswa Baru',
-            'email' => 'calon@example.com',
+            'email' => 'putrianggara@gmail.com',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);
 
         $this->assertSame(
             User::ROLE_MAHASISWA,
-            User::query()->where('email', 'calon@example.com')->firstOrFail()->role,
+            User::query()->where('email', 'putrianggara@gmail.com')->firstOrFail()->role,
         );
     }
 
@@ -37,13 +37,13 @@ class RegistrationTest extends TestCase
     {
         $this->post('/register', [
             'name' => 'Penyusup',
-            'email' => 'penyusup@example.com',
+            'email' => 'bagusrahmat@gmail.com',
             'password' => 'password',
             'password_confirmation' => 'password',
             'role' => User::ROLE_ADMIN,
         ]);
 
-        $user = User::query()->where('email', 'penyusup@example.com')->firstOrFail();
+        $user = User::query()->where('email', 'bagusrahmat@gmail.com')->firstOrFail();
 
         $this->assertSame(User::ROLE_MAHASISWA, $user->role);
         $this->assertFalse($user->isAdmin());
@@ -56,7 +56,7 @@ class RegistrationTest extends TestCase
     {
         $response = $this->post('/register', [
             'name' => 'Test User',
-            'email' => 'test@example.com',
+            'email' => 'laraswati@gmail.com',
             'password' => 'password',
             'password_confirmation' => 'password',
         ]);

@@ -93,10 +93,18 @@
                                         <dt class="text-gray-500 dark:text-gray-400">Kode Holland</dt>
                                         <dd class="font-semibold text-gray-800 dark:text-gray-200">{{ $card['data']->holland_code ?? '-' }}</dd>
                                     </div>
+                                    {{-- Bukan "nilai kecocokan": skor prodi peringkat 1 selalu 100 karena
+                                         diskalakan terhadap dirinya sendiri, sehingga tidak membedakan sesi
+                                         satu dengan lainnya. Margin ke peringkat 2 justru berbeda-beda dan
+                                         menyatakan seberapa tegas rekomendasi sesi itu. --}}
                                     <div class="flex justify-between">
-                                        <dt class="text-gray-500 dark:text-gray-400">Nilai kecocokan</dt>
+                                        <dt class="text-gray-500 dark:text-gray-400">Margin ke peringkat 2</dt>
                                         <dd class="font-semibold tabular-nums text-gray-800 dark:text-gray-200">
-                                            {{ number_format($card['data']->recommended_k_normal ?? 0, 2) }}
+                                            @if ($card['data']->margin_to_runner_up === null)
+                                                &mdash;
+                                            @else
+                                                {{ number_format($card['data']->margin_to_runner_up, 2) }} poin
+                                            @endif
                                         </dd>
                                     </div>
                                     <div class="flex justify-between">
@@ -204,7 +212,7 @@
                                     <th class="px-6 py-3">Kode</th>
                                     <th class="px-6 py-3">Holland</th>
                                     <th class="px-6 py-3">Rekomendasi</th>
-                                    <th class="px-6 py-3 text-right">Nilai</th>
+                                    <th class="px-6 py-3 text-right">Margin ke #2</th>
                                     <th class="px-6 py-3">Pilihan 1</th>
                                     <th class="px-6 py-3 text-right">Aksi</th>
                                 </tr>
@@ -216,7 +224,9 @@
                                         <td class="whitespace-nowrap px-6 py-3 font-mono text-xs">{{ $session->code }}</td>
                                         <td class="px-6 py-3 font-semibold">{{ $session->holland_code ?? '-' }}</td>
                                         <td class="px-6 py-3">{{ $session->recommendedProgram?->full_name ?? '-' }}</td>
-                                        <td class="px-6 py-3 text-right tabular-nums">{{ number_format($session->recommended_k_normal ?? 0, 2) }}</td>
+                                        <td class="px-6 py-3 text-right tabular-nums">
+                                            {{ $session->margin_to_runner_up === null ? '—' : number_format($session->margin_to_runner_up, 2) }}
+                                        </td>
                                         <td class="px-6 py-3">
                                             @if ($session->matches_preference)
                                                 <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">Sesuai</span>

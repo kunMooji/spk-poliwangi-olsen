@@ -25,7 +25,7 @@ php artisan serve
 | Peran | Surel | Kata sandi |
 |---|---|---|
 | Admin | `admin@poliwangi.ac.id` | `password` |
-| Calon mahasiswa | `siswa@example.com` | `password` |
+| Calon mahasiswa | `dewiratna@gmail.com` | `password` |
 
 ### Basis data
 
@@ -59,14 +59,19 @@ aktif**, bukan hanya prodi pilihan responden. CoCoSo memeringkat semua alternati
 sekaligus, sehingga prodi di luar daftar prioritas pun harus punya nilai — justru
 prodi itulah yang berpotensi menjadi rekomendasi baru.
 
+> Rincian tiap kriteria C1–C5 — rumus, normalisasi, daya pisah terukur, dan
+> keterbatasannya — ada di [kriteria/](kriteria/).
+
 ### `app/Services/`
 
 | Berkas | Tanggung jawab | Menyentuh DB |
 |---|---|---|
-| `RiasecService.php` | Skor Likert → persentase → kode Holland; cosine similarity untuk C3 | ❌ |
+| `RiasecService.php` | Skor Likert → persentase → kode Holland; korelasi Pearson untuk C3 | ❌ |
 | `CocosoService.php` | Seluruh tahapan CoCoSo, mengembalikan setiap langkah antara | ❌ |
 | `ExplanationService.php` | Kontribusi per kriteria, perbandingan antar prodi, sorotan kuat/lemah | ❌ |
 | `SensitivityService.php` | Sweep λ dan pergeseran bobot | ❌ |
+| `CriteriaInfluenceService.php` | Daya pisah kriteria: bobot × rentang ternormalisasi, per sesi maupun rerata | ✅ (baca) |
+| `ReliabilityService.php` | Cronbach's alpha per dimensi RIASEC dan seluruh instrumen | ✅ (baca) |
 | `DecisionMatrixBuilder.php` | Menyusun x_ij sesuai `criteria.source` | ✅ (baca) |
 | `RecommendationService.php` | Orkestrator dalam transaksi, menyimpan hasil + snapshot | ✅ |
 
@@ -207,7 +212,7 @@ Yang wajib diisi dengan sadar:
   membedakan prodi satu dengan lainnya pada C2 — C1 bernilai sama untuk semua
   prodi. Dua prodi dengan mapel pendukung identik akan selalu seri pada blok
   nilai rapor. Prodi yang dikosongkan mapel pendukungnya memakai rerata rapor.
-- **Profil RIASEC 6 dimensi** (0–100). Menjadi pembanding cosine similarity C3.
+- **Profil RIASEC 6 dimensi** (0–100). Menjadi pembanding korelasi Pearson C3.
 - **Data tracer**. `employment_rate` dihitung otomatis dari
   `employed_count / alumni_count`, tidak pernah diisi manual.
 
@@ -248,8 +253,9 @@ menonaktifkan pernyataan tidak merusak persentase tes yang sudah selesai.
 
 | Kunci | Rentang | Arti |
 |---|---|---|
-| `threshold` | 0–100 | Ambang kelayakan yang ditampilkan pada lembar hasil — tidak menentukan rekomendasi |
-| `threshold_mode` | `normal` \| `raw` | Pembanding: K ternormalisasi atau K mentah |
+| `margin_threshold` | 0–100 | Selisih minimum peringkat 1 terhadap peringkat 2 agar rekomendasi ditandai meyakinkan — penanda, tidak menentukan rekomendasi |
+| `tie_threshold` | 0–100 | Selisih maksimum agar dua prodi bersebelahan ditandai praktis seri — penanda tampilan |
+| `likert_min`, `likert_max` | 0–5, 2–10 | Skala kuesioner. **Tersambung penuh**: label tombol, jumlah kolom, validasi jawaban, dan pembagi persentase semuanya mengikutinya |
 | `lambda` | 0–1 | Keseimbangan S_i dan P_i pada K_ic |
 | `epsilon` | 1e-7 – 0.01 | Batas bawah nilai ternormalisasi |
 | `unselected_priority_score` | 0–100 | Skor C4 untuk prodi di luar daftar prioritas |
@@ -274,10 +280,11 @@ php artisan test tests/Unit                   # satu direktori
 
 | Berkas | Cakupan |
 |---|---|
-| `Unit/RiasecServiceTest` | Konversi persentase, kode Holland, cosine similarity |
+| `Unit/RiasecServiceTest` | Konversi persentase, kode Holland, korelasi Pearson |
 | `Unit/CocosoServiceTest` | Tahapan CoCoSo, pengaman kolom konstan dan pembagian nol |
 | `Unit/ExplanationServiceTest` | Kontribusi, perbandingan, sorotan |
 | `Unit/SensitivityServiceTest` | Sweep λ, pergeseran bobot, penskalaan ulang |
+| `Unit/ReliabilityServiceTest` | Rumus Cronbach's alpha diuji terhadap hitungan tangan, termasuk kasus tak terdefinisi |
 | `Feature/AssessmentFlowTest` | Alur calon mahasiswa ujung ke ujung, otorisasi, penjelasan hasil |
 | `Feature/RecommendationServiceTest` | Penyimpanan hasil, snapshot, rekomendasi mengikuti peringkat, pengaruh nilai rapor |
 | `Feature/AdminPanelTest` | Pemisahan peran, seluruh CRUD, rekap, sensitivitas, statistik |
@@ -311,6 +318,13 @@ Perhatikan bila salah satunya gagal:
 | `test_akun_yang_sudah_pernah_tes_tidak_dapat_dihapus` | Keutuhan arsip |
 | `test_sesi_berjalan_terputus_setelah_akunnya_dinonaktifkan` | Penonaktifan berlaku seketika |
 | `test_jawaban_sebagian_tersimpan_tanpa_menjalankan_perhitungan` | Perhitungan hanya dari jawaban lengkap |
+| `test_total_bobot_bukan_satu_diskalakan_dan_tidak_mengubah_perbandingan` | Penskalaan bobot mempertahankan perbandingan antar kriteria |
+| `test_tes_yang_sudah_selesai_tidak_dapat_dihitung_ulang_lewat_pengiriman_baru` | Hasil yang sudah terbit tidak dapat ditimpa |
+| `test_menjawab_setinggi_mungkin_selalu_menghasilkan_seratus_persen` | Skala Likert tersambung antara tampilan dan perhitungan |
+| `test_penanda_seri_tidak_mengubah_peringkat_maupun_rekomendasi` | Penanda seri murni tampilan |
+| `test_daya_pisah_kriteria_dihitung_dari_rentang_bukan_dari_bobot` | Daya pisah C1 nol meski bobotnya besar |
+| `test_prodi_non_prioritas_tetap_memakai_nilai_mapel_yang_sudah_terkumpul` | C2 tidak membuang data yang sudah dikumpulkan |
+| `test_reliabilitas_hanya_menghitung_responden_yang_lengkap` | Alpha tidak dinaikkan oleh jawaban sebagian |
 
 ---
 
@@ -398,6 +412,50 @@ ke basis data lain, bagian ini perlu disesuaikan.
 
 ---
 
+### Bobot diskalakan, jadi angka di form bukan angka yang dipakai
+
+`RecommendationService::normalizeWeights()` menskalakan bobot agar berjumlah 1
+sebelum masuk CoCoSo. Yang tersimpan pada `weights_snapshot['C3']['weight']`
+karena itu bisa berbeda dari `criteria.weight` bila totalnya bukan 1 — angka
+aslinya ada pada `weight_raw`.
+
+Jangan menambahkan aturan validasi yang memaksa total 1 di form: penyuntingan
+bobot dilakukan satu per satu, sehingga totalnya pasti menyimpang di tengah jalan.
+Peringatan di halaman Kriteria sudah cukup.
+
+### Skala Likert dibaca dari tiga tempat sekaligus
+
+`likert_min` dan `likert_max` dipakai oleh validasi jawaban
+(`StoreAnswersRequest`, `AutosaveAnswersRequest`), oleh pembagi persentase
+(`RiasecService` lewat `AppServiceProvider`), dan oleh label serta jumlah tombol
+di kuesioner (`Riasec::likertScale()`).
+
+Ketiganya harus tetap sejalan. Dulu yang ketiga dipatok 1–5 sebagai konstanta,
+sehingga menyetel skala ke 1–7 membuat responden hanya melihat lima tombol
+sementara pembaginya memakai rentang 6 — setiap jawaban tertekan ke bawah tanpa
+error. Bila menambah tempat baru yang membaca skala, ambil dari pengaturan.
+
+### Nilai rapor menerima koma, tetapi hanya lewat `prepareForValidation()`
+
+`is_numeric('82,5')` bernilai `false`, sehingga aturan `numeric` menolak
+penulisan desimal bahasa Indonesia. `StoreAssessmentRequest::prepareForValidation()`
+menormalkan koma menjadi titik **khusus untuk kolom nilai**.
+
+Bila menambah kolom nilai baru, tambahkan namanya ke daftar di metode itu — kalau
+tidak, kolom baru akan menolak koma sementara kolom lain menerimanya.
+
+### Angka disimpan pada `decimal(5,2)`
+
+Pembulatan dilakukan eksplisit di `StoreAssessmentRequest` sebelum disimpan,
+bukan diserahkan kepada kolomnya. Tanpa itu, `82.756` tersimpan sebagai 82,76
+sementara rerata terlanjur dihitung dari angka aslinya — angka yang tersimpan dan
+angka yang dipakai menghitung jadi berbeda.
+
+Hal yang sama berlaku pada `margin_to_runner_up`: bandingkan dengan delta `1e-4`,
+bukan `1e-6`, karena presisi kolomnya empat desimal.
+
+---
+
 ## 8. Yang Belum Dikerjakan
 
 | Pekerjaan | Catatan |
@@ -407,8 +465,14 @@ ke basis data lain, bagian ini perlu disesuaikan.
 | Konfigurasi pengiriman surel | `MAIL_MAILER=log`; pemulihan kata sandi mandiri belum berfungsi |
 | Notifikasi hasil selesai | Calon mahasiswa perlu membuka sendiri lembar hasilnya |
 | Pembatasan laju pengiriman tes | Belum ada `throttle` pada rute pengiriman |
-| `docs/perhitungan.md` | Contoh perhitungan manual untuk lampiran laporan |
+| `documentation/perhitungan.md` | Contoh perhitungan manual untuk lampiran laporan |
+| Data prodi yang sebenarnya | Profil RIASEC dan angka tracer masih data contoh dari seeder — lihat batasan metodologis di [architecture.md §18](architecture.md) |
 
 Sudah dikerjakan sejak versi sebelumnya: ekspor CSV rekap, manajemen akun,
-gelombang PMB, catatan perubahan, simpan sebagian jawaban, lembar cetak, dan
-perbandingan antar sesi.
+gelombang PMB, catatan perubahan, simpan sebagian jawaban, lembar cetak,
+perbandingan antar sesi, daya pisah kriteria, reliabilitas instrumen, penanda
+margin dan peringkat praktis seri.
+
+Riwayat perubahan metodologis beserta angka pengukurannya dicatat terpisah di
+[perubahan-sistem.md](perubahan-sistem.md). Rincian tiap kriteria ada di
+[kriteria/](kriteria/).

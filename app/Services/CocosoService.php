@@ -44,7 +44,7 @@ final class CocosoService
      *   (c·v_i - c·v_min) / (c·v_max - c·v_min) = (v_i - v_min) / (v_max - v_min)
      *
      * sehingga konstantanya tidak berpengaruh sama sekali terhadap hasil. Pada
-     * SPK ini konstanta tersebut adalah nilai rapor calon mahasiswa (C1..C6) —
+     * SPK ini konstanta tersebut adalah nilai rapor calon mahasiswa (C1 dan C2) —
      * tanpa batas tetap, nilai rapor tidak mengubah peringkat sedikit pun.
      *
      * @param  array<string|int, array<string, float>>  $matrix  x_ij: [kunciAlternatif => [kodeKriteria => nilai]]
@@ -262,9 +262,17 @@ final class CocosoService
      * Skalakan nilai K ke rentang 0-100 relatif terhadap K tertinggi.
      *
      * K mentah tidak berada pada rentang tetap (K_ib saja sudah bernilai >= 2) dan
-     * besarannya ikut bergeser mengikuti jumlah alternatif, sehingga tidak layak
-     * dibandingkan langsung dengan threshold. Versi ternormalisasi inilah yang
-     * dipakai sebagai pembanding threshold bawaan.
+     * besarannya ikut bergeser mengikuti jumlah alternatif, sehingga angkanya
+     * tidak bisa dibaca apa adanya.
+     *
+     * Perlu ditegaskan apa yang BUKAN dihasilkan di sini: ini bukan skor
+     * kelayakan absolut. K_ia, K_ib, dan K_ic ketiganya didefinisikan relatif
+     * terhadap alternatif lain pada sesi yang sama (Sum(P+S), min(S), min(P),
+     * max(S), max(P)), sehingga K tidak punya titik nol maupun titik sempurna
+     * yang tetap. Akibatnya alternatif peringkat 1 selalu bernilai tepat 100 —
+     * itu memang definisinya, bukan pertanda ia sempurna. Membandingkan angka
+     * ini dengan ambang kelayakan tidak bermakna; yang sebanding antar sesi
+     * adalah jarak peringkat 1 terhadap peringkat 2 pada skala ini.
      *
      * @param  array<string|int, float>  $k
      * @return array<string|int, float>

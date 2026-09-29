@@ -226,19 +226,27 @@
             @if ($assessment->matches_preference)
                 <p class="note ok">
                     Pilihan pertama Anda, <strong>{{ $assessment->primaryProgram?->full_name }}</strong>,
-                    sekaligus menempati peringkat teratas dengan nilai
-                    <strong>{{ number_format($primaryResult?->k_normal ?? 0, 2) }}</strong>
-                    dari {{ $assessment->results->count() }} program studi. Peringkat ini murni hasil
+                    sekaligus menempati peringkat teratas dari
+                    {{ $assessment->results->count() }} program studi. Peringkat ini murni hasil
                     perhitungan seluruh kriteria, bukan karena urutan pilihan Anda.
                 </p>
             @else
                 <p class="note">
                     Pilihan pertama Anda, <strong>{{ $assessment->primaryProgram?->full_name ?? '-' }}</strong>,
                     berada di peringkat <strong>{{ $primaryResult?->ranking ?? '-' }}</strong>
-                    dari {{ $assessment->results->count() }} program studi dengan nilai
-                    <strong>{{ number_format($primaryResult?->k_normal ?? 0, 2) }}</strong>.
-                    Nilai tertinggi diraih <strong>{{ $assessment->recommendedProgram?->full_name }}</strong>
-                    ({{ number_format($recommendedResult?->k_normal ?? 0, 2) }}).
+                    dari {{ $assessment->results->count() }} program studi, dengan skor
+                    <strong>{{ number_format($primaryResult?->k_normal ?? 0, 2) }}</strong> dari 100
+                    relatif terhadap peringkat teratas,
+                    <strong>{{ $assessment->recommendedProgram?->full_name }}</strong>.
+                </p>
+            @endif
+
+            @if ($assessment->margin_to_runner_up !== null)
+                <p class="note {{ $assessment->hasConfidentRecommendation() ? 'ok' : '' }}">
+                    Jarak peringkat 1 terhadap peringkat 2:
+                    <strong>{{ number_format($assessment->margin_to_runner_up, 2) }} poin</strong> dari 100
+                    (ambang {{ number_format($assessment->margin_threshold_used ?? 0, 2) }}) &mdash;
+                    {{ $assessment->hasConfidentRecommendation() ? 'rekomendasi tergolong meyakinkan.' : 'kedua prodi teratas praktis setara, sebaiknya ditimbang bersama.' }}
                 </p>
             @endif
         </section>
@@ -325,12 +333,14 @@
                     <tr>
                         <th style="width:8%;">#</th>
                         <th>Program Studi</th>
-                        <th class="num" style="width:18%;">Nilai (K ternorm.)</th>
+                        <th class="num" style="width:18%;">% thd. terbaik</th>
                         <th style="width:22%;">Keterangan</th>
                     </tr>
                 </thead>
                 <tbody>
+                    @php($tieGroups = $assessment->tieGroups())
                     @foreach ($assessment->results as $result)
+                        @php($tie = $tieGroups[$result->study_program_id] ?? null)
                         <tr>
                             <td><strong>{{ $result->ranking }}</strong></td>
                             <td>{{ $result->studyProgram->full_name }}</td>
@@ -341,6 +351,9 @@
                                 @endif
                                 @if ($result->study_program_id === $assessment->primary_program_id)
                                     <span class="badge muted">Pilihan 1</span>
+                                @endif
+                                @if ($tie)
+                                    <span class="badge muted">Setara #{{ $tie['from'] }}&ndash;{{ $tie['to'] }}</span>
                                 @endif
                             </td>
                         </tr>

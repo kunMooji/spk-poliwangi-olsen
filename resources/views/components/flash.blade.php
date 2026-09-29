@@ -1,4 +1,6 @@
-@if (session('success'))
+@props(['showSuccess' => true])
+
+@if ($showSuccess && session('success'))
     <x-alert type="success" class="mb-4">{{ session('success') }}</x-alert>
 @endif
 

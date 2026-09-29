@@ -59,7 +59,7 @@
                     <h3 class="mt-2 text-2xl font-semibold tracking-tight text-gray-950 dark:text-gray-100">Petunjuk pengisian</h3>
                     <p class="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
                         Terdapat <strong>{{ $questions->count() }} pernyataan</strong>. Untuk setiap pernyataan, pilih
-                        angka yang paling menggambarkan diri Anda pada skala 1 sampai 5. Tidak ada jawaban benar
+                        angka yang paling menggambarkan diri Anda pada skala {{ $likertMin }} sampai {{ $likertMax }}. Tidak ada jawaban benar
                         atau salah &mdash; jawablah sejujurnya sesuai keadaan Anda.
                     </p>
 
@@ -126,8 +126,11 @@
                             <p class="text-sm leading-relaxed text-gray-800 dark:text-gray-100">{{ $question->statement }}</p>
                         </div>
 
-                        <div class="relative z-10 mt-4 grid grid-cols-5 gap-2 ps-10">
-                            @foreach ($likert as $value => $label)
+                        {{-- Jumlah kolom mengikuti banyaknya titik skala, jadi tidak bisa
+                             memakai kelas Tailwind yang dipatok seperti grid-cols-5. --}}
+                        <div class="relative z-10 mt-4 grid gap-2 ps-10"
+                             style="grid-template-columns: repeat({{ count($likert) }}, minmax(0, 1fr));">
+                            @foreach ($likertShort as $value => $label)
                                 <label class="cursor-pointer">
                                     <input type="radio" class="peer sr-only"
                                            name="answers[{{ $question->id }}]" value="{{ $value }}"

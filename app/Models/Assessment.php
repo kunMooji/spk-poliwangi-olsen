@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Setting;
 use App\Support\Riasec;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -25,7 +26,7 @@ class Assessment extends Model
         'percent_r', 'percent_i', 'percent_a', 'percent_s', 'percent_e', 'percent_c',
         'holland_code', 'dominant_type',
         'primary_program_id', 'recommended_program_id', 'recommended_k_value', 'recommended_k_normal',
-        'matches_preference', 'threshold_used', 'threshold_mode_used', 'lambda_used', 'weights_snapshot',
+        'matches_preference', 'margin_to_runner_up', 'margin_threshold_used', 'lambda_used', 'weights_snapshot',
         'status', 'completed_at',
     ];
 
@@ -48,7 +49,8 @@ class Assessment extends Model
             'recommended_k_value' => 'float',
             'recommended_k_normal' => 'float',
             'matches_preference' => 'boolean',
-            'threshold_used' => 'float',
+            'margin_to_runner_up' => 'float',
+            'margin_threshold_used' => 'float',
             'lambda_used' => 'float',
             'weights_snapshot' => 'array',
             'completed_at' => 'datetime',
@@ -181,5 +183,83 @@ class Assessment extends Model
     public function isCompleted(): bool
     {
         return $this->status === 'completed';
+    }
+
+    /**
+     * Kelompok prodi yang skornya terlalu berdekatan untuk dianggap berbeda.
+     *
+     * Dua prodi bersebelahan yang selisih `k_normal`-nya di bawah ambang
+     * `tie_threshold` dimasukkan ke satu kelompok, dan kelompok itu bisa
+     * memanjang: bila #9 dekat #10 dan #10 dekat #11, ketiganya satu kelompok.
+     *
+     * Ini penanda, bukan pengubah peringkat. Urutannya tetap apa adanya dari
+     * CoCoSo; yang ditambahkan hanya keterangan bahwa selisihnya berada di bawah
+     * presisi yang bisa dipertanggungjawabkan — pada data nyata ada pasangan yang
+     * hanya berselisih 0,003 poin, dan urutan di antaranya ditentukan pembulatan.
+     *
+     * @return array<int, array{from: int, to: int, size: int}> [studyProgramId => rentang peringkat sekelompok]
+     */
+    public function tieGroups(): array
+    {
+        $threshold = (float) Setting::get('tie_threshold');
+        $sorted = $this->results->sortBy('ranking')->values();
+
+        if ($sorted->count() < 2 || $threshold <= 0.0) {
+            return [];
+        }
+
+        // Pengelompokan berantai: sebuah prodi masuk kelompok berjalan selama
+        // jaraknya ke prodi tepat di atasnya masih di bawah ambang.
+        $groups = [];
+        $current = [$sorted[0]];
+
+        for ($i = 1; $i < $sorted->count(); $i++) {
+            $previous = $sorted[$i - 1];
+            $result = $sorted[$i];
+
+            if ((float) $previous->k_normal - (float) $result->k_normal < $threshold) {
+                $current[] = $result;
+
+                continue;
+            }
+
+            $groups[] = $current;
+            $current = [$result];
+        }
+
+        $groups[] = $current;
+
+        $map = [];
+
+        foreach ($groups as $group) {
+            if (count($group) < 2) {
+                continue;
+            }
+
+            $ranks = array_map(fn ($result) => (int) $result->ranking, $group);
+            $meta = ['from' => min($ranks), 'to' => max($ranks), 'size' => count($group)];
+
+            foreach ($group as $result) {
+                $map[$result->study_program_id] = $meta;
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * Apakah jarak prodi peringkat 1 terhadap peringkat 2 cukup lebar untuk
+     * disebut meyakinkan?
+     *
+     * Mengembalikan null bila sesi ini dihitung sebelum margin dicatat, sehingga
+     * pemanggil dapat membedakan "tipis" dari "tidak diketahui".
+     */
+    public function hasConfidentRecommendation(): ?bool
+    {
+        if ($this->margin_to_runner_up === null || $this->margin_threshold_used === null) {
+            return null;
+        }
+
+        return $this->margin_to_runner_up >= $this->margin_threshold_used;
     }
 }

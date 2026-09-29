@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
 /**
- * Pemutakhiran data serapan kerja alumni (C9) untuk seluruh prodi sekaligus.
+ * Pemutakhiran data serapan kerja alumni (C5) untuk seluruh prodi sekaligus.
  *
  * `employment_rate` tidak pernah diisi manual, selalu diturunkan dari
  * employed_count / alumni_count supaya angkanya tidak saling bertentangan.

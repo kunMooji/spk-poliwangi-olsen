@@ -19,7 +19,7 @@ class LandingPageTest extends TestCase
         $response = $this->get(route('home'))->assertOk();
 
         $response->assertSee('Politeknik Negeri Banyuwangi');
-        $response->assertSee('Enam dimensi kepribadian RIASEC');
+        $response->assertSee('Enam dimensi RIASEC');
 
         // Angka pada halaman dibaca dari basis data, bukan ditulis tetap.
         $this->assertSame(
