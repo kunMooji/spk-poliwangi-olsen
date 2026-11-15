@@ -24,6 +24,12 @@
         if ($biodataHasError) {
             $initialStep = 1;
         }
+
+        // Prodi dikelompokkan per jurusan untuk picker akordeon pada langkah 3.
+        // Slot awal ditampilkan 3 (atau sebanyak minimum wajib bila lebih besar);
+        // sisanya ditambahkan pengguna lewat tombol "Tambah".
+        $programGroups = $programs->groupBy(fn ($program) => $program->department ?: 'Lainnya');
+        $baseSlots = min($maxPriorities, max($minPriorities, 3));
     @endphp
 
     <div class="py-8 sm:py-10">
@@ -76,7 +82,12 @@
                       x-data="raporForm({
                           programSubjects: @js($programSubjectMap),
                           programNames: @js($programs->pluck('full_name', 'id')),
+                          programDepartments: @js($programs->mapWithKeys(fn ($program) => [$program->id => $program->department ?: 'Lainnya'])),
+                          programDeptIndex: @js($programs->mapWithKeys(fn ($program) => [$program->id => $programGroups->keys()->search($program->department ?: 'Lainnya')])),
                           priorities: @js(array_values((array) old('priorities', []))),
+                          baseSlots: {{ $baseSlots }},
+                          maxSlots: {{ $maxPriorities }},
+                          minPriorities: {{ $minPriorities }},
                           added: @js($addedSubjects),
                           subjectProfiles: @js($subjectProfiles),
                           extraSubjects: @js($extraSubjects),
@@ -86,7 +97,7 @@
                           commonGroup: @js(\App\Support\Rapor::COMMON_GROUP),
                       })"
                       x-init="$store.wizard.step = {{ $initialStep }}; $nextTick(() => restoreDraft())"
-                      @submit="saveDraft($event)">
+                      @submit="onSubmit($event)">
                     @csrf
 
                 {{--
@@ -245,67 +256,131 @@
                 <div x-show="$store.wizard.step === 3" x-cloak data-step-panel="3" class="space-y-6">
 
                     {{-- Prioritas prodi --}}
-                    <section class="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/10">
+                    <section class="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/10 sm:p-6">
                         <div class="flex items-center gap-3">
-                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400 sm:h-10 sm:w-10">
                                 <x-heroicon-o-list-bullet class="h-5 w-5" />
                             </span>
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Urutan Prioritas Program Studi</h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">
-                                    Pilih minimal {{ $minPriorities }} program studi sesuai urutan minat Anda. Prioritas
-                                    pertama memperoleh skor minat tertinggi. Program studi tidak boleh dipilih dua kali.
-                                </p>
-                            </div>
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 sm:text-lg">Urutan Prioritas Program Studi</h3>
                         </div>
+                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                            Pilih minimal {{ $minPriorities }} prodi sesuai urutan minat. Prioritas 1 mendapat skor minat tertinggi.
+                        </p>
 
+                        {{--
+                            Picker akordeon: pilih jurusan dulu, lalu prodinya. Nilai tetap
+                            dikirim lewat <input type="hidden"> bernama priorities[i], jadi
+                            kontrak dengan server tidak berubah. Slot di atas $baseSlots hanya
+                            tampil setelah pengguna menekan "Tambah" (atau sudah terisi).
+                        --}}
                         <div class="mt-5 space-y-4">
                             @for ($i = 0; $i < $maxPriorities; $i++)
-                                <div>
-                                    <x-input-label :for="'priority_'.$i">
-                                        Prioritas ke-{{ $i + 1 }}
-                                        @if ($i < $minPriorities)
-                                            <span class="text-rose-500">*</span>
-                                        @else
-                                            <span class="text-xs font-normal text-gray-400">(opsional)</span>
+                                <div @if ($i >= $baseSlots) x-show="{{ $i }} < visibleSlots" x-cloak @endif
+                                     x-data="{ open: false, dept: null }" @click.outside="open = false"
+                                     @keydown.escape="open = false">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <label for="priority_{{ $i }}" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                            Prioritas ke-{{ $i + 1 }}
+                                            @if ($i < $minPriorities)
+                                                <span class="text-rose-500">*</span>
+                                            @else
+                                                <span class="text-xs font-normal text-gray-400">(opsional)</span>
+                                            @endif
+                                        </label>
+                                        @if ($i >= $baseSlots)
+                                            <button type="button" @click="removeSlot({{ $i }})"
+                                                    x-show="{{ $i }} === visibleSlots - 1" x-cloak
+                                                    class="text-xs font-medium text-gray-400 transition hover:text-rose-600 dark:hover:text-rose-400">
+                                                Hapus
+                                            </button>
                                         @endif
-                                    </x-input-label>
-                                    <select id="priority_{{ $i }}" name="priorities[{{ $i }}]"
-                                            x-model="priorities[{{ $i }}]"
-                                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300"
-                                            @if ($i < $minPriorities) required @endif>
-                                        <option value="">— Pilih program studi —</option>
-                                        @foreach ($programs as $program)
-                                            <option value="{{ $program->id }}">
-                                                {{ $program->full_name }} ({{ $program->department }})
-                                            </option>
+                                    </div>
+
+                                    <input type="hidden" name="priorities[{{ $i }}]" x-model="priorities[{{ $i }}]"
+                                           @if ($i >= $baseSlots) :disabled="{{ $i }} >= visibleSlots" @endif>
+
+                                    <button type="button" id="priority_{{ $i }}"
+                                            @click="open = ! open; if (open) dept = deptIndexOf({{ $i }})"
+                                            :aria-expanded="open"
+                                            class="mt-1 flex w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left text-sm transition focus:outline-none focus:ring-2 focus:ring-brand-500/40"
+                                            :class="priorities[{{ $i }}]
+                                                ? 'border-brand-300 bg-brand-50/60 dark:border-brand-500/40 dark:bg-brand-500/10'
+                                                : 'border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-900'">
+                                        <span class="min-w-0">
+                                            <span x-show="priorities[{{ $i }}]" x-cloak class="block">
+                                                <span class="block font-medium leading-snug text-gray-900 dark:text-gray-100" x-text="programNames[priorities[{{ $i }}]]"></span>
+                                                <span class="block text-xs text-gray-500 dark:text-gray-400" x-text="programDepartments[priorities[{{ $i }}]]"></span>
+                                            </span>
+                                            <span x-show="! priorities[{{ $i }}]" class="text-gray-400">Pilih program studi</span>
+                                        </span>
+                                        <x-heroicon-o-chevron-down class="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200" ::class="open && 'rotate-180'" />
+                                    </button>
+
+                                    <div x-show="open" x-cloak x-transition.opacity.duration.150ms
+                                         class="mt-2 divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 bg-white dark:divide-white/10 dark:border-white/10 dark:bg-ink-900">
+                                        @foreach ($programGroups as $department => $items)
+                                            <div>
+                                                <button type="button"
+                                                        @click="dept = dept === {{ $loop->index }} ? null : {{ $loop->index }}"
+                                                        :aria-expanded="dept === {{ $loop->index }}"
+                                                        class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left text-sm font-semibold text-gray-800 transition hover:bg-gray-50 dark:text-gray-100 dark:hover:bg-white/5">
+                                                    <span>
+                                                        {{ $department }}
+                                                        <span class="ms-1 text-xs font-normal text-gray-400">{{ $items->count() }} prodi</span>
+                                                    </span>
+                                                    <x-heroicon-o-chevron-down class="h-4 w-4 shrink-0 text-gray-400 transition-transform duration-200" ::class="dept === {{ $loop->index }} && 'rotate-180'" />
+                                                </button>
+
+                                                <ul x-show="dept === {{ $loop->index }}" x-cloak x-transition.opacity.duration.150ms
+                                                    class="space-y-1 bg-gray-50/80 p-2 dark:bg-white/[0.03]">
+                                                    @foreach ($items as $program)
+                                                        <li>
+                                                            <button type="button"
+                                                                    @click="pick({{ $i }}, '{{ $program->id }}'); open = false"
+                                                                    :disabled="takenBy('{{ $program->id }}', {{ $i }}) !== null"
+                                                                    class="flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition disabled:cursor-not-allowed disabled:opacity-50"
+                                                                    :class="String(priorities[{{ $i }}]) === '{{ $program->id }}'
+                                                                        ? 'bg-brand-600 font-medium text-white'
+                                                                        : 'text-gray-700 hover:bg-white dark:text-gray-200 dark:hover:bg-white/10'">
+                                                                <span>{{ $program->full_name }}</span>
+                                                                <span x-show="takenBy('{{ $program->id }}', {{ $i }}) !== null" x-cloak
+                                                                      class="shrink-0 text-xs text-gray-400"
+                                                                      x-text="'Prioritas ' + takenBy('{{ $program->id }}', {{ $i }})"></span>
+                                                                <x-heroicon-s-check class="h-4 w-4 shrink-0" x-show="String(priorities[{{ $i }}]) === '{{ $program->id }}'" x-cloak />
+                                                            </button>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
                                         @endforeach
-                                    </select>
+                                    </div>
+
                                     <x-input-error :messages="$errors->get('priorities.'.$i)" class="mt-2" />
                                 </div>
                             @endfor
+
+                            <button type="button" @click="addSlot()" x-show="visibleSlots < maxSlots" x-cloak
+                                    class="flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-brand-300 px-4 py-3 text-sm font-semibold text-brand-700 transition hover:bg-brand-50 dark:border-brand-500/40 dark:text-brand-300 dark:hover:bg-brand-500/10">
+                                <x-heroicon-o-plus class="h-4 w-4" />
+                                Tambah prioritas
+                            </button>
+
+                            <p class="text-sm text-rose-600 dark:text-rose-400" x-show="priorityError" x-cloak x-text="priorityError"></p>
                         </div>
                     </section>
 
                     {{-- Komponen kedua SNBP: nilai mapel pendukung prodi --}}
-                    <section class="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/10">
+                    <section class="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/10 sm:p-6">
                         <div class="flex items-center gap-3">
-                            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
+                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400 sm:h-10 sm:w-10">
                                 <x-heroicon-o-book-open class="h-5 w-5" />
                             </span>
-                            <div>
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Nilai Mata Pelajaran Pendukung</h3>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">
-                                    Daftar ini menyesuaikan jenjang dan jurusan yang Anda pilih di biodata, sehingga
-                                    Anda tidak diminta mengisi mata pelajaran yang tidak pernah Anda tempuh. Yang
-                                    ditanyakan hanya mata pelajaran pendukung dari
-                                    <strong>program studi yang Anda jadikan prioritas</strong> di atas &mdash; program
-                                    studi lain tidak memerlukan isian di sini. <strong>Kosongkan</strong> mata
-                                    pelajaran yang tidak ada di rapor Anda &mdash; nilainya akan digantikan rerata
-                                    rapor Anda, bukan dianggap nol.
-                                </p>
-                            </div>
+                            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 sm:text-lg">Nilai Mata Pelajaran Pendukung</h3>
                         </div>
+                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                            Isi nilai mapel pendukung untuk prodi prioritas Anda. <strong>Kosongkan</strong> bila tidak ada di
+                            rapor &mdash; akan diganti rerata rapor, bukan dianggap nol.
+                        </p>
 
                         <p class="mt-3 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:bg-amber-500/10 dark:text-amber-300"
                            x-show="! level" x-cloak>
@@ -428,13 +503,28 @@
              * dengan mapel yang sengaja dikosongkan.
              */
             function raporForm({
-                programSubjects, programNames, priorities, added,
+                programSubjects, programNames, programDepartments, programDeptIndex, priorities, added,
                 subjectProfiles, extraSubjects, majorOptions, level, major, commonGroup,
+                baseSlots, maxSlots, minPriorities,
             }) {
+                // Selalu `maxSlots` elemen berisi string ('' = kosong), supaya
+                // pengisian slot mana pun tidak meninggalkan lubang pada array.
+                const normalizePriorities = (list) => Array.from(
+                    { length: maxSlots },
+                    (_, index) => (list?.[index] ? String(list[index]) : '')
+                );
+
                 return {
                     programSubjects,
                     programNames,
-                    priorities: priorities ?? [],
+                    programDepartments,
+                    programDeptIndex,
+                    baseSlots,
+                    maxSlots,
+                    minPriorities,
+                    extraSlots: baseSlots,
+                    priorityError: '',
+                    priorities: normalizePriorities(priorities),
                     added: added ?? [],
                     subjectProfiles,
                     extraSubjects,
@@ -464,15 +554,81 @@
                             });
 
                             const restored = JSON.parse(raw);
-                            this.priorities = Object.entries(restored)
-                                .filter(([name]) => name.startsWith('priorities['))
-                                .sort(([left], [right]) => left.localeCompare(right, undefined, { numeric: true }))
-                                .map(([, entries]) => entries[0]?.value ?? '');
+                            const restoredPriorities = [];
+                            Object.entries(restored).forEach(([name, entries]) => {
+                                const match = name.match(/^priorities\[(\d+)\]$/);
+                                if (match) {
+                                    restoredPriorities[Number(match[1])] = entries[0]?.value ?? '';
+                                }
+                            });
+                            this.priorities = normalizePriorities(restoredPriorities);
                             this.level = restored.education_level?.[0]?.value ?? this.level;
                             this.major = restored.school_major?.[0]?.value ?? this.major;
                         } catch (error) {
                             sessionStorage.removeItem('spk-assessment-draft');
                         }
+                    },
+
+                    /**
+                     * Slot prioritas yang tampil: minimal `baseSlots`, bertambah lewat
+                     * tombol "Tambah", dan selalu mencakup slot terisi terjauh (mis.
+                     * saat draft atau old input memulihkan prioritas ke-4).
+                     */
+                    get visibleSlots() {
+                        const lastFilled = this.priorities.reduce((last, id, index) => (id ? index : last), -1);
+
+                        return Math.min(this.maxSlots, Math.max(this.baseSlots, this.extraSlots, lastFilled + 1));
+                    },
+
+                    addSlot() {
+                        this.extraSlots = Math.min(this.maxSlots, this.visibleSlots + 1);
+                    },
+
+                    removeSlot(index) {
+                        this.priorities[index] = '';
+                        this.extraSlots = index;
+                    },
+
+                    pick(index, programId) {
+                        this.priorities[index] = String(programId);
+                        this.priorityError = '';
+                    },
+
+                    /** Nomor prioritas (1-based) lain yang sudah memakai prodi ini, atau null. */
+                    takenBy(programId, exceptIndex) {
+                        const index = this.priorities.findIndex((id, i) => i !== exceptIndex && id === String(programId));
+
+                        return index === -1 ? null : index + 1;
+                    },
+
+                    /** Posisi jurusan prodi terpilih pada daftar akordeon, agar langsung terbuka. */
+                    deptIndexOf(index) {
+                        const id = this.priorities[index];
+
+                        if (! id) {
+                            return null;
+                        }
+
+                        return this.programDeptIndex[id] ?? null;
+                    },
+
+                    onSubmit(event) {
+                        // Enter pada langkah 1-2 tidak boleh mengirim formulir; lanjutkan saja.
+                        if (this.$store.wizard.step < 3) {
+                            event.preventDefault();
+                            this.nextStep();
+                            return;
+                        }
+
+                        if (this.selectedPrograms.length < this.minPriorities) {
+                            event.preventDefault();
+                            this.priorityError = `Pilih minimal ${this.minPriorities} program studi.`;
+                            const firstEmpty = this.priorities.findIndex((id, i) => i < this.minPriorities && ! id);
+                            document.getElementById(`priority_${firstEmpty}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            return;
+                        }
+
+                        this.saveDraft(event);
                     },
 
                     saveDraft(event) {
@@ -563,7 +719,7 @@
 
                     /** Prodi terpilih, urut mengikuti nomor prioritas, tanpa slot kosong. */
                     get selectedPrograms() {
-                        return this.priorities.filter((id) => id !== '' && id !== null);
+                        return this.priorities.filter((id) => id !== '' && id !== null && id !== undefined);
                     },
 
                     /** Nomor prioritas prodi yang memakai mapel ini. */

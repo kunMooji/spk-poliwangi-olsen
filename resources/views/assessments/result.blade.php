@@ -27,10 +27,122 @@
                 <div class="overflow-hidden rounded-[1.35rem] bg-ink-950 p-6 text-porcelain-50 shadow-inner sm:p-8">
                     <p class="font-mono text-[10px] font-bold uppercase tracking-[0.18em] text-brand-200">Rekomendasi Utama</p>
                     <h3 class="mt-3 text-3xl font-bold tracking-tight">{{ $assessment->recommendedProgram?->full_name ?? '-' }}</h3>
-                    <p class="mt-3 max-w-3xl text-sm leading-relaxed text-porcelain-200/75">
+                    <p class="mt-3 line-clamp-3 max-w-3xl text-sm leading-relaxed text-porcelain-200/75">
                         {{ $assessment->recommendedProgram?->description }}
                     </p>
                 </div>
+            </section>
+
+            {{-- Tabel peringkat --}}
+            <section x-data="{ showAllRanks: false }" class="student-panel overflow-hidden">
+                <div class="p-6">
+                    <div class="flex flex-wrap items-center justify-between gap-3">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Peringkat Program Studi</h3>
+                        <span class="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 dark:bg-brand-900/30 dark:text-brand-200">
+                            Top 5 dari {{ $assessment->results->count() }}
+                        </span>
+                    </div>
+
+                    <div class="student-panel-muted mt-5 rounded-xl border border-black/5 p-4 dark:border-white/10">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Pilihan program studi Anda</p>
+                        <div class="mt-3 grid gap-3 md:grid-cols-3">
+                            @foreach ($assessment->priorities->take(3) as $priority)
+                                @php($priorityResult = $assessment->results->firstWhere('study_program_id', $priority->study_program_id))
+                                @php($isPriorityRecommended = $priority->study_program_id === $assessment->recommended_program_id)
+                                @php($priorityUrl = $priority->studyProgram?->website_url)
+                                {{-- Kartu menjadi tautan hanya bila prodinya punya situs; selain itu tetap kartu biasa. --}}
+                                <{{ $priorityUrl ? 'a' : 'div' }}
+                                    @if ($priorityUrl) href="{{ $priorityUrl }}" target="_blank" rel="noopener noreferrer" title="Buka situs prodi" @endif
+                                    class="block rounded-lg border border-black/5 bg-white p-3 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.04] {{ $priorityUrl ? 'transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md dark:hover:border-brand-500/50' : '' }}">
+                                    <div class="flex items-center justify-between gap-2">
+                                        <span class="text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-brand-300">Pilihan {{ $priority->priority_order }}</span>
+                                        <span class="font-mono text-xs font-bold tabular-nums text-gray-600 dark:text-gray-300">
+                                            #{{ $priorityResult?->ranking ?? '-' }}
+                                        </span>
+                                    </div>
+                                    <p class="mt-2 text-sm font-semibold leading-snug text-gray-900 dark:text-gray-100">
+                                        {{ $priority->studyProgram?->full_name ?? '-' }}
+                                        @if ($priorityUrl)
+                                            <x-heroicon-o-arrow-top-right-on-square class="ms-0.5 inline h-3.5 w-3.5 align-[-1px] text-brand-600 dark:text-brand-300" aria-hidden="true" />
+                                        @endif
+                                    </p>
+                                    @if ($isPriorityRecommended)
+                                        <p class="mt-1 text-xs font-semibold text-brand-700 dark:text-brand-300">Rekomendasi utama</p>
+                                    @endif
+                                </{{ $priorityUrl ? 'a' : 'div' }}>
+                            @endforeach
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="student-table min-w-full divide-y divide-black/5 text-sm dark:divide-white/10">
+                        <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
+                            <tr>
+                                <th class="px-6 py-3">#</th>
+                                <th class="px-6 py-3">Program Studi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            @php($tieGroups = $assessment->tieGroups())
+                            @foreach ($assessment->results as $result)
+                                @php($isRecommended = $result->study_program_id === $assessment->recommended_program_id)
+                                @php($tie = $tieGroups[$result->study_program_id] ?? null)
+                                @php($priorityOrder = $assessment->priorities->firstWhere('study_program_id', $result->study_program_id)?->priority_order)
+                                @php($websiteUrl = $result->studyProgram->website_url)
+                                {{-- Baris berprodi bersitus bisa diklik di mana saja; tautan di dalamnya
+                                     tetap ada untuk keyboard dan pembaca layar. --}}
+                                <tr @if ($result->ranking > 5) x-cloak x-show="showAllRanks" @endif
+                                    @if ($websiteUrl) data-href="{{ $websiteUrl }}" onclick="if (!event.target.closest('a')) window.open(this.dataset.href, '_blank', 'noopener')" @endif
+                                    class="{{ $isRecommended ? 'bg-brand-50 dark:bg-brand-900/20' : '' }} {{ $websiteUrl ? 'cursor-pointer transition hover:bg-brand-50/70 dark:hover:bg-white/5' : '' }} text-gray-700 dark:text-gray-300">
+                                    <td class="px-6 py-3 font-semibold">{{ $result->ranking }}</td>
+                                    <td class="px-6 py-3">
+                                        @if ($websiteUrl)
+                                            <a href="{{ $websiteUrl }}" target="_blank" rel="noopener noreferrer" title="Buka situs prodi"
+                                               class="font-medium text-gray-900 hover:text-brand-700 dark:text-gray-100 dark:hover:text-brand-300">
+                                                {{ $result->studyProgram->full_name }}
+                                                <x-heroicon-o-arrow-top-right-on-square class="ms-0.5 inline h-3.5 w-3.5 align-[-1px] text-brand-600 dark:text-brand-300" aria-hidden="true" />
+                                            </a>
+                                        @else
+                                            <span class="font-medium text-gray-900 dark:text-gray-100">
+                                                {{ $result->studyProgram->full_name }}
+                                            </span>
+                                        @endif
+                                        @if ($isRecommended)
+                                            <span class="ms-2 rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
+                                                Rekomendasi
+                                            </span>
+                                        @endif
+                                        @if ($tie)
+                                            <span class="ms-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-700 dark:bg-amber-400/15 dark:text-amber-100"
+                                                  title="Selisih skornya terlalu kecil untuk dianggap berbeda. Peringkat {{ $tie['from'] }}–{{ $tie['to'] }} sebaiknya dibaca setara.">
+                                                Setara #{{ $tie['from'] }}&ndash;{{ $tie['to'] }}
+                                            </span>
+                                        @endif
+                                        @if ($priorityOrder)
+                                            <span class="ms-1 rounded-full bg-gray-200 px-2 py-0.5 text-[10px] font-semibold uppercase text-gray-700 dark:bg-gray-600 dark:text-gray-200">
+                                                Pilihan {{ $priorityOrder }}
+                                            </span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                @if ($assessment->results->count() > 5)
+                    <div class="border-t border-gray-100 px-6 py-4 text-center dark:border-gray-700">
+                        <button type="button" @click="showAllRanks = !showAllRanks"
+                                class="inline-flex items-center gap-2 rounded-lg border border-brand-200 px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50 dark:border-brand-700 dark:text-brand-200 dark:hover:bg-brand-900/20">
+                            <span x-text="showAllRanks ? 'Sembunyikan daftar lengkap' : 'Lihat lebih banyak'"></span>
+                            <svg class="h-4 w-4 transition-transform duration-200" :class="showAllRanks && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
+                            </svg>
+                        </button>
+                    </div>
+                @endif
             </section>
 
             {{-- Posisi pilihan pertama & keyakinan peringkat teratas: angka tampil
@@ -54,7 +166,6 @@
                         <dd class="mt-1.5 font-mono text-2xl font-bold leading-none text-ink-900 dark:text-porcelain-50">
                             {{ number_format($primaryResult?->k_normal ?? 0, 2) }}<span class="ml-1 text-xs font-normal text-ink-500 dark:text-porcelain-300/70">/ 100</span>
                         </dd>
-                        <dd class="mt-1.5 text-xs text-ink-500 dark:text-porcelain-300/70">terhadap peringkat teratas</dd>
                     </div>
 
                     @if ($hasMargin)
@@ -68,33 +179,25 @@
                                     <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-400/15 dark:text-emerald-200">Meyakinkan</span>
                                 @endif
                             </dd>
-                            @if ($assessment->margin_threshold_used !== null)
-                                <dd class="mt-1.5 text-xs text-ink-500 dark:text-porcelain-300/70">ambang {{ number_format($assessment->margin_threshold_used, 2) }} poin</dd>
-                            @endif
                         </div>
                     @endif
                 </dl>
 
-                <div class="space-y-1 border-t border-black/5 px-5 py-3.5 dark:border-white/10">
-                    @if ($confident === false)
-                        <p class="flex items-start gap-2 text-sm font-medium text-amber-800 dark:text-amber-200">
-                            <x-heroicon-o-exclamation-triangle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                            Dua prodi teratas nyaris setara &mdash; timbang keduanya, jangan jadikan peringkat 1 jawaban tunggal.
-                        </p>
-                    @elseif ($confident === true)
-                        <p class="flex items-start gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-200">
-                            <x-heroicon-o-check-circle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                            Peringkat teratas cukup kuat dan tidak mudah berubah oleh selisih nilai kecil.
-                        </p>
-                    @endif
-                    <p class="text-xs text-ink-500 dark:text-porcelain-300/70">
-                        @if ($assessment->matches_preference)
-                            Sesuai pilihan pertama Anda &mdash; peringkat ini murni hasil perhitungan kriteria, bukan karena urutan pilihan.
+                @if ($confident !== null)
+                    <div class="border-t border-black/5 px-5 py-3.5 dark:border-white/10">
+                        @if ($confident === false)
+                            <p class="flex items-start gap-2 text-sm font-medium text-amber-800 dark:text-amber-200">
+                                <x-heroicon-o-exclamation-triangle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                                Dua prodi teratas nyaris setara &mdash; timbang keduanya.
+                            </p>
                         @else
-                            Minat Anda sudah dihitung sebagai salah satu kriteria; keputusan akhir tetap di tangan Anda.
+                            <p class="flex items-start gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-200">
+                                <x-heroicon-o-check-circle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                                Peringkat teratas cukup kuat.
+                            </p>
                         @endif
-                    </p>
-                </div>
+                    </div>
+                @endif
             </section>
 
             {{-- Penjelasan: kriteria mana yang mengangkat dan menahan prodi rekomendasi --}}
@@ -118,23 +221,21 @@
                     </h3>
 
                     @if ($highlights['strengths'] !== [] || $highlights['weaknesses'] !== [])
-                        <p class="mt-2 max-w-3xl text-sm leading-relaxed text-gray-600 dark:text-gray-300">
+                        <dl class="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-300">
                             @if ($highlights['strengths'] !== [])
-                                Program studi ini unggul pada
-                                <strong class="text-emerald-700 dark:text-emerald-400">{{ implode(', ', $highlights['strengths']) }}</strong>.
+                                <div>
+                                    <dt class="inline font-medium">Unggul:</dt>
+                                    <dd class="inline font-semibold text-emerald-700 dark:text-emerald-400">{{ implode(', ', $highlights['strengths']) }}</dd>
+                                </div>
                             @endif
                             @if ($highlights['weaknesses'] !== [])
-                                Yang menahan nilainya adalah
-                                <strong class="text-rose-700 dark:text-rose-400">{{ implode(', ', $highlights['weaknesses']) }}</strong>
-                                &mdash; bagian inilah yang perlu Anda pertimbangkan sebelum memutuskan.
+                                <div>
+                                    <dt class="inline font-medium">Menahan nilai:</dt>
+                                    <dd class="inline font-semibold text-rose-700 dark:text-rose-400">{{ implode(', ', $highlights['weaknesses']) }}</dd>
+                                </div>
                             @endif
-                        </p>
+                        </dl>
                     @endif
-
-                    <p class="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                        Batang di bawah menunjukkan sumbangan tiap kriteria terhadap nilai prodi ini, yaitu
-                        bobot kriteria dikalikan nilai ternormalisasinya.
-                    </p>
 
                     <div class="mt-5 space-y-3">
                         @foreach ($contributions as $row)
@@ -224,7 +325,7 @@
                                             {{ number_format($percentages[$dimension], 1) }}%
                                         </dd>
                                     </div>
-                                    <p class="riasec-dimension-description ms-10 mt-1 text-xs leading-relaxed" title="{{ Riasec::shortDescription($dimension) }}">
+                                    <p class="riasec-dimension-description ms-10 mt-1 hidden text-xs leading-relaxed sm:block" title="{{ Riasec::shortDescription($dimension) }}">
                                         {{ Riasec::shortDescription($dimension) }}
                                     </p>
                                 </div>
@@ -232,110 +333,6 @@
                         </dl>
                     </aside>
                 </div>
-            </section>
-
-            {{-- Tabel peringkat --}}
-            <section x-data="{ showAllRanks: false }" class="student-panel overflow-hidden">
-                <div class="p-6">
-                    <div class="flex flex-wrap items-start justify-between gap-3">
-                        <div>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Peringkat Program Studi</h3>
-                            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                Lima program studi dengan kecocokan tertinggi dari {{ $assessment->results->count() }} alternatif.
-                            </p>
-                        </div>
-                        <span class="rounded-full bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 dark:bg-brand-900/30 dark:text-brand-200">
-                            Top 5 rekomendasi
-                        </span>
-                    </div>
-
-                    <div class="student-panel-muted mt-5 rounded-xl border border-black/5 p-4 dark:border-white/10">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Pilihan program studi Anda</p>
-                        <div class="mt-3 grid gap-3 md:grid-cols-3">
-                            @foreach ($assessment->priorities->take(3) as $priority)
-                                @php($priorityResult = $assessment->results->firstWhere('study_program_id', $priority->study_program_id))
-                                @php($isPriorityRecommended = $priority->study_program_id === $assessment->recommended_program_id)
-                                <div class="rounded-lg border border-black/5 bg-white p-3 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.04]">
-                                    <div class="flex items-center justify-between gap-2">
-                                        <span class="text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-brand-300">Pilihan {{ $priority->priority_order }}</span>
-                                        <span class="font-mono text-xs font-bold tabular-nums text-gray-600 dark:text-gray-300">
-                                            #{{ $priorityResult?->ranking ?? '-' }}
-                                        </span>
-                                    </div>
-                                    <p class="mt-2 text-sm font-semibold leading-snug text-gray-900 dark:text-gray-100">
-                                        {{ $priority->studyProgram?->full_name ?? '-' }}
-                                    </p>
-                                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                                        Peringkat {{ $priorityResult?->ranking ?? '-' }} dari {{ $assessment->results->count() }} prodi
-                                        @if ($isPriorityRecommended)
-                                            <span class="font-semibold text-brand-700 dark:text-brand-300">&middot; Rekomendasi utama</span>
-                                        @endif
-                                    </p>
-                                </div>
-                            @endforeach
-                        </div>
-                    </div>
-
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                        Label Pilihan 1, 2, dan 3 tetap ditampilkan pada daftar, termasuk bila peringkatnya di luar lima besar.
-                    </p>
-                </div>
-
-                <div class="overflow-x-auto">
-                    <table class="student-table min-w-full divide-y divide-black/5 text-sm dark:divide-white/10">
-                        <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
-                            <tr>
-                                <th class="px-6 py-3">#</th>
-                                <th class="px-6 py-3">Program Studi</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            @php($tieGroups = $assessment->tieGroups())
-                            @foreach ($assessment->results as $result)
-                                @php($isRecommended = $result->study_program_id === $assessment->recommended_program_id)
-                                @php($tie = $tieGroups[$result->study_program_id] ?? null)
-                                @php($priorityOrder = $assessment->priorities->firstWhere('study_program_id', $result->study_program_id)?->priority_order)
-                                <tr @if ($result->ranking > 5) x-cloak x-show="showAllRanks" @endif
-                                    class="{{ $isRecommended ? 'bg-brand-50 dark:bg-brand-900/20' : '' }} text-gray-700 dark:text-gray-300">
-                                    <td class="px-6 py-3 font-semibold">{{ $result->ranking }}</td>
-                                    <td class="px-6 py-3">
-                                        <span class="font-medium text-gray-900 dark:text-gray-100">
-                                            {{ $result->studyProgram->full_name }}
-                                        </span>
-                                        @if ($isRecommended)
-                                            <span class="ms-2 rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
-                                                Rekomendasi
-                                            </span>
-                                        @endif
-                                        @if ($tie)
-                                            <span class="ms-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-700 dark:bg-amber-400/15 dark:text-amber-100"
-                                                  title="Selisih skornya terlalu kecil untuk dianggap berbeda. Peringkat {{ $tie['from'] }}–{{ $tie['to'] }} sebaiknya dibaca setara.">
-                                                Setara #{{ $tie['from'] }}&ndash;{{ $tie['to'] }}
-                                            </span>
-                                        @endif
-                                        @if ($priorityOrder)
-                                            <span class="ms-1 rounded-full bg-gray-200 px-2 py-0.5 text-[10px] font-semibold uppercase text-gray-700 dark:bg-gray-600 dark:text-gray-200">
-                                                Pilihan {{ $priorityOrder }}
-                                            </span>
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-
-                @if ($assessment->results->count() > 5)
-                    <div class="border-t border-gray-100 px-6 py-4 text-center dark:border-gray-700">
-                        <button type="button" @click="showAllRanks = !showAllRanks"
-                                class="inline-flex items-center gap-2 rounded-lg border border-brand-200 px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-50 dark:border-brand-700 dark:text-brand-200 dark:hover:bg-brand-900/20">
-                            <span x-text="showAllRanks ? 'Sembunyikan daftar lengkap' : 'Lihat lebih banyak'"></span>
-                            <svg class="h-4 w-4 transition-transform duration-200" :class="showAllRanks && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6" />
-                            </svg>
-                        </button>
-                    </div>
-                @endif
             </section>
 
             {{-- Kuesioner umpan balik pengguna --}}
@@ -349,7 +346,7 @@
                             <div>
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Bantu kami dengan mengisi kuesioner</h3>
                                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                                    Bagaimana pengalaman Anda menggunakan sistem rekomendasi ini? Jawaban Anda membantu kami menilai dan menyempurnakan sistem. Pengisian hanya beberapa menit.
+                                    Bantu kami menyempurnakan sistem. Hanya beberapa menit.
                                 </p>
                             </div>
                         </div>

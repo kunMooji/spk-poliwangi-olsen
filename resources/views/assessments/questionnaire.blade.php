@@ -19,6 +19,9 @@
             'E' => '#EF5350',
             'C' => '#26C6DA',
         ];
+        // Label kedua ujung skala, ditampilkan di bawah deretan angka.
+        $likertFirst = $likert[array_key_first($likert)];
+        $likertLast = $likert[array_key_last($likert)];
         $questionIcons = [
             'R' => 'wrench-screwdriver',
             'I' => 'magnifying-glass',
@@ -51,123 +54,127 @@
                 </div>
 
             <div class="relative mt-8 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
-                <x-assessment-progress :current="4" fraction-expression="answeredCount / total" sticky-top="lg:top-20" clickable />
+                <x-assessment-progress :current="4" fraction-expression="answeredCount / total" sticky-top="lg:top-20" clickable hide-on-mobile />
 
                 <div class="min-w-0">
-                <div class="rounded-2xl border border-brand-100 bg-white p-6 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/10 sm:p-8">
-                    <p class="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-400">Sebelum mulai</p>
-                    <h3 class="mt-2 text-2xl font-semibold tracking-tight text-gray-950 dark:text-gray-100">Petunjuk pengisian</h3>
-                    <p class="mt-2 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
-                        Terdapat <strong>{{ $questions->count() }} pernyataan</strong>. Untuk setiap pernyataan, pilih
-                        angka yang paling menggambarkan diri Anda pada skala {{ $likertMin }} sampai {{ $likertMax }}. Tidak ada jawaban benar
-                        atau salah &mdash; jawablah sejujurnya sesuai keadaan Anda.
+                <div class="rounded-2xl border border-brand-100 bg-white p-5 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/10 sm:p-6">
+                    <h3 class="text-lg font-semibold tracking-tight text-gray-950 dark:text-gray-100 sm:text-xl">Petunjuk pengisian</h3>
+                    <p class="mt-1.5 text-sm leading-relaxed text-gray-600 dark:text-gray-300">
+                        Pilih angka {{ $likertMin }}&ndash;{{ $likertMax }} yang paling menggambarkan diri Anda pada
+                        <strong>{{ $questions->count() }} pernyataan</strong> berikut. Tidak ada jawaban benar atau salah.
                     </p>
 
-                    <div class="mt-4 flex flex-wrap gap-2 text-xs">
-                        @foreach ($likert as $value => $label)
-                            <span class="rounded-md bg-gray-100 px-2.5 py-1 text-gray-700 dark:bg-gray-700 dark:text-gray-200">
-                                <strong>{{ $value }}</strong> = {{ $label }}
-                            </span>
-                        @endforeach
-                    </div>
-
-                    <p class="mt-4 rounded-lg bg-sky-50 px-3 py-2 text-xs leading-relaxed text-sky-800 dark:bg-sky-900/30 dark:text-sky-200">
-                        Jawaban Anda <strong>tersimpan otomatis</strong> beberapa saat setelah dipilih. Bila halaman
-                        tertutup atau Anda berpindah perangkat, pengisian dapat dilanjutkan dari butir terakhir
-                        &mdash; tidak perlu mengulang dari awal.
-                        @if ($saved->isNotEmpty())
-                            Saat ini <strong>{{ $saved->count() }} jawaban</strong> Anda sudah tersimpan.
-                        @endif
-                    </p>
-                </div>
-
-        {{-- Bilah kemajuan yang menempel di atas saat digulir --}}
-        <div class="sticky top-0 z-10 mt-6 rounded-xl border border-brand-100 bg-white/95 px-4 backdrop-blur dark:border-white/10 dark:bg-ink-900/95">
-            <div class="mx-auto max-w-none px-0 py-4">
-                <div class="flex items-center justify-between text-sm">
-                    <span class="font-medium text-gray-700 dark:text-gray-200">
-                        Terjawab <span x-text="answeredCount"></span> dari {{ $questions->count() }}
-                    </span>
-                    <div class="flex items-center gap-3">
-                        {{-- Penanda simpan otomatis: calon mahasiswa perlu tahu
-                             jawabannya sudah aman di server, bukan sekadar di layar. --}}
-                        <span class="text-xs" x-show="saveState !== 'idle'" x-cloak
-                              :class="{
-                                  'text-gray-500 dark:text-gray-400': saveState === 'saving',
-                                  'text-emerald-600 dark:text-emerald-400': saveState === 'saved',
-                                  'text-rose-600 dark:text-rose-400': saveState === 'error',
-                              }"
-                              x-text="saveMessage"></span>
-                        <span class="font-semibold text-brand-600 dark:text-brand-400" x-text="percent + '%'"></span>
+                    <div class="mt-3 flex flex-wrap gap-2 text-xs text-gray-700 dark:text-gray-200">
+                        <span class="rounded-md bg-gray-100 px-2.5 py-1 dark:bg-gray-700"><strong>{{ $likertMin }}</strong> = {{ $likertFirst }}</span>
+                        <span class="rounded-md bg-gray-100 px-2.5 py-1 dark:bg-gray-700"><strong>{{ $likertMax }}</strong> = {{ $likertLast }}</span>
                     </div>
                 </div>
-                <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+
+        {{-- Bilah kemajuan yang menempel di bawah app bar (sticky top-0 z-30)
+             saat digulir. Offset 65px = tinggi app bar, supaya tidak tertutup. --}}
+        <div class="sticky top-[65px] z-20 mt-4 rounded-xl border border-brand-100 bg-white/95 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-ink-900/95 sm:mt-6">
+            <div class="flex items-center gap-3 text-sm">
+                <span class="shrink-0 font-medium text-gray-700 dark:text-gray-200">
+                    <span x-text="answeredCount"></span>/{{ $questions->count() }}
+                    <span class="hidden sm:inline">terjawab</span>
+                </span>
+                <div class="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
                     <div class="h-full rounded-full bg-brand-600 transition-all duration-300" :style="`width: ${percent}%`"></div>
                 </div>
+                <span class="shrink-0 font-semibold text-brand-600 dark:text-brand-400" x-text="percent + '%'"></span>
             </div>
+            {{-- Penanda simpan otomatis: di HP disembunyikan agar bilah tetap ringkas,
+                 kecuali saat gagal menyimpan — itu perlu diketahui pengguna. --}}
+            <p class="mt-1.5 text-xs" x-show="saveState !== 'idle'" x-cloak
+               :class="{
+                   'hidden sm:block': saveState !== 'error',
+                   'text-gray-500 dark:text-gray-400': saveState === 'saving',
+                   'text-emerald-600 dark:text-emerald-400': saveState === 'saved',
+                   'text-rose-600 dark:text-rose-400': saveState === 'error',
+               }"
+               x-text="saveMessage"></p>
         </div>
 
         <div class="mx-auto max-w-none px-0">
             <form method="POST" action="{{ route('assessments.answers.store', $assessment) }}"
-                  @submit="onSubmit($event)" class="mt-6 space-y-4">
+                  @submit="onSubmit($event)" class="mt-4 space-y-3 sm:mt-6 sm:space-y-4">
                 @csrf
 
                 @foreach ($questions as $index => $question)
                     @php($questionColor = $questionPalettes[$question->dimension] ?? '#42A5F5')
                     @php($questionIcon = $questionIcons[$question->dimension] ?? 'sparkles')
-                    <div class="riasec-question-card relative overflow-hidden rounded-2xl border bg-white p-5 shadow-sm shadow-ink-950/5 transition dark:bg-white/[0.06] dark:shadow-black/10 sm:p-6"
-                         style="--question-color: {{ $questionColor }}"
-                         :class="answers['{{ $question->id }}'] ? '' : 'ring-1 ring-amber-300 dark:ring-amber-700'">
-                        <x-dynamic-component :component="'heroicon-o-'.$questionIcon" class="riasec-question-silhouette pointer-events-none absolute -bottom-7 -right-5 h-32 w-32" aria-hidden="true" />
+                    <div id="question-{{ $index }}" data-question-id="{{ $question->id }}"
+                         class="riasec-question-card relative scroll-mt-32 overflow-hidden rounded-2xl border bg-white p-4 shadow-sm shadow-ink-950/5 transition dark:bg-white/[0.06] dark:shadow-black/10 sm:p-6"
+                         style="--question-color: {{ $questionColor }}">
+                        <x-dynamic-component :component="'heroicon-o-'.$questionIcon" class="riasec-question-silhouette pointer-events-none absolute -bottom-7 -right-5 hidden h-32 w-32 sm:block" aria-hidden="true" />
+
                         <div class="relative z-10 flex gap-3">
-                            <span class="riasec-question-number mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold">
-                                {{ $index + 1 }}
+                            <span class="riasec-question-number mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition"
+                                  :class="answers['{{ $question->id }}'] && '!bg-emerald-500 !text-white'">
+                                <span x-show="! answers['{{ $question->id }}']">{{ $index + 1 }}</span>
+                                <x-heroicon-s-check class="h-4 w-4" x-show="answers['{{ $question->id }}']" x-cloak />
                             </span>
-                            <p class="text-sm leading-relaxed text-gray-800 dark:text-gray-100">{{ $question->statement }}</p>
+                            <p class="text-[15px] font-medium leading-relaxed text-gray-800 dark:text-gray-100">{{ $question->statement }}</p>
                         </div>
 
-                        {{-- Jumlah kolom mengikuti banyaknya titik skala, jadi tidak bisa
+                        {{-- Skala berupa lingkaran bernomor selebar kartu (tanpa indentasi),
+                             target sentuh 44px, dengan label kedua ujung di bawahnya.
+                             Jumlah kolom mengikuti banyaknya titik skala, jadi tidak bisa
                              memakai kelas Tailwind yang dipatok seperti grid-cols-5. --}}
-                        <div class="relative z-10 mt-4 grid gap-2 ps-10"
-                             style="grid-template-columns: repeat({{ count($likert) }}, minmax(0, 1fr));">
-                            @foreach ($likertShort as $value => $label)
-                                <label class="cursor-pointer">
-                                    <input type="radio" class="peer sr-only"
-                                           name="answers[{{ $question->id }}]" value="{{ $value }}"
-                                           x-model="answers['{{ $question->id }}']">
-                                    <span class="block rounded-lg border border-gray-300 px-2 py-2 text-center text-xs transition
-                                                 hover:border-brand-400 hover:bg-brand-50
-                                                 peer-checked:border-brand-600 peer-checked:bg-brand-600 peer-checked:text-white
-                                                 dark:border-gray-600 dark:hover:bg-gray-700 dark:peer-checked:border-brand-500 dark:peer-checked:bg-brand-600">
-                                        <span class="block text-base font-bold">{{ $value }}</span>
-                                        <span class="mt-0.5 block leading-tight">{{ $label }}</span>
-                                    </span>
-                                </label>
-                            @endforeach
+                        <div class="relative z-10 mt-4">
+                            <div class="grid gap-1.5 sm:gap-3"
+                                 style="grid-template-columns: repeat({{ count($likert) }}, minmax(0, 1fr));"
+                                 role="radiogroup" aria-label="Jawaban pernyataan {{ $index + 1 }}">
+                                @foreach ($likert as $value => $label)
+                                    <label class="cursor-pointer" title="{{ $label }}">
+                                        <input type="radio" class="peer sr-only"
+                                               name="answers[{{ $question->id }}]" value="{{ $value }}"
+                                               aria-label="{{ $value }} &mdash; {{ $label }}"
+                                               x-model="answers['{{ $question->id }}']"
+                                               @change="advance({{ $index }})">
+                                        <span class="mx-auto flex h-11 w-11 items-center justify-center rounded-full border-2 border-gray-300 bg-white text-base font-semibold text-gray-600 transition active:scale-95
+                                                     hover:border-brand-400 hover:bg-brand-50
+                                                     peer-focus-visible:ring-2 peer-focus-visible:ring-brand-500/50
+                                                     peer-checked:border-brand-600 peer-checked:bg-brand-600 peer-checked:text-white
+                                                     dark:border-gray-600 dark:bg-transparent dark:text-gray-300 dark:hover:bg-white/10 dark:peer-checked:border-brand-500 dark:peer-checked:bg-brand-600 dark:peer-checked:text-white
+                                                     sm:h-12 sm:w-12">
+                                            {{ $value }}
+                                        </span>
+                                    </label>
+                                @endforeach
+                            </div>
+                            <div class="mt-2 flex justify-between gap-4 text-[11px] leading-tight text-gray-500 dark:text-gray-400">
+                                <span>{{ $likertFirst }}</span>
+                                <span class="text-right">{{ $likertLast }}</span>
+                            </div>
                         </div>
                     </div>
                 @endforeach
 
-                <div class="sticky bottom-0 rounded-2xl border border-brand-100 bg-white/95 p-4 shadow-lg shadow-ink-950/10 backdrop-blur dark:border-white/10 dark:bg-ink-900/95 sm:p-5">
-                    <div class="flex flex-wrap items-center justify-between gap-3">
-                        <div class="flex min-w-0 items-center gap-4">
-                            <a href="{{ route('assessments.create', ['resume' => 1, 'step' => 3]) }}"
-                               class="inline-flex shrink-0 items-center gap-2 rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:-translate-y-0.5 hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
-                                <x-heroicon-o-arrow-left class="h-4 w-4" />
-                                Kembali ke Prioritas Prodi
-                            </a>
+                {{-- Area kirim berada di aliran halaman (bukan sticky) supaya tidak
+                     menimpa kartu pertanyaan di layar sempit. --}}
+                <div id="questionnaire-submit" class="rounded-2xl border border-brand-100 bg-white p-4 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] sm:p-5">
+                    <p class="text-sm text-gray-600 dark:text-gray-300" x-show="!isComplete">
+                        Masih ada <span class="font-semibold" x-text="{{ $questions->count() }} - answeredCount"></span>
+                        pernyataan belum dijawab.
+                        <button type="button" @click="goToUnanswered()"
+                                class="ms-1 font-semibold text-brand-600 underline-offset-2 hover:underline dark:text-brand-400">
+                            Lihat
+                        </button>
+                    </p>
+                    <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400" x-show="isComplete" x-cloak>
+                        Semua pernyataan sudah terjawab.
+                    </p>
 
-                            <p class="text-sm text-gray-500 dark:text-gray-400" x-show="!isComplete">
-                                Masih ada <span class="font-semibold" x-text="{{ $questions->count() }} - answeredCount"></span>
-                                pernyataan yang belum dijawab.
-                            </p>
-                            <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400" x-show="isComplete" x-cloak>
-                                Semua pernyataan sudah terjawab.
-                            </p>
-                        </div>
+                    <div class="mt-3 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <a href="{{ route('assessments.create', ['resume' => 1, 'step' => 3]) }}"
+                           class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-semibold text-gray-700 transition hover:bg-gray-50 dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700">
+                            <x-heroicon-o-arrow-left class="h-4 w-4" />
+                            Kembali ke Prioritas Prodi
+                        </a>
 
                         <button type="submit" :disabled="!isComplete"
-                                class="rounded-lg bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-gray-300 dark:disabled:bg-gray-600">
+                                class="w-full rounded-xl bg-brand-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-gray-300 dark:disabled:bg-gray-600 sm:w-auto">
                             Proses &amp; Lihat Hasil
                         </button>
                     </div>
@@ -272,6 +279,34 @@
                         } finally {
                             this.pending = false;
                         }
+                    },
+
+                    /**
+                     * Di HP, setelah menjawab, gulir halus ke pernyataan berikutnya
+                     * bila belum dijawab — pengguna tidak perlu menggulir manual
+                     * untuk tiap butir. Jeda singkat memberi waktu umpan balik
+                     * pilihan terlihat dan x-model selesai memperbarui jawaban.
+                     */
+                    advance(index) {
+                        if (!window.matchMedia('(max-width: 639px)').matches) {
+                            return;
+                        }
+
+                        setTimeout(() => {
+                            const next = document.getElementById(`question-${index + 1}`);
+
+                            if (next && !this.answers[next.dataset.questionId]) {
+                                next.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        }, 220);
+                    },
+
+                    /** Lompat ke pernyataan pertama yang belum dijawab. */
+                    goToUnanswered() {
+                        const target = [...document.querySelectorAll('[data-question-id]')]
+                            .find((card) => !this.answers[card.dataset.questionId]);
+
+                        target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     },
 
                     get answeredCount() {

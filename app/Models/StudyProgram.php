@@ -19,6 +19,29 @@ class StudyProgram extends Model
 
     protected $table = 'study_programs';
 
+    /**
+     * Situs resmi jurusan/prodi, dikunci pada `code` prodi. Prodi yang tidak
+     * tercantum di sini (mis. Teknologi Rekayasa Otomotif, Pariwisata) memang
+     * belum punya tautan, jadi tidak menampilkan aksi apa pun.
+     */
+    public const WEBSITES = [
+        // Jurusan Bisnis dan Informatika — satu situs untuk ketiga prodi.
+        'TRPL-D4' => 'https://jbi.poliwangi.ac.id/',
+        'BD-D4' => 'https://jbi.poliwangi.ac.id/',
+        'TRK-D4' => 'https://jbi.poliwangi.ac.id/',
+        // Jurusan Teknik Sipil — satu situs untuk keempat prodi.
+        'TS-D3' => 'https://sipil.poliwangi.ac.id/',
+        'TRKJJ-D4' => 'https://sipil.poliwangi.ac.id/',
+        'TRKBG-D4' => 'https://sipil.poliwangi.ac.id/',
+        'MK-D4' => 'https://sipil.poliwangi.ac.id/',
+        // Jurusan Teknik Mesin — hanya dua prodi yang punya situs.
+        'TRM-D4' => 'https://trm.poliwangi.ac.id/',
+        'TMK-D4' => 'https://tmk.poliwangi.ac.id/',
+        // Jurusan Pertanian — hanya dua prodi yang punya situs.
+        'AGB-D4' => 'https://agb.poliwangi.ac.id/',
+        'TPHT-D4' => 'https://tpht.poliwangi.ac.id/',
+    ];
+
     protected $fillable = [
         'code', 'name', 'level', 'department', 'description',
         'riasec_r', 'riasec_i', 'riasec_a', 'riasec_s', 'riasec_e', 'riasec_c',
@@ -99,6 +122,12 @@ class StudyProgram extends Model
     public function getFullNameAttribute(): string
     {
         return trim($this->level.' '.$this->name);
+    }
+
+    /** Alamat situs prodi, atau null bila prodi ini belum punya tautan. */
+    public function getWebsiteUrlAttribute(): ?string
+    {
+        return self::WEBSITES[$this->code] ?? null;
     }
 
     /** Persentase alumni terserap kerja, siap tampil. */

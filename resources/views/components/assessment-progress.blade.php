@@ -4,6 +4,7 @@
     'fractionExpression' => null,
     'stickyTop' => 'lg:top-0',
     'clickable' => false,
+    'hideOnMobile' => false,
     'tipTitle' => 'Jawablah setiap pernyataan sesuai dengan kondisi diri Anda.',
     'tipBody' => 'Tidak ada jawaban benar atau salah.',
 ])
@@ -36,7 +37,7 @@
     kemajuan di dalam step tersebut supaya persentasenya tetap naik
     seiring soal yang dijawab, bukan diam di satu angka.
 --}}
-<div x-data="{}" class="flex min-h-[30rem] w-full flex-col rounded-2xl border border-brand-100 bg-white p-6 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/10 lg:sticky {{ $stickyTop }} lg:h-[calc(100vh-6rem)] lg:w-full">
+<div x-data="{}" class="{{ $hideOnMobile ? 'hidden lg:flex' : 'flex' }} min-h-[30rem] w-full flex-col rounded-2xl border border-brand-100 bg-white p-6 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-black/10 lg:sticky {{ $stickyTop }} lg:h-[calc(100vh-6rem)] lg:w-full">
 
     <div class="flex items-center justify-between">
         <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100">
