@@ -15,6 +15,7 @@
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800|unbounded:600,700,800&display=swap" rel="stylesheet" />
         @vite(['resources/css/app.css'])
+        <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}?v=2">
     </head>
     <body class="min-h-screen bg-[#dcecff] font-sans antialiased transition-colors dark:bg-ink-950">
         <main class="mx-auto flex min-h-screen max-w-[1600px] items-center p-3 sm:p-5 lg:p-7">

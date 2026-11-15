@@ -101,10 +101,16 @@ export default {
                 },
                 // Krem hangat untuk latar terang — pengganti putih polos agar
                 // mode terang tetap terasa premium, bukan default template.
+                // Shade 300–500 khusus teks sekunder pada mode gelap — dipilih
+                // cukup terang supaya tetap terbaca (≥ AA) di atas latar `ink`
+                // meski dipakai dengan modifier opasitas (mis. /60, /70).
                 porcelain: {
                     50: '#faf8f3',
                     100: '#f2ede2',
                     200: '#e6ddc9',
+                    300: '#ddd6c4',
+                    400: '#cfc8b5',
+                    500: '#b9b29e',
                 },
             },
         },

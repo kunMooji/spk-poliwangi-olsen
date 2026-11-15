@@ -33,51 +33,69 @@
                 </div>
             </section>
 
-            {{-- Penjelasan kesesuaian dengan pilihan --}}
-            @if ($assessment->matches_preference)
-                <x-alert type="success">
-                    Program studi pilihan pertama Anda,
-                    <strong>{{ $assessment->primaryProgram?->full_name }}</strong>,
-                    sekaligus menempati peringkat teratas dari
-                    {{ $assessment->results->count() }} program studi.
-                    Peringkat ini murni hasil perhitungan seluruh kriteria &mdash;
-                    bukan karena Anda menempatkannya sebagai pilihan pertama.
-                </x-alert>
-            @else
-                <x-alert type="warning">
-                    Program studi pilihan pertama Anda,
-                    <strong>{{ $assessment->primaryProgram?->full_name ?? '-' }}</strong>,
-                    berada di peringkat
-                    <strong>{{ $primaryResult?->ranking ?? '-' }}</strong>
-                    dari {{ $assessment->results->count() }} program studi, dengan skor
-                    <strong>{{ number_format($primaryResult?->k_normal ?? 0, 2) }}</strong>
-                    dari 100 relatif terhadap peringkat teratas,
-                    <strong>{{ $assessment->recommendedProgram?->full_name }}</strong>.
-                    Minat Anda sudah ikut diperhitungkan sebagai salah satu kriteria,
-                    dan keputusan akhir tetap berada di tangan Anda.
-                </x-alert>
-            @endif
+            {{-- Posisi pilihan pertama & keyakinan peringkat teratas: angka tampil
+                 sebagai tiga petak data, teks hanya untuk kesimpulannya. --}}
+            @php
+                $confident = $assessment->hasConfidentRecommendation();
+                $hasMargin = $assessment->margin_to_runner_up !== null;
+            @endphp
+            <section class="student-panel dashboard-enter overflow-hidden">
+                <dl class="grid divide-y divide-black/5 dark:divide-white/10 sm:divide-x sm:divide-y-0 {{ $hasMargin ? 'sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1.2fr)]' : 'sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]' }}">
+                    <div class="px-5 py-4">
+                        <dt class="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-500 dark:text-porcelain-300/70">Pilihan pertama Anda</dt>
+                        <dd class="mt-1.5 text-base font-semibold leading-snug text-ink-900 dark:text-porcelain-50">{{ $assessment->primaryProgram?->full_name ?? '-' }}</dd>
+                        <dd class="mt-0.5 text-xs text-ink-500 dark:text-porcelain-300/70">
+                            Peringkat <span class="font-semibold text-ink-700 dark:text-porcelain-100">{{ $primaryResult?->ranking ?? '-' }}</span> dari {{ $assessment->results->count() }} prodi
+                        </dd>
+                    </div>
 
+                    <div class="px-5 py-4">
+                        <dt class="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-500 dark:text-porcelain-300/70">Skor relatif</dt>
+                        <dd class="mt-1.5 font-mono text-2xl font-bold leading-none text-ink-900 dark:text-porcelain-50">
+                            {{ number_format($primaryResult?->k_normal ?? 0, 2) }}<span class="ml-1 text-xs font-normal text-ink-500 dark:text-porcelain-300/70">/ 100</span>
+                        </dd>
+                        <dd class="mt-1.5 text-xs text-ink-500 dark:text-porcelain-300/70">terhadap peringkat teratas</dd>
+                    </div>
 
-            {{-- Seberapa meyakinkan peringkat teratas dibanding pesaing terdekatnya --}}
-            @if ($assessment->hasConfidentRecommendation() === false)
-                <x-alert type="warning">
-                    Jarak <strong>{{ $assessment->recommendedProgram?->full_name }}</strong> terhadap prodi
-                    peringkat kedua hanya
-                    <strong>{{ number_format($assessment->margin_to_runner_up, 2) }} poin</strong>
-                    dari 100 &mdash; di bawah ambang
-                    {{ number_format($assessment->margin_threshold_used, 2) }} poin.
-                    Keduanya praktis setara, jadi sebaiknya Anda menimbang kedua program studi itu
-                    dan tidak memperlakukan peringkat 1 sebagai jawaban tunggal.
-                </x-alert>
-            @elseif ($assessment->hasConfidentRecommendation() === true)
-                <x-alert type="info">
-                    <strong>{{ $assessment->recommendedProgram?->full_name }}</strong> unggul
-                    <strong>{{ number_format($assessment->margin_to_runner_up, 2) }} poin</strong>
-                    dari 100 atas prodi peringkat kedua, sehingga peringkat teratasnya cukup meyakinkan
-                    dan tidak mudah berubah oleh selisih nilai yang kecil.
-                </x-alert>
-            @endif
+                    @if ($hasMargin)
+                        <div class="px-5 py-4">
+                            <dt class="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-500 dark:text-porcelain-300/70">Jarak ke peringkat 2</dt>
+                            <dd class="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-1">
+                                <span class="font-mono text-2xl font-bold leading-none text-ink-900 dark:text-porcelain-50">{{ number_format($assessment->margin_to_runner_up, 2) }}<span class="ml-1 text-xs font-normal text-ink-500 dark:text-porcelain-300/70">poin</span></span>
+                                @if ($confident === false)
+                                    <span class="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800 dark:bg-amber-400/15 dark:text-amber-200">Praktis setara</span>
+                                @elseif ($confident === true)
+                                    <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 dark:bg-emerald-400/15 dark:text-emerald-200">Meyakinkan</span>
+                                @endif
+                            </dd>
+                            @if ($assessment->margin_threshold_used !== null)
+                                <dd class="mt-1.5 text-xs text-ink-500 dark:text-porcelain-300/70">ambang {{ number_format($assessment->margin_threshold_used, 2) }} poin</dd>
+                            @endif
+                        </div>
+                    @endif
+                </dl>
+
+                <div class="space-y-1 border-t border-black/5 px-5 py-3.5 dark:border-white/10">
+                    @if ($confident === false)
+                        <p class="flex items-start gap-2 text-sm font-medium text-amber-800 dark:text-amber-200">
+                            <x-heroicon-o-exclamation-triangle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                            Dua prodi teratas nyaris setara &mdash; timbang keduanya, jangan jadikan peringkat 1 jawaban tunggal.
+                        </p>
+                    @elseif ($confident === true)
+                        <p class="flex items-start gap-2 text-sm font-medium text-emerald-800 dark:text-emerald-200">
+                            <x-heroicon-o-check-circle class="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+                            Peringkat teratas cukup kuat dan tidak mudah berubah oleh selisih nilai kecil.
+                        </p>
+                    @endif
+                    <p class="text-xs text-ink-500 dark:text-porcelain-300/70">
+                        @if ($assessment->matches_preference)
+                            Sesuai pilihan pertama Anda &mdash; peringkat ini murni hasil perhitungan kriteria, bukan karena urutan pilihan.
+                        @else
+                            Minat Anda sudah dihitung sebagai salah satu kriteria; keputusan akhir tetap di tangan Anda.
+                        @endif
+                    </p>
+                </div>
+            </section>
 
             {{-- Penjelasan: kriteria mana yang mengangkat dan menahan prodi rekomendasi --}}
             @if ($contributions !== [])
@@ -319,6 +337,30 @@
                     </div>
                 @endif
             </section>
+
+            {{-- Kuesioner umpan balik pengguna --}}
+            @if ($feedbackFormUrl = config('services.feedback_form.url'))
+                <section class="student-panel p-6 sm:p-7">
+                    <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex items-start gap-4">
+                            <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-900/30 dark:text-brand-200">
+                                <x-heroicon-o-clipboard-document-list class="h-6 w-6" aria-hidden="true" />
+                            </span>
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Bantu kami dengan mengisi kuesioner</h3>
+                                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                                    Bagaimana pengalaman Anda menggunakan sistem rekomendasi ini? Jawaban Anda membantu kami menilai dan menyempurnakan sistem. Pengisian hanya beberapa menit.
+                                </p>
+                            </div>
+                        </div>
+                        <a href="{{ $feedbackFormUrl }}" target="_blank" rel="noopener noreferrer"
+                           class="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-700">
+                            Isi Kuesioner
+                            <x-heroicon-o-arrow-top-right-on-square class="h-4 w-4" aria-hidden="true" />
+                        </a>
+                    </div>
+                </section>
+            @endif
 
             <div class="flex flex-wrap gap-3">
                 <a href="{{ route('assessments.index') }}"

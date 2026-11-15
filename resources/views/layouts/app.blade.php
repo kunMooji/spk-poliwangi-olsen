@@ -25,6 +25,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}?v=2">
     </head>
     <body class="font-sans antialiased">
         @php($dashboardRoute = Auth::user()->isAdmin() ? route('admin.dashboard') : route('dashboard'))

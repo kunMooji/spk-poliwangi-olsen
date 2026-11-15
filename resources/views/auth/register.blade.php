@@ -20,6 +20,7 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800|unbounded:600,700,800&display=swap" rel="stylesheet" />
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}?v=2">
     </head>
 
     <body class="bg-porcelain-50 font-sans text-ink-900 antialiased dark:bg-ink-950 dark:text-porcelain-100">
@@ -31,7 +32,7 @@
                     <a href="{{ route('home') }}" class="flex items-center gap-2.5">
                         <img src="{{ asset('images/poliwangi_logo.png') }}" alt="Logo Politeknik Negeri Banyuwangi" class="h-9 w-9 object-contain">
                         <span class="font-display text-sm font-extrabold uppercase tracking-wide text-ink-900 dark:text-porcelain-100">
-                            SPK <span class="text-brand-600">Poliwangi</span>
+                            SPK <span class="text-brand-600 dark:text-brand-300">Poliwangi</span>
                         </span>
                     </a>
                     <x-theme-toggle />
@@ -148,6 +149,8 @@
                                 </a>
                             </div>
                         </form>
+
+                        <x-google-button class="mt-5" label="Daftar dengan Google" />
 
                         <p class="mt-4 flex items-start gap-2.5 rounded-lg border border-black/5 bg-black/[0.02] px-4 py-2.5 text-xs leading-relaxed text-ink-500 dark:border-white/10 dark:bg-white/5 dark:text-porcelain-300/60">
                             <x-heroicon-o-information-circle class="mt-0.5 h-4 w-4 shrink-0 text-ink-400 dark:text-porcelain-400/60" />

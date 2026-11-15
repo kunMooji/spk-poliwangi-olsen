@@ -128,7 +128,7 @@ final class Riasec
         return $scale;
     }
 
-    public static function name(string $dimension): string
+    public static function name(    string $dimension): string
     {
         return self::NAMES[strtoupper($dimension)] ?? $dimension;
     }
