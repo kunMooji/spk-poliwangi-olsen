@@ -53,6 +53,11 @@
                         @endisset
                     </div>
                 </div>
+
+                {{-- Slot opsional di sisi bawah app bar (mis. bilah kemajuan tes di HP). --}}
+                @isset($progressBar)
+                    {{ $progressBar }}
+                @endisset
             </header>
 
             <!-- Page Content -->

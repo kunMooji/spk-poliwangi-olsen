@@ -45,7 +45,7 @@
         </h3>
         @if ($reactive)
             <span class="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-600 dark:bg-brand-500/10 dark:text-brand-400"
-                  x-text="`${Math.round(($store.wizard.step / {{ $total }}) * 100)}%`"></span>
+                  x-text="`${Math.round((($store.wizard.step - 1) / {{ $total }}) * 100)}%`"></span>
         @elseif ($fractionExpression)
             <span class="shrink-0 rounded-full bg-brand-50 px-2 py-0.5 text-xs font-semibold text-brand-600 dark:bg-brand-500/10 dark:text-brand-400"
                   x-text="`${Math.round({{ $fractionOverallExpr }})}%`"></span>
@@ -60,7 +60,7 @@
         <div class="h-1.5 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
             @if ($reactive)
                 <div class="h-full rounded-full bg-brand-600 transition-all duration-300"
-                     :style="`width: ${($store.wizard.step / {{ $total }}) * 100}%`"></div>
+                     :style="`width: ${(($store.wizard.step - 1) / {{ $total }}) * 100}%`"></div>
             @elseif ($fractionExpression)
                 <div class="h-full rounded-full bg-brand-600 transition-all duration-300"
                      :style="`width: ${ {{ $fractionOverallExpr }} }%`"></div>

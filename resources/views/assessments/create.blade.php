@@ -1,4 +1,9 @@
 <x-app-layout>
+    {{-- Bilah kemajuan di app bar (HP): tiap langkah yang SELESAI menambah 25%. --}}
+    <x-slot name="progressBar">
+        <x-assessment-progress-bar expression="(($store.wizard.step - 1) / 4) * 100" />
+    </x-slot>
+
     @php
         // Langkah awal wizard mengikuti letak error validasi (kalau ada), supaya
         // pengguna yang gagal validasi langsung diarahkan ke langkah yang
@@ -66,7 +71,7 @@
                 </div>
 
           <div class="relative mt-8 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
-                <x-assessment-progress reactive sticky-top="lg:top-20"
+                <x-assessment-progress reactive hide-on-mobile sticky-top="lg:top-20"
                     tip-title="Pastikan data yang Anda isi benar"
                     tip-body="Data ini akan digunakan untuk proses rekomendasi prodi yang lebih akurat." />
 

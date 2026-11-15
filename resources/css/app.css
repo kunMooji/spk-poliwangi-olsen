@@ -433,11 +433,6 @@ html.lenis body {
     box-shadow: 0 10px 22px color-mix(in srgb, var(--question-color) 14%, transparent);
 }
 
-.riasec-question-number {
-    background: color-mix(in srgb, var(--question-color) 14%, white);
-    color: color-mix(in srgb, var(--question-color) 82%, #0a1a20);
-}
-
 .riasec-question-silhouette {
     color: var(--question-color);
     opacity: 0.09;
@@ -453,11 +448,6 @@ html.lenis body {
 .dark .riasec-question-card {
     border-color: color-mix(in srgb, var(--question-color) 60%, transparent);
     background-image: linear-gradient(115deg, color-mix(in srgb, var(--question-color) 16%, #0a1a20), rgba(255, 255, 255, 0.06) 62%);
-}
-
-.dark .riasec-question-number {
-    background: color-mix(in srgb, var(--question-color) 25%, #0a1a20);
-    color: color-mix(in srgb, var(--question-color) 72%, white);
 }
 
 .dark .riasec-question-silhouette {

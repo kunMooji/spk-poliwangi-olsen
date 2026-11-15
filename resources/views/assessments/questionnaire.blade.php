@@ -5,6 +5,12 @@
         </h2>
     </x-slot>
 
+    {{-- Bilah kemajuan di app bar (HP): 3 langkah awal sudah selesai (75%),
+         sisanya 25% bertambah setiap satu pernyataan dijawab. --}}
+    <x-slot name="progressBar">
+        <x-assessment-progress-bar expression="((3 + $store.wizard.fraction) / 4) * 100" />
+    </x-slot>
+
     @php
         // Jawaban yang sudah tersimpan di server dipakai sebagai nilai awal;
         // draft di localStorage hanya menambal butir yang belum tersimpan.
@@ -70,9 +76,14 @@
                     </div>
                 </div>
 
-        {{-- Bilah kemajuan yang menempel di bawah app bar (sticky top-0 z-30)
+        {{-- Di HP/tablet kemajuan cukup ditunjukkan bilah tipis di app bar; yang
+             perlu tetap tampil di sini hanya peringatan gagal simpan. --}}
+        <p class="mt-4 rounded-lg bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:bg-rose-500/10 dark:text-rose-300 lg:hidden"
+           x-show="saveState === 'error'" x-cloak x-text="saveMessage"></p>
+
+        {{-- Bilah kemajuan desktop yang menempel di bawah app bar (sticky top-0 z-30)
              saat digulir. Offset 65px = tinggi app bar, supaya tidak tertutup. --}}
-        <div class="sticky top-[65px] z-20 mt-4 rounded-xl border border-brand-100 bg-white/95 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-ink-900/95 sm:mt-6">
+        <div class="sticky top-[65px] z-20 mt-6 hidden rounded-xl border border-brand-100 bg-white/95 px-4 py-3 backdrop-blur dark:border-white/10 dark:bg-ink-900/95 lg:block">
             <div class="flex items-center gap-3 text-sm">
                 <span class="shrink-0 font-medium text-gray-700 dark:text-gray-200">
                     <span x-text="answeredCount"></span>/{{ $questions->count() }}
@@ -83,11 +94,9 @@
                 </div>
                 <span class="shrink-0 font-semibold text-brand-600 dark:text-brand-400" x-text="percent + '%'"></span>
             </div>
-            {{-- Penanda simpan otomatis: di HP disembunyikan agar bilah tetap ringkas,
-                 kecuali saat gagal menyimpan — itu perlu diketahui pengguna. --}}
+            {{-- Penanda simpan otomatis: calon mahasiswa perlu tahu jawabannya sudah aman di server. --}}
             <p class="mt-1.5 text-xs" x-show="saveState !== 'idle'" x-cloak
                :class="{
-                   'hidden sm:block': saveState !== 'error',
                    'text-gray-500 dark:text-gray-400': saveState === 'saving',
                    'text-emerald-600 dark:text-emerald-400': saveState === 'saved',
                    'text-rose-600 dark:text-rose-400': saveState === 'error',
@@ -108,22 +117,15 @@
                          style="--question-color: {{ $questionColor }}">
                         <x-dynamic-component :component="'heroicon-o-'.$questionIcon" class="riasec-question-silhouette pointer-events-none absolute -bottom-7 -right-5 hidden h-32 w-32 sm:block" aria-hidden="true" />
 
-                        <div class="relative z-10 flex gap-3">
-                            <span class="riasec-question-number mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition"
-                                  :class="answers['{{ $question->id }}'] && '!bg-emerald-500 !text-white'">
-                                <span x-show="! answers['{{ $question->id }}']">{{ $index + 1 }}</span>
-                                <x-heroicon-s-check class="h-4 w-4" x-show="answers['{{ $question->id }}']" x-cloak />
-                            </span>
-                            <p class="text-[15px] font-medium leading-relaxed text-gray-800 dark:text-gray-100">{{ $question->statement }}</p>
-                        </div>
+                        {{-- Tanpa nomor soal: teks pernyataan dan deretan lingkaran sama-sama
+                             mulai dari tepi kiri kartu, jadi tidak ada indentasi. --}}
+                        <p class="relative z-10 text-[15px] font-medium leading-relaxed text-gray-800 dark:text-gray-100">{{ $question->statement }}</p>
 
-                        {{-- Skala berupa lingkaran bernomor selebar kartu (tanpa indentasi),
-                             target sentuh 44px, dengan label kedua ujung di bawahnya.
-                             Jumlah kolom mengikuti banyaknya titik skala, jadi tidak bisa
-                             memakai kelas Tailwind yang dipatok seperti grid-cols-5. --}}
-                        <div class="relative z-10 mt-4">
-                            <div class="grid gap-1.5 sm:gap-3"
-                                 style="grid-template-columns: repeat({{ count($likert) }}, minmax(0, 1fr));"
+                        {{-- Skala berupa lingkaran bernomor (target sentuh 44px) yang
+                             disebar rata kiri-kanan selebar kartu, dengan label kedua
+                             ujung di bawahnya pada garis tepi yang sama. --}}
+                        <div class="relative z-10 mt-4 sm:inline-block">
+                            <div class="flex items-center justify-between gap-1.5 sm:justify-start sm:gap-3"
                                  role="radiogroup" aria-label="Jawaban pernyataan {{ $index + 1 }}">
                                 @foreach ($likert as $value => $label)
                                     <label class="cursor-pointer" title="{{ $label }}">
@@ -132,7 +134,7 @@
                                                aria-label="{{ $value }} &mdash; {{ $label }}"
                                                x-model="answers['{{ $question->id }}']"
                                                @change="advance({{ $index }})">
-                                        <span class="mx-auto flex h-11 w-11 items-center justify-center rounded-full border-2 border-gray-300 bg-white text-base font-semibold text-gray-600 transition active:scale-95
+                                        <span class="flex h-11 w-11 items-center justify-center rounded-full border-2 border-gray-300 bg-white text-base font-semibold text-gray-600 transition active:scale-95
                                                      hover:border-brand-400 hover:bg-brand-50
                                                      peer-focus-visible:ring-2 peer-focus-visible:ring-brand-500/50
                                                      peer-checked:border-brand-600 peer-checked:bg-brand-600 peer-checked:text-white
@@ -212,6 +214,10 @@
 
                         this.answers = { ...draft, ...initial };
 
+                        // Bilah kemajuan di app bar membaca store global, karena
+                        // berada di luar cakupan x-data halaman ini.
+                        this.$store.wizard.fraction = this.total ? this.answeredCount / this.total : 0;
+
                         // Draft lokal yang belum sempat terkirim langsung
                         // disusulkan ke server begitu halaman dibuka lagi.
                         if (Object.keys(draft).some((id) => !(id in initial))) {
@@ -219,6 +225,7 @@
                         }
 
                         this.$watch('answers', (value) => {
+                            this.$store.wizard.fraction = this.total ? this.answeredCount / this.total : 0;
                             localStorage.setItem(this.storageKey, JSON.stringify(value));
                             this.schedule();
                         });

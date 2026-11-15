@@ -11,7 +11,9 @@ window.Chart = Chart;
 // Langkah aktif formulir tes bertahap (biodata/rapor/prodi & mapel pendukung).
 // Disimpan sebagai store global, bukan state lokal, supaya indikator langkah
 // di header (di luar cakupan x-data formulir) tetap ikut bereaksi.
-Alpine.store('wizard', { step: 1 });
+// `fraction` (0..1) = kemajuan di dalam langkah berjalan, dipakai kuesioner
+// RIASEC agar bilah kemajuan bertambah setiap satu pernyataan dijawab.
+Alpine.store('wizard', { step: 1, fraction: 0 });
 
 Alpine.start();
 
