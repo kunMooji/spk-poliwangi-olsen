@@ -14,7 +14,18 @@ class GoogleAuthController extends Controller
 {
     public function redirect(): RedirectResponse
     {
-        return Socialite::driver('google')->redirect();
+        return $this->driver()->redirect();
+    }
+
+    /**
+     * Alamat callback dibentuk dari route, bukan dari GOOGLE_REDIRECT_URI di .env,
+     * agar selalu mengikuti domain yang sedang dipakai (lokal maupun produksi) dan
+     * tidak salah lempar ke localhost bila .env server terbawa dari lokal.
+     * Alamat ini tetap harus terdaftar di Google Cloud Console.
+     */
+    private function driver()
+    {
+        return Socialite::driver('google')->redirectUrl(route('auth.google.callback'));
     }
 
     /**
@@ -27,7 +38,7 @@ class GoogleAuthController extends Controller
     public function callback(): RedirectResponse
     {
         try {
-            $google = Socialite::driver('google')->user();
+            $google = $this->driver()->user();
         } catch (Throwable) {
             return $this->failed('Masuk dengan Google dibatalkan atau gagal. Silakan coba lagi.');
         }
