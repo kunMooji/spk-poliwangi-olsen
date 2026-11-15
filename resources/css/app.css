@@ -685,3 +685,38 @@ html.lenis body {
         display: none;
     }
 }
+
+/* Di HP, kartu pembungkus bergradien (header halaman yang juga membungkus
+   kartu-kartu isi) menjadi datar: tanpa padding, border, latar, dan bayangan.
+   Tanpa ini isi halaman terjepit tiga lapis padding (jarak halaman + kartu
+   pembungkus + kartu isi) sehingga form dan teks terasa sempit. Mulai sm
+   kartu pembungkus tampil seperti biasa. */
+@media (max-width: 639.98px) {
+    .mobile-flat {
+        padding: 0 !important;
+        border-width: 0 !important;
+        border-radius: 0 !important;
+        background: none !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+    }
+}
+
+/* Tabel di HP: tabel lebar (4 kolom atau lebih) diberi lebar minimum supaya
+   teks tidak patah per kata; pembungkus overflow-x-auto membuatnya bisa
+   digeser ke samping. Judul kolom tidak boleh patah baris. */
+@media (max-width: 639.98px) {
+    .overflow-x-auto > table:has(th:nth-child(4)) {
+        min-width: 40rem;
+    }
+
+    .overflow-x-auto > table th {
+        white-space: nowrap;
+    }
+}
+
+/* Label berbentuk pil di dalam sel tabel (peran, status, dsb.) tidak boleh
+   patah baris — kalau patah, latar pilnya ikut terbelah. */
+table td span.rounded-full {
+    white-space: nowrap;
+}

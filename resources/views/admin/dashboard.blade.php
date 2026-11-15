@@ -8,7 +8,7 @@
             <x-flash />
 
             <div class="dashboard-enter">
-                <section class="relative overflow-hidden rounded-[1.75rem] border border-brand-100 bg-[radial-gradient(circle_at_86%_0%,rgba(179,227,236,.65),transparent_28%),linear-gradient(135deg,#ffffff,#eff9fb)] p-5 shadow-xl shadow-ink-950/5 dark:border-white/10 dark:bg-[radial-gradient(circle_at_78%_7%,rgba(27,137,163,.30),transparent_24%),linear-gradient(135deg,#071b29,#0b1627_55%,#14243a)] dark:shadow-2xl dark:shadow-ink-950/20 sm:p-7 lg:p-9">
+                <section class="mobile-flat relative overflow-hidden rounded-[1.75rem] border border-brand-100 bg-[radial-gradient(circle_at_86%_0%,rgba(179,227,236,.65),transparent_28%),linear-gradient(135deg,#ffffff,#eff9fb)] p-5 shadow-xl shadow-ink-950/5 dark:border-white/10 dark:bg-[radial-gradient(circle_at_78%_7%,rgba(27,137,163,.30),transparent_24%),linear-gradient(135deg,#071b29,#0b1627_55%,#14243a)] dark:shadow-2xl dark:shadow-ink-950/20 sm:p-7 lg:p-9">
                     <div class="pointer-events-none absolute inset-0 bg-grain opacity-0 dark:opacity-20"></div>
                     <div class="relative">
                         <span class="pointer-events-none absolute -left-3 top-3 hidden grid grid-cols-3 gap-2 opacity-25 lg:grid"><i class="h-1 w-1 rounded-full bg-brand-600"></i><i class="h-1 w-1 rounded-full bg-brand-600"></i><i class="h-1 w-1 rounded-full bg-brand-600"></i><i class="h-1 w-1 rounded-full bg-brand-600"></i><i class="h-1 w-1 rounded-full bg-brand-600"></i><i class="h-1 w-1 rounded-full bg-brand-600"></i></span>

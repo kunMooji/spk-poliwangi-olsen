@@ -39,7 +39,7 @@
                     <a href="{{ $dashboardRoute }}" class="shrink-0 rounded-lg transition hover:scale-105 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:ring-offset-2 dark:focus:ring-offset-ink-900" aria-label="Kembali ke dasbor">
                         <img src="{{ asset('images/poliwangi_logo.png') }}" alt="Logo Politeknik Negeri Banyuwangi" class="h-10 w-10 shrink-0 object-contain">
                     </a>
-                    <div class="group relative min-w-0 max-w-full cursor-pointer rounded-lg outline-none transition hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500/60 dark:hover:text-brand-200"
+                    <div class="group relative min-w-0 max-w-full cursor-pointer rounded-lg outline-none [&_h2]:min-w-0 [&_h2]:truncate max-sm:[&_h2]:text-sm transition hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-500/60 dark:hover:text-brand-200"
                          role="link" tabindex="0" aria-label="Kembali ke dasbor"
                          x-data
                          @click="if (!$event.target.closest('a, button, input, select, textarea, label')) window.location.href = '{{ $dashboardRoute }}'"
