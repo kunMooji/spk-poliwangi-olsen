@@ -47,11 +47,16 @@
                         <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Pilihan program studi Anda</p>
                         <div class="mt-3 grid gap-3 md:grid-cols-3">
                             @foreach ($assessment->priorities->take(3) as $priority)
-                                @php($priorityResult = $assessment->results->firstWhere('study_program_id', $priority->study_program_id))
-                                @php($isPriorityRecommended = $priority->study_program_id === $assessment->recommended_program_id)
-                                @php($priorityUrl = $priority->studyProgram?->website_url)
-                                {{-- Kartu menjadi tautan hanya bila prodinya punya situs; selain itu tetap kartu biasa. --}}
-                                <{{ $priorityUrl ? 'a' : 'div' }}
+                                {{-- Sengaja memakai blok PHP, bukan bentuk inline berkurung: seksi ini
+                                     berada di atas blok PHP lain, dan Blade akan menelan bentuk inline
+                                     sampai penutup blok terdekat sehingga halaman error 500. --}}
+                                @php
+                                    $priorityResult = $assessment->results->firstWhere('study_program_id', $priority->study_program_id);
+                                    $isPriorityRecommended = $priority->study_program_id === $assessment->recommended_program_id;
+                                    $priorityUrl = $priority->studyProgram?->website_url;
+                                @endphp
+                                {{-- <a> tanpa href bukan tautan: kartu hanya bisa diklik bila prodinya punya situs. --}}
+                                <a
                                     @if ($priorityUrl) href="{{ $priorityUrl }}" target="_blank" rel="noopener noreferrer" title="Buka situs prodi" @endif
                                     class="block rounded-lg border border-black/5 bg-white p-3 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.04] {{ $priorityUrl ? 'transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md dark:hover:border-brand-500/50' : '' }}">
                                     <div class="flex items-center justify-between gap-2">
@@ -69,7 +74,7 @@
                                     @if ($isPriorityRecommended)
                                         <p class="mt-1 text-xs font-semibold text-brand-700 dark:text-brand-300">Rekomendasi utama</p>
                                     @endif
-                                </{{ $priorityUrl ? 'a' : 'div' }}>
+                                </a>
                             @endforeach
                         </div>
                     </div>
@@ -85,16 +90,20 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                            @php($tieGroups = $assessment->tieGroups())
+                            @php
+                                $tieGroups = $assessment->tieGroups();
+                            @endphp
                             @foreach ($assessment->results as $result)
-                                @php($isRecommended = $result->study_program_id === $assessment->recommended_program_id)
-                                @php($tie = $tieGroups[$result->study_program_id] ?? null)
-                                @php($priorityOrder = $assessment->priorities->firstWhere('study_program_id', $result->study_program_id)?->priority_order)
-                                @php($websiteUrl = $result->studyProgram->website_url)
+                                @php
+                                    $isRecommended = $result->study_program_id === $assessment->recommended_program_id;
+                                    $tie = $tieGroups[$result->study_program_id] ?? null;
+                                    $priorityOrder = $assessment->priorities->firstWhere('study_program_id', $result->study_program_id)?->priority_order;
+                                    $websiteUrl = $result->studyProgram->website_url;
+                                @endphp
                                 {{-- Baris berprodi bersitus bisa diklik di mana saja; tautan di dalamnya
                                      tetap ada untuk keyboard dan pembaca layar. --}}
                                 <tr @if ($result->ranking > 5) x-cloak x-show="showAllRanks" @endif
-                                    @if ($websiteUrl) data-href="{{ $websiteUrl }}" onclick="if (!event.target.closest('a')) window.open(this.dataset.href, '_blank', 'noopener')" @endif
+                                    @if ($websiteUrl) data-href="{{ $websiteUrl }}" onclick="event.target.closest('a') || window.open(this.dataset.href, '_blank', 'noopener')" @endif
                                     class="{{ $isRecommended ? 'bg-brand-50 dark:bg-brand-900/20' : '' }} {{ $websiteUrl ? 'cursor-pointer transition hover:bg-brand-50/70 dark:hover:bg-white/5' : '' }} text-gray-700 dark:text-gray-300">
                                     <td class="px-6 py-3 font-semibold">{{ $result->ranking }}</td>
                                     <td class="px-6 py-3">
