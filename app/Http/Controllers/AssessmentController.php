@@ -334,9 +334,7 @@ class AssessmentController extends Controller
             return back()->withErrors(['answers' => $exception->getMessage()]);
         }
 
-        return redirect()
-            ->route('assessments.result', $assessment)
-            ->with('success', 'Perhitungan selesai. Berikut hasil rekomendasi program studi untuk Anda.');
+        return redirect()->route('assessments.result', $assessment);
     }
 
     public function destroy(Assessment $assessment): RedirectResponse

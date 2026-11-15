@@ -84,7 +84,17 @@ function renderRiasecCharts() {
                         grid: { color: grid },
                     },
                     x: {
-                        ticks: { color: tick },
+                        ticks: {
+                            color: tick,
+                            // Di layar sempit nama dimensi ditulis miring dan
+                            // terpotong; cukup huruf awalnya (R, I, A, S, E, C).
+                            // Nama lengkap tetap tampil di tooltip.
+                            maxRotation: 0,
+                            autoSkip: false,
+                            callback(value, index) {
+                                return this.chart.width < 560 ? labels[index].charAt(0) : labels[index];
+                            },
+                        },
                         grid: { display: false },
                     },
                 },

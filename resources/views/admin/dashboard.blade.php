@@ -121,13 +121,6 @@
                     'E' => ['icon' => 'arrow-trending-up', 'color' => '#f16b4a', 'surface' => 'bg-rose-50 text-rose-500 dark:bg-rose-400/15 dark:text-rose-300'],
                     'C' => ['icon' => 'clipboard-document-list', 'color' => '#3297e8', 'surface' => 'bg-sky-50 text-sky-500 dark:bg-sky-400/15 dark:text-sky-300'],
                 ];
-                $programGradients = [
-                    'linear-gradient(135deg, #66c8ff 0%, #3188f5 52%, #195cdb 100%)',
-                    'linear-gradient(135deg, #b579ff 0%, #7c3aed 52%, #5b21b6 100%)',
-                    'linear-gradient(135deg, #ffd45a 0%, #fb9a2f 52%, #f26a18 100%)',
-                    'linear-gradient(135deg, #54dfb7 0%, #14b8a6 52%, #0f7490 100%)',
-                    'linear-gradient(135deg, #fb8baa 0%, #ec4899 52%, #a21caf 100%)',
-                ];
             @endphp
 
             <section class="dashboard-enter dashboard-enter-3 grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,.85fr)]">
@@ -172,14 +165,14 @@
                     @else
                         <ol class="mt-6 space-y-4">
                             @foreach ($popularPrograms as $index => $row)
-                                <li class="relative overflow-hidden rounded-2xl p-4 text-white shadow-lg shadow-ink-950/10" style="background: {{ $programGradients[$index % count($programGradients)] }}">
-                                    <span class="pointer-events-none absolute -right-5 -top-6 h-24 w-24 rounded-full border border-white/10"></span>
-                                    <span class="pointer-events-none absolute right-5 top-3 grid grid-cols-3 gap-1 opacity-35"><i class="h-1 w-1 rounded-full bg-white"></i><i class="h-1 w-1 rounded-full bg-white"></i><i class="h-1 w-1 rounded-full bg-white"></i><i class="h-1 w-1 rounded-full bg-white"></i><i class="h-1 w-1 rounded-full bg-white"></i><i class="h-1 w-1 rounded-full bg-white"></i></span>
-                                    <div class="relative flex items-center gap-3">
-                                        <span class="shrink-0 font-mono text-sm font-bold tabular-nums text-white">{{ $index + 1 }}</span>
-                                        <span class="min-w-0 flex-1 text-sm font-bold leading-snug sm:text-base">{{ $row->recommendedProgram?->full_name ?? '-' }}</span>
-                                        <span class="shrink-0 rounded-lg bg-white/15 px-3 py-2 text-xs font-bold">{{ $row->total }} tes</span>
-                                    </div>
+                                <li>
+                                    <x-gradient-card :index="$index" class="p-4">
+                                        <div class="flex items-center gap-3">
+                                            <span class="shrink-0 font-mono text-sm font-bold tabular-nums text-white">{{ $index + 1 }}</span>
+                                            <span class="min-w-0 flex-1 text-sm font-bold leading-snug sm:text-base">{{ $row->recommendedProgram?->full_name ?? '-' }}</span>
+                                            <span class="shrink-0 rounded-lg bg-white/15 px-3 py-2 text-xs font-bold">{{ $row->total }} tes</span>
+                                        </div>
+                                    </x-gradient-card>
                                 </li>
                             @endforeach
                         </ol>
