@@ -17,7 +17,7 @@
         </script>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800|unbounded:600,700,800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700,800&display=swap" rel="stylesheet" />
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}?v=2">
@@ -31,7 +31,7 @@
                 <div class="mb-4 flex items-center justify-between">
                     <a href="{{ route('home') }}" class="flex items-center gap-2.5">
                         <img src="{{ asset('images/poliwangi_logo.png') }}" alt="Logo Politeknik Negeri Banyuwangi" class="h-9 w-9 object-contain">
-                        <span class="font-display text-sm font-extrabold uppercase tracking-wide text-ink-900 dark:text-porcelain-100">
+                        <span class="font-display text-sm font-extrabold tracking-wide text-ink-900 dark:text-porcelain-100">
                             SPK <span class="text-brand-600 dark:text-brand-300">Poliwangi</span>
                         </span>
                     </a>
@@ -48,8 +48,8 @@
                             Politeknik Negeri Banyuwangi
                         </span>
 
-                        <h1 class="mt-4 font-display text-4xl font-extrabold uppercase leading-[1.05] tracking-tight text-ink-950 dark:text-porcelain-50">
-                            Masuk ke<br>akun Anda.
+                        <h1 class="mt-4 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-ink-950 dark:text-porcelain-50">
+                            Masuk Ke<br>Akun Anda.
                         </h1>
 
                         <p class="mt-3 max-w-sm text-sm leading-relaxed text-ink-600 dark:text-porcelain-300/70">

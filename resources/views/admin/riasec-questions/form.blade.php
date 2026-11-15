@@ -7,7 +7,7 @@
 <div class="space-y-6">
     <input type="hidden" name="_dialog" value="{{ $dialogKey }}">
     <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-        <div class="grid gap-5 sm:grid-cols-2">
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div class="sm:col-span-2">
                 <x-input-label for="statement" value="Pernyataan" />
                 <textarea id="statement" name="statement" rows="3" required

@@ -101,7 +101,7 @@
             </div>
 
             @if (! $periods->isEmpty())
-                <div x-show="view === 'card'" x-cloak class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div x-show="view === 'card'" x-cloak class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($periods as $period)
                         @php($periodColor = $period->is_active ? '#059669' : '#64748b')
                         <div class="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-gray-800">

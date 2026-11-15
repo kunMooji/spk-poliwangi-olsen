@@ -15,7 +15,7 @@
     <input type="hidden" name="_dialog" value="{{ $dialogKey }}">
 
     <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-        <div class="grid gap-5 sm:grid-cols-2">
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div>
                 <x-input-label for="code" value="Kode Kriteria" />
                 <x-text-input id="code" name="code" type="text" class="mt-1 block w-full"

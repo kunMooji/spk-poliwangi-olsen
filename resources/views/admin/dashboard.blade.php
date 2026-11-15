@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-display text-[10px] font-bold uppercase tracking-wide text-ink-900 dark:text-porcelain-50 sm:text-sm">Pusat kendali administrator</h2>
+        <h2 class="font-display text-[10px] font-extrabold tracking-wide text-ink-900 dark:text-porcelain-50 sm:text-sm">Pusat Kendali Administrator</h2>
     </x-slot>
 
     <div class="py-8 sm:py-10">
@@ -16,7 +16,7 @@
                         <h1 class="mt-4 text-3xl font-bold tracking-tight text-ink-950 dark:text-white sm:text-4xl">Pusat kendali administrator</h1>
                         <p class="mt-3 max-w-2xl text-sm leading-relaxed text-ink-600 dark:text-porcelain-200/75 sm:text-base">Pantau sesi calon mahasiswa, kelola data perhitungan, dan tinjau kesehatan parameter rekomendasi dalam satu tempat.</p>
 
-                        <div class="mt-8 grid gap-6 lg:grid-cols-2 lg:items-center">
+                        <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2 lg:items-center">
                             <div class="space-y-5 lg:order-2">
                                 <section class="rounded-2xl border border-brand-100 bg-white/90 p-5 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-none">
                                     <p class="flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-brand-700 dark:text-brand-200"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-50 text-brand-600 dark:bg-brand-500/15 dark:text-brand-200"><x-heroicon-o-chart-bar class="h-4 w-4" /></span>Ringkasan perhitungan</p>
@@ -63,7 +63,7 @@
                 </section>
             </div>
 
-            <section class="dashboard-enter dashboard-enter-2 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <section class="dashboard-enter dashboard-enter-2 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
                 @foreach ([
                     ['label' => 'Calon mahasiswa', 'value' => $totalStudents, 'unit' => 'akun', 'icon' => 'user-group', 'description' => 'Total akun calon mahasiswa terdaftar', 'trend' => $trends['students'], 'headerStyle' => 'background: linear-gradient(135deg, #42A5F5, #1976D2)', 'iconSurface' => 'bg-blue-50 text-blue-600 dark:bg-blue-400/15 dark:text-blue-200'],
                     ['label' => 'Tes selesai', 'value' => $totalCompleted, 'unit' => 'sesi', 'icon' => 'clipboard-document-check', 'description' => 'Sesi tes yang telah diselesaikan', 'trend' => $trends['completed'], 'headerStyle' => 'background: linear-gradient(135deg, #26C281, #1AA368)', 'iconSurface' => 'bg-emerald-50 text-emerald-600 dark:bg-emerald-400/15 dark:text-emerald-200'],
@@ -123,7 +123,7 @@
                 ];
             @endphp
 
-            <section class="dashboard-enter dashboard-enter-3 grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,.85fr)]">
+            <section class="dashboard-enter dashboard-enter-3 grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,.85fr)]">
                 <article class="dashboard-lift rounded-2xl border border-black/5 bg-white p-6 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-ink-900/60 sm:p-7">
                     <div class="flex flex-wrap items-start justify-between gap-3">
                         <div>
@@ -136,7 +136,7 @@
                     @if ($totalCompleted === 0)
                         <div class="mt-6 flex min-h-64 flex-col items-center justify-center rounded-2xl border border-dashed border-black/10 bg-porcelain-50 px-6 text-center dark:border-white/10 dark:bg-ink-950/40"><x-heroicon-o-chart-pie class="h-7 w-7 text-brand-600 dark:text-brand-300" /><p class="mt-4 font-semibold text-ink-800 dark:text-porcelain-100">Belum ada tes yang selesai</p><p class="mt-1 text-sm text-ink-500 dark:text-porcelain-300/70">Sebaran RIASEC akan tersedia setelah sesi pertama diselesaikan.</p></div>
                     @else
-                        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+                        <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
                             @foreach ($dimensionLabels as $code => $label)
                                 @php($total = $dominantDistribution[$code] ?? 0)
                                 @php($style = $dimensionStyles[$code])
@@ -188,7 +188,28 @@
                 @if ($recent->isEmpty())
                     <div class="p-10 text-center"><p class="font-semibold text-ink-800 dark:text-porcelain-100">Belum ada calon mahasiswa yang mengerjakan tes</p><p class="mt-1 text-sm text-ink-500 dark:text-porcelain-300/70">Sesi terbaru akan muncul otomatis di sini.</p></div>
                 @else
-                    <table class="w-full table-fixed divide-y divide-black/5 text-sm dark:divide-white/10">
+                    {{-- HP & tablet: daftar kartu. Lima kolom tabel table-fixed tidak muat di
+                         layar sempit (nama terpotong, tanggal menimpa kolom rekomendasi). --}}
+                    <ul class="divide-y divide-black/5 dark:divide-white/10 lg:hidden">
+                        @foreach ($recent as $assessment)
+                            <li>
+                                <a href="{{ route('admin.recap.show', $assessment) }}"
+                                   class="flex items-center gap-3 px-5 py-4 transition hover:bg-porcelain-50 dark:hover:bg-white/5">
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-baseline justify-between gap-3">
+                                            <p class="truncate text-sm font-semibold text-ink-900 dark:text-porcelain-50">{{ $assessment->full_name }}</p>
+                                            <p class="shrink-0 text-xs text-ink-500 dark:text-porcelain-300/70">{{ $assessment->created_at->translatedFormat('d M Y') }}</p>
+                                        </div>
+                                        <p class="mt-1 text-sm leading-snug text-ink-700 dark:text-porcelain-200">{{ $assessment->recommendedProgram?->full_name ?? '-' }}</p>
+                                        <p class="mt-1 truncate font-mono text-[11px] text-ink-400 dark:text-porcelain-300/60">{{ $assessment->code }}</p>
+                                    </div>
+                                    <x-heroicon-o-chevron-right class="h-4 w-4 shrink-0 text-ink-400" aria-hidden="true" />
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+
+                    <table class="hidden w-full table-fixed divide-y divide-black/5 text-sm dark:divide-white/10 lg:table">
                         <thead class="bg-porcelain-50 text-left text-[10px] font-bold uppercase tracking-[0.14em] text-ink-500 dark:bg-ink-950/50 dark:text-porcelain-300/70">
                             <tr>
                                 <th class="w-[16%] px-3 py-3 sm:px-6">Kode</th>

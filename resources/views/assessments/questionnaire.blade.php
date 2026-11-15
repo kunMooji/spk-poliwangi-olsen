@@ -59,7 +59,7 @@
                     <div class="hidden items-end gap-3 sm:flex"><p class="max-w-[9.5rem] -rotate-3 font-script text-lg leading-tight text-brand-600 dark:text-brand-300">Kenali diri, tentukan arahmu</p><img src="{{ asset('images/ilastrasi_toga.png') }}" alt="" class="h-20 w-auto shrink-0"></div>
                 </div>
 
-            <div class="relative mt-8 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
+            <div class="relative mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
                 <x-assessment-progress :current="4" fraction-expression="answeredCount / total" sticky-top="lg:top-20" clickable hide-on-mobile />
 
                 <div class="min-w-0">

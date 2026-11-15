@@ -78,7 +78,7 @@
                     </div>
                 </div>
 
-                <div x-show="view === 'card'" x-cloak class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div x-show="view === 'card'" x-cloak class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                     @foreach ($programs as $program)
                         @php
                             $tracerColor = match (true) {

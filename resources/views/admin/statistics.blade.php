@@ -10,7 +10,7 @@
             <x-admin-panel-hero eyebrow="Analitik keputusan" title="Statistik Institusional" description="Pantau pola minat, kecocokan rekomendasi, dan hasil asesmen di seluruh sesi." />
 
             <form method="GET" class="rounded-2xl border border-brand-100 bg-white/80 p-4 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.06] dark:shadow-none">
-                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
                     <div>
                         <x-input-label for="period" value="Gelombang" />
                         <select id="period" name="period" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-brand-200 bg-white text-sm text-ink-900 shadow-sm focus:border-brand-500 focus:ring-brand-500 dark:border-white/15 dark:bg-ink-950/50 dark:text-white">
@@ -78,7 +78,7 @@
                     </p>
                 </div>
             @else
-                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ([
                         ['label' => 'Tes Selesai', 'value' => $totalCompleted, 'unit' => 'sesi'],
                         ['label' => 'Rata-rata Margin #1 vs #2', 'value' => number_format($averageMargin, 1), 'unit' => 'poin dari 100'],
@@ -212,7 +212,7 @@
                     </div>
                 </section>
 
-                <div class="grid gap-4 lg:grid-cols-2">
+                <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
                     {{-- Asal sekolah --}}
                     <section class="overflow-hidden rounded-xl bg-white shadow-sm dark:bg-gray-800">
                         <div class="border-b border-gray-200 px-6 py-4 dark:border-gray-700">
@@ -222,6 +222,9 @@
                         @if ($schools->isEmpty())
                             <p class="p-6 text-sm text-gray-500 dark:text-gray-400">Belum ada data asal sekolah.</p>
                         @else
+                            {{-- Pembungkus scroll: section induknya overflow-hidden, jadi tanpa ini
+                                 kolom kanan terpotong diam-diam di layar HP. --}}
+                            <div class="overflow-x-auto">
                             <table class="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
                                 <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500 dark:bg-gray-900/50 dark:text-gray-400">
                                     <tr>
@@ -240,6 +243,7 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                            </div>
                         @endif
                     </section>
 
@@ -267,7 +271,7 @@
                     </section>
                 </div>
 
-                <div class="grid gap-4 lg:grid-cols-3">
+                <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
                     {{-- Sebaran tipe RIASEC --}}
                     <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
                         <h3 class="font-semibold text-gray-900 dark:text-gray-100">Tipe Kepribadian Dominan</h3>

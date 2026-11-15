@@ -17,7 +17,7 @@
                 peningkatan hak akses dari halaman web.
             </x-alert>
 
-            <form method="GET" class="grid gap-4 rounded-xl bg-white p-4 shadow-sm dark:bg-gray-800 sm:grid-cols-2 lg:grid-cols-4">
+            <form method="GET" class="grid grid-cols-1 gap-4 rounded-xl bg-white p-4 shadow-sm dark:bg-gray-800 sm:grid-cols-2 lg:grid-cols-4">
                 <div class="lg:col-span-2">
                     <x-input-label for="q" value="Cari" />
                     <x-text-input id="q" name="q" type="search" class="mt-1 block w-full"
@@ -158,7 +158,7 @@
 
             @if (! $users->isEmpty())
                 <div x-show="view === 'card'" x-cloak>
-                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($users as $user)
                             @php($roleColor = $user->isAdmin() ? '#7c3aed' : '#0284c7')
                             <div class="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-gray-800">

@@ -1,7 +1,7 @@
 {{-- Formulir gelombang, dipakai bersama oleh halaman tambah dan ubah. --}}
 <div class="space-y-6">
     <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
-        <div class="grid gap-5 sm:grid-cols-2">
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div class="sm:col-span-2">
                 <x-input-label for="name" value="Nama Gelombang" />
                 <x-text-input id="name" name="name" type="text" class="mt-1 block w-full"

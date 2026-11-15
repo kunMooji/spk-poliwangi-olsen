@@ -2,7 +2,7 @@
     <x-slot name="header">
         <div>
             <p class="font-mono text-[9px] font-bold uppercase tracking-[0.18em] text-brand-600 dark:text-brand-300">Pengaturan akun</p>
-            <h2 class="font-display text-base font-bold text-ink-900 dark:text-porcelain-50 sm:text-lg">Profil saya</h2>
+            <h2 class="font-display text-base font-extrabold text-ink-900 dark:text-porcelain-50 sm:text-lg">Profil Saya</h2>
         </div>
     </x-slot>
 
@@ -10,11 +10,11 @@
         <div class="mx-auto flex h-full max-w-[1440px] flex-col px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
             <div class="mb-5 shrink-0 lg:mb-4">
                 <p class="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-brand-600 dark:text-brand-300">Ruang pribadi</p>
-                <h1 class="mt-1 font-display text-2xl font-bold tracking-tight text-ink-900 dark:text-porcelain-50 sm:text-3xl">Kelola profil dan keamanan akun</h1>
+                <h1 class="mt-1 font-display text-2xl font-extrabold tracking-tight text-ink-900 dark:text-porcelain-50 sm:text-3xl">Kelola Profil Dan Keamanan Akun</h1>
                 <p class="mt-1 text-sm text-ink-600 dark:text-porcelain-300">Perbarui informasi yang tampil di akun SPK Anda.</p>
             </div>
 
-            <div class="grid min-h-0 flex-1 gap-4 lg:grid-cols-12 lg:grid-rows-1">
+            <div class="grid grid-cols-1 min-h-0 flex-1 gap-4 lg:grid-cols-12 lg:grid-rows-1">
                 <section class="student-panel flex min-h-0 flex-col p-5 sm:p-6 lg:col-span-4" aria-labelledby="profile-photo-heading">
                     <div class="mb-5 flex items-center justify-between">
                         <div>

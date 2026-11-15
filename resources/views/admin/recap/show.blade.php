@@ -15,7 +15,7 @@
 
             <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Biodata</h3>
-                <dl class="mt-4 grid gap-4 text-sm sm:grid-cols-3">
+                <dl class="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
                     @foreach ([
                         'Akun' => $assessment->user?->email ?? '-',
                         'Jenis Kelamin' => match ($assessment->gender) { 'L' => 'Laki-laki', 'P' => 'Perempuan', default => '-' },
@@ -44,7 +44,7 @@
                     </p>
                 </div>
 
-                <dl class="mt-4 grid gap-4 text-sm sm:grid-cols-5">
+                <dl class="mt-4 grid grid-cols-1 gap-4 text-sm sm:grid-cols-5">
                     @foreach ($assessment->raporSemesters as $semester)
                         <div>
                             <dt class="text-gray-500 dark:text-gray-400">Semester {{ $semester->semester }}</dt>
@@ -58,7 +58,7 @@
                 @php($completedSubjectScores = $assessment->subjectScores->filter(fn ($row) => $row->score !== null))
                 @if ($completedSubjectScores->isNotEmpty())
                     <h4 class="mt-6 text-sm font-semibold text-gray-900 dark:text-gray-100">Mata Pelajaran Pendukung</h4>
-                    <dl class="mt-3 grid gap-4 text-sm sm:grid-cols-4">
+                    <dl class="mt-3 grid grid-cols-1 gap-4 text-sm sm:grid-cols-4">
                         @foreach ($completedSubjectScores as $row)
                             <div>
                                 <dt class="text-gray-500 dark:text-gray-400">{{ $row->subject?->name ?? '—' }}</dt>

@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex flex-wrap items-center justify-between gap-3">
-            <h2 class="font-display text-[10px] font-bold uppercase tracking-wide text-ink-900 dark:text-porcelain-50 sm:text-sm">
+            <h2 class="font-display text-[10px] font-extrabold tracking-wide text-ink-900 dark:text-porcelain-50 sm:text-sm">
                 Detail Perhitungan CoCoSo
             </h2>
             <a href="{{ route('assessments.result', $assessment) }}"
@@ -23,7 +23,7 @@
             {{-- Parameter --}}
             <section class="student-panel p-6 sm:p-7">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Parameter yang Dipakai</h3>
-                <dl class="mt-4 grid gap-4 sm:grid-cols-3">
+                <dl class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
                     @foreach ([
                         'Lambda (λ)' => number_format($assessment->lambda_used, 3),
                         'Margin ke peringkat 2' => $assessment->margin_to_runner_up === null

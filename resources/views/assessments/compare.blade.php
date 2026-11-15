@@ -2,7 +2,7 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-display text-[10px] font-bold uppercase tracking-wide text-ink-900 dark:text-porcelain-50 sm:text-sm">Bandingkan hasil tes</h2>
+        <h2 class="font-display text-[10px] font-extrabold tracking-wide text-ink-900 dark:text-porcelain-50 sm:text-sm">Bandingkan Hasil Tes</h2>
     </x-slot>
 
     <div class="py-8">
@@ -29,7 +29,7 @@
                 </div>
             @else
                 {{-- Pemilih dua sesi yang dibandingkan --}}
-                <form method="GET" class="student-panel grid gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
+                <form method="GET" class="student-panel grid grid-cols-1 gap-4 p-5 sm:grid-cols-2 lg:grid-cols-3">
                     <div>
                         <x-input-label for="a" value="Tes Sebelumnya" />
                         <select id="a" name="a"
@@ -69,7 +69,7 @@
                     </x-alert>
                 @elseif ($left && $right)
                     {{-- Ringkasan rekomendasi --}}
-                    <section class="grid gap-4 sm:grid-cols-2">
+                    <section class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         @foreach ([['label' => 'Tes Sebelumnya', 'data' => $left, 'tone' => 'gray'], ['label' => 'Tes Pembanding', 'data' => $right, 'tone' => 'indigo']] as $card)
                             <div class="student-panel p-6
                                         {{ $card['tone'] === 'indigo' ? 'ring-2 ring-brand-500' : '' }}">

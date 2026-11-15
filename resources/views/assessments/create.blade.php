@@ -70,7 +70,7 @@
                     </div>
                 </div>
 
-          <div class="relative mt-8 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
+          <div class="relative mt-8 grid grid-cols-1 gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:items-start">
                 <x-assessment-progress reactive hide-on-mobile sticky-top="lg:top-20"
                     tip-title="Pastikan data yang Anda isi benar"
                     tip-body="Data ini akan digunakan untuk proses rekomendasi prodi yang lebih akurat." />
@@ -132,7 +132,7 @@
                         </div>
                     </div>
 
-                    <div class="mt-5 grid gap-5 sm:grid-cols-2">
+                    <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <div class="sm:col-span-2">
                             <x-input-label for="full_name">Nama Lengkap <span class="text-rose-500">*</span></x-input-label>
                             <div class="relative mt-1">
@@ -244,7 +244,7 @@
                         </div>
                     </div>
 
-                    <div class="mt-5 grid gap-5 sm:grid-cols-5">
+                    <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-5">
                         @foreach ($semesters as $semester)
                             <div>
                                 <x-input-label :for="'rapor_semesters_'.$semester" :value="'Semester '.$semester" />
@@ -399,7 +399,7 @@
                             pendukungnya.
                         </p>
 
-                        <div class="mt-5 grid gap-5 sm:grid-cols-3">
+                        <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
                             @foreach ($supportSubjects as $subject)
                                 {{--
                                     Hanya mapel pendukung milik prodi prioritas yang ditanyakan.

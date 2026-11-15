@@ -13,7 +13,7 @@
                 </x-slot:action>
             </x-admin-panel-hero>
 
-            <form method="GET" class="grid gap-4 rounded-xl bg-white p-4 shadow-sm dark:bg-gray-800 sm:grid-cols-2 lg:grid-cols-6">
+            <form method="GET" class="grid grid-cols-1 gap-4 rounded-xl bg-white p-4 shadow-sm dark:bg-gray-800 sm:grid-cols-2 lg:grid-cols-6">
                 <div class="lg:col-span-2">
                     <x-input-label for="q" value="Cari" />
                     <x-text-input id="q" name="q" type="search" class="mt-1 block w-full"
@@ -180,7 +180,7 @@
 
             @if (! $assessments->isEmpty())
                 <div x-show="view === 'card'" x-cloak>
-                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($assessments as $assessment)
                             @php($cardColor = $assessment->dominant_type ? \App\Support\Riasec::color($assessment->dominant_type) : '#6b7280')
                             <div class="flex flex-col overflow-hidden rounded-xl bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:bg-gray-800">

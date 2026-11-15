@@ -16,7 +16,7 @@
                 <section class="divide-y divide-gray-200 rounded-xl bg-white shadow-sm dark:divide-gray-700 dark:bg-gray-800">
                     @foreach ($settings as $setting)
                         @php($field = 'settings.'.$setting->key)
-                        <div class="grid gap-4 p-6 sm:grid-cols-3">
+                        <div class="grid grid-cols-1 gap-4 p-6 sm:grid-cols-3">
                             <div class="sm:col-span-2">
                                 <x-input-label :for="$setting->key" :value="$setting->label" />
                                 <p class="mt-1 text-xs leading-relaxed text-gray-500 dark:text-gray-400">{{ $setting->description }}</p>

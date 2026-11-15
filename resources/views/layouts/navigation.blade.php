@@ -31,7 +31,7 @@
         <div class="flex items-center justify-between gap-3 px-1">
             <a href="{{ $isAdmin ? route('admin.dashboard') : route('dashboard') }}" class="flex min-w-0 items-center gap-3" @click="open = false">
                 <img src="{{ asset('images/poliwangi_logo.png') }}" alt="Logo Politeknik Negeri Banyuwangi" class="h-10 w-10 shrink-0 object-contain">
-                <span class="min-w-0 font-display text-xs font-extrabold uppercase tracking-wide text-ink-900 dark:text-porcelain-50">SPK <span class="text-brand-600 dark:text-brand-300">Poliwangi</span></span>
+                <span class="min-w-0 font-display text-xs font-extrabold tracking-wide text-ink-900 dark:text-porcelain-50">SPK <span class="text-brand-600 dark:text-brand-300">Poliwangi</span></span>
             </a>
             <button type="button" @click="open = false" class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-ink-500 transition hover:bg-black/5 hover:text-ink-900 focus:outline-none focus:ring-2 focus:ring-brand-500/50 dark:text-porcelain-300 dark:hover:bg-white/10 dark:hover:text-porcelain-50">
                 <x-heroicon-o-x-mark class="h-5 w-5" aria-hidden="true" /><span class="sr-only">Tutup menu navigasi</span>

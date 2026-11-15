@@ -14,7 +14,7 @@
         <title>{{ config('app.name') }} &middot; Politeknik Negeri Banyuwangi</title>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800|unbounded:400,600,700,800,900|space-mono:400,700" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700,800|space-mono:400,700&display=swap" rel="stylesheet" />
 
         {{-- Landing page selalu terang — tidak ada toggle tema di sini, jadi
              tidak perlu skrip anti-flash pembaca localStorage seperti di
@@ -38,7 +38,7 @@
                 <div class="flex items-center justify-between py-4">
                     <a href="{{ url('/') }}" class="flex items-center gap-2">
                         <img src="{{ asset('images/poliwangi_logo.png') }}" alt="Logo Politeknik Negeri Banyuwangi" class="h-9 w-9 object-contain">
-                        <span class="font-display text-sm font-extrabold uppercase tracking-wide text-ink-900">
+                        <span class="font-display text-sm font-extrabold tracking-wide text-ink-900">
                             SPK <span class="text-brand-600">Poliwangi</span>
                         </span>
                     </a>
@@ -113,9 +113,9 @@
                             Dossier Penjurusan &middot; CoCoSo &times; RIASEC
                         </span>
 
-                        <h1 class="mt-5 font-display text-4xl font-extrabold uppercase leading-[1.05] tracking-tight text-porcelain-50 sm:text-6xl">
-                            <span data-split-reveal>Pilih jurusan</span>
-                            <span class="block bg-gradient-to-r from-brand-300 via-brand-200 to-porcelain-100 bg-clip-text text-transparent">bukan tebakan.</span>
+                        <h1 class="mt-5 font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-porcelain-50 sm:text-6xl">
+                            <span data-split-reveal>Pilih Jurusan</span>
+                            <span class="block bg-gradient-to-r from-brand-300 via-brand-200 to-porcelain-100 bg-clip-text text-transparent">Bukan Tebakan.</span>
                         </h1>
 
                         <p class="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-porcelain-200/85 lg:mx-0">
@@ -180,7 +180,7 @@
                 <div class="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
                     <div class="reveal lg:col-span-6">
                         <span class="font-mono text-xs uppercase tracking-[0.2em] text-brand-600">Neraca penilaian</span>
-                        <h2 data-split-reveal class="mt-2 font-display text-2xl font-extrabold uppercase tracking-tight text-ink-900 sm:text-3xl">Apa saja yang dinilai?</h2>
+                        <h2 data-split-reveal class="mt-2 font-display text-2xl font-extrabold tracking-tight text-ink-900 sm:text-3xl">Apa Saja Yang Dinilai?</h2>
                         <p class="mt-3 text-ink-600">
                             Setiap kriteria punya bobot tersendiri yang ditetapkan bersama pihak akademik. Bobot
                             yang berlaku saat Anda mengerjakan tes disimpan menyatu dengan hasil.
@@ -227,7 +227,7 @@
                 <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_0%,rgba(63,174,196,0.25),transparent)]"></div>
                 <div class="absolute inset-0 bg-grain opacity-20 mix-blend-overlay"></div>
                 <div class="relative flex flex-col items-center justify-center space-y-5 px-6 py-14 text-center sm:py-16">
-                    <h3 class="reveal font-display text-xl font-extrabold uppercase tracking-tight text-porcelain-50 sm:text-2xl">Mencakup seluruh jurusan Poliwangi</h3>
+                    <h3 class="reveal font-display text-xl font-extrabold tracking-tight text-porcelain-50 sm:text-2xl">Mencakup Seluruh Jurusan Poliwangi</h3>
                     <p class="reveal max-w-lg text-sm text-porcelain-200/70">Peringkat dihitung lintas jurusan, bukan hanya program studi favorit.</p>
                     <div class="reveal flex flex-wrap items-center justify-center gap-2">
                         @foreach ($departments as $department)
@@ -245,7 +245,7 @@
                 <div class="mx-auto max-w-[84rem] px-4 sm:px-6 lg:px-8">
                     <div class="reveal max-w-2xl">
                         <span class="font-mono text-xs uppercase tracking-[0.2em] text-brand-600">Profil kepribadian</span>
-                        <h2 data-split-reveal class="mt-2 font-display text-3xl font-extrabold uppercase tracking-tight text-ink-900">Enam dimensi RIASEC</h2>
+                        <h2 data-split-reveal class="mt-2 font-display text-3xl font-extrabold tracking-tight text-ink-900">Enam Dimensi RIASEC</h2>
                         <p class="mt-3 max-w-2xl text-ink-600">
                             Model Holland membagi kecenderungan minat kerja menjadi enam tipe. Ketuk salah satu blok di
                             samping untuk membaca penjelasannya di sini.
@@ -275,7 +275,7 @@
                             <div class="relative flex h-full flex-col p-7 sm:p-10 lg:p-12">
                                 <div x-show="!open" data-riasec-panel="default" class="flex h-full flex-col items-start justify-center">
                                     <span class="font-mono text-xs font-bold uppercase tracking-[0.24em] text-porcelain-200/60">Jelajahi profil Anda</span>
-                                    <h3 class="mt-4 max-w-lg font-display text-4xl font-extrabold uppercase leading-[0.92] tracking-tight text-white sm:text-5xl lg:text-6xl">R&middot;I&middot;A&middot;S&middot;E&middot;C</h3>
+                                    <h3 class="mt-4 max-w-lg font-display text-4xl font-extrabold leading-[0.92] tracking-tight text-white sm:text-5xl lg:text-6xl">R&middot;I&middot;A&middot;S&middot;E&middot;C</h3>
                                     <div class="mt-7 h-px w-16 bg-white/35"></div>
                                     <p class="mt-6 max-w-md text-base leading-relaxed text-porcelain-200/85 sm:text-lg">
                                         Pilih satu dimensi di sebelah kanan untuk memahami kecenderungan minat,
@@ -300,7 +300,7 @@
                                             </button>
                                         </div>
                                         <span class="mt-8 block font-mono text-xs font-bold uppercase tracking-[0.2em] text-porcelain-200/60">Dimensi {{ $loop->iteration }} dari 6</span>
-                                        <h3 class="mt-3 font-display text-4xl font-extrabold uppercase leading-none tracking-tight text-porcelain-50 sm:text-5xl">{{ $label }}</h3>
+                                        <h3 class="mt-3 font-display text-4xl font-extrabold leading-none tracking-tight text-porcelain-50 sm:text-5xl">{{ $label }}</h3>
                                         <div class="mt-6 h-px w-16 bg-white/35"></div>
                                         <p class="mt-6 max-h-56 overflow-y-auto pr-2 text-base leading-relaxed text-porcelain-200/90 sm:text-lg">
                                             {{ $descriptions[$code] }}
@@ -345,7 +345,7 @@
                 <div class="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 px-6 py-12 sm:px-10 sm:py-16 lg:grid-cols-12">
                     <div class="reveal lg:col-span-5">
                         <span class="font-mono text-xs uppercase tracking-[0.2em] text-brand-300">Alur &middot; 3 langkah</span>
-                        <h2 data-split-reveal class="mt-2 font-display text-2xl font-extrabold uppercase tracking-tight text-porcelain-50 sm:text-3xl">Bagaimana cara kerjanya?</h2>
+                        <h2 data-split-reveal class="mt-2 font-display text-2xl font-extrabold tracking-tight text-porcelain-50 sm:text-3xl">Bagaimana Cara Kerjanya?</h2>
                         <p class="mt-3 text-porcelain-200/70">
                             Tiga langkah, satu kali duduk. Anda tidak perlu tahu rumusnya, tetapi seluruh
                             perhitungannya tetap dapat Anda buka bila ingin memeriksanya.
@@ -395,7 +395,7 @@
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div class="reveal max-w-2xl">
                         <span class="font-mono text-xs uppercase tracking-[0.2em] text-brand-600">Katalog</span>
-                        <h2 data-split-reveal class="mt-2 font-display text-3xl font-extrabold uppercase tracking-tight">Program studi yang dibandingkan</h2>
+                        <h2 data-split-reveal class="mt-2 font-display text-3xl font-extrabold tracking-tight">Program Studi Yang Dibandingkan</h2>
                         <p class="mt-3 text-ink-600">
                             Seluruh program studi di bawah ini ikut diperingkat, bukan hanya yang Anda pilih.
                             Cari atau saring menurut jurusan untuk menjajakinya.
@@ -510,7 +510,7 @@
 
                     <div class="reveal lg:col-span-7" x-data="{ openFaq: 0 }">
                         <span class="font-mono text-xs uppercase tracking-[0.2em] text-brand-600">Bantuan</span>
-                        <h2 class="mt-2 font-display text-2xl font-extrabold uppercase tracking-tight text-ink-900 sm:text-3xl">Pertanyaan yang sering diajukan</h2>
+                        <h2 class="mt-2 font-display text-2xl font-extrabold tracking-tight text-ink-900 sm:text-3xl">Pertanyaan Yang Sering Diajukan</h2>
 
                         <ul class="mt-8 divide-y divide-black/10 rounded-[1.5rem] border border-black/10 bg-white">
                             @foreach ([
@@ -562,7 +562,7 @@
                             <x-heroicon-o-shield-check class="h-4 w-4" />
                             Keputusan tetap di tangan Anda
                         </span>
-                        <h2 data-split-reveal class="mt-3 font-display text-3xl font-extrabold uppercase tracking-tight sm:text-4xl">Siap tahu prodi paling cocok?</h2>
+                        <h2 data-split-reveal class="mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">Siap Tahu Prodi Paling Cocok?</h2>
                         <p class="mx-auto mt-3 max-w-2xl text-porcelain-200/80">
                             Buat akun calon mahasiswa, kerjakan tesnya, dan bawa hasilnya untuk berdiskusi dengan guru
                             BK maupun orang tua.
@@ -609,7 +609,7 @@
 
         {{-- Footer — struktur 4 kolom ala nefa, diisi tautan & info yang sungguhan ada. --}}
         <footer class="border-t border-black/5 bg-porcelain-50">
-            <section class="mx-2 my-4 grid overflow-hidden rounded-[2rem] bg-white shadow-xl shadow-ink-950/[0.06] sm:mx-6 lg:grid-cols-2">
+            <section class="mx-2 my-4 grid grid-cols-1 overflow-hidden rounded-[2rem] bg-white shadow-xl shadow-ink-950/[0.06] sm:mx-6 lg:grid-cols-2">
                 <div class="flex items-center px-6 py-14 sm:px-12 lg:px-20 xl:px-28">
                     <div class="w-full max-w-md">
                         <span class="font-mono text-xs uppercase tracking-[0.2em] text-brand-600">Suara Anda</span>

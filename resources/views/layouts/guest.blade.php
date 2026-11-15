@@ -20,14 +20,14 @@
         </script>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700,800&display=swap" rel="stylesheet" />
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
         <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}?v=2">
     </head>
 
     <body class="font-sans text-gray-900 antialiased dark:text-gray-100">
-        <div class="grid min-h-[100dvh] lg:grid-cols-2">
+        <div class="grid grid-cols-1 min-h-[100dvh] lg:grid-cols-2">
             {{-- Panel kiri: identitas sistem, disembunyikan pada layar sempit --}}
             <aside class="relative hidden flex-col justify-between bg-gradient-to-br from-brand-600 to-brand-900 p-12 text-white lg:flex">
                 <a href="{{ route('home') }}" class="flex items-center gap-3">
@@ -39,7 +39,7 @@
                 </a>
 
                 <div>
-                    <h2 class="text-3xl font-bold leading-tight">
+                    <h2 class="text-3xl font-extrabold leading-tight">
                         Temukan program studi yang benar-benar sejalan dengan Anda.
                     </h2>
                     <p class="mt-4 max-w-md leading-relaxed text-brand-100">
@@ -80,7 +80,7 @@
                     </div>
 
                     @if ($title)
-                        <h1 class="text-2xl font-bold tracking-tight">{{ $title }}</h1>
+                        <h1 class="text-2xl font-extrabold tracking-tight">{{ $title }}</h1>
                     @endif
 
                     @if ($subtitle)

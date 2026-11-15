@@ -11,7 +11,7 @@
              x-init="$watch('view', v => localStorage.setItem('spk-list-view', v))">
             <x-flash />
 
-            <form method="GET" class="grid gap-4 rounded-xl bg-white p-4 shadow-sm dark:bg-gray-800 sm:grid-cols-2 lg:grid-cols-5">
+            <form method="GET" class="grid grid-cols-1 gap-4 rounded-xl bg-white p-4 shadow-sm dark:bg-gray-800 sm:grid-cols-2 lg:grid-cols-5">
                 <div>
                     <x-input-label for="subject" value="Jenis Data" />
                     <select id="subject" name="subject"
@@ -145,7 +145,7 @@
 
             @if (! $logs->isEmpty())
                 <div x-show="view === 'card'" x-cloak>
-                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                         @foreach ($logs as $log)
                             @php
                                 $actionColor = match ($log->action) {

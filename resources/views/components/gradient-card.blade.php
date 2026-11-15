@@ -27,9 +27,8 @@
 @else
     <div style="{{ $style }}" {{ $attributes->merge(['class' => $classes]) }}>
 @endif
-        {{-- Ornamen tipis: cincin di pojok kanan atas dan kisi titik. --}}
+        {{-- Ornamen tipis: cincin di pojok kanan atas. --}}
         <span class="pointer-events-none absolute -right-5 -top-6 h-24 w-24 rounded-full border border-white/10" aria-hidden="true"></span>
-        <span class="pointer-events-none absolute right-5 top-3 grid grid-cols-3 gap-1 opacity-35" aria-hidden="true"><i class="h-1 w-1 rounded-full bg-white"></i><i class="h-1 w-1 rounded-full bg-white"></i><i class="h-1 w-1 rounded-full bg-white"></i><i class="h-1 w-1 rounded-full bg-white"></i><i class="h-1 w-1 rounded-full bg-white"></i><i class="h-1 w-1 rounded-full bg-white"></i></span>
         <div class="relative">{{ $slot }}</div>
 @if ($href)
     </a>

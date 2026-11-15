@@ -14,11 +14,11 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ['Figtree', ...defaultTheme.fontFamily.sans],
-                // Display badge-like face untuk headline & label kartu RIASEC —
-                // dipakai hemat (headline, eyebrow, huruf besar) agar terasa
-                // "sangar" tanpa mengorbankan keterbacaan body text.
-                display: ['"Unbounded"', ...defaultTheme.fontFamily.sans],
+                sans: ['Poppins', ...defaultTheme.fontFamily.sans],
+                // Seluruh aplikasi memakai Poppins. `font-display` menandai judul
+                // utama dan selalu dipasangkan dengan font-extrabold (800);
+                // subjudul & teks lain memakai Poppins dengan bobot 400–700.
+                display: ['"Poppins"', ...defaultTheme.fontFamily.sans],
                 // Muka utilitas untuk angka/kode (statistik, kode Holland,
                 // kode kriteria) — memberi kesan "dossier/sertifikat" data-driven.
                 mono: ['"Space Mono"', ...defaultTheme.fontFamily.mono],

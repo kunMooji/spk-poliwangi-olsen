@@ -17,7 +17,7 @@
     <section class="rounded-xl bg-white p-6 shadow-sm dark:bg-gray-800">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Identitas Program Studi</h3>
 
-        <div class="mt-5 grid gap-5 sm:grid-cols-2">
+        <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div>
                 <x-input-label for="code" value="Kode Prodi" />
                 <x-text-input id="code" name="code" type="text" class="mt-1 block w-full"
@@ -137,7 +137,7 @@
             menggunakan korelasi Pearson (100 = pola searah sempurna, 50 = tidak berkorelasi, 0 = berlawanan).
         </p>
 
-        <div class="mt-5 grid gap-5 sm:grid-cols-3">
+        <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
             @foreach ($dimensions as $code => $label)
                 @php($field = 'riasec_'.strtolower($code))
                 <div>
@@ -156,7 +156,7 @@
             Persentase serapan kerja dihitung otomatis dari jumlah alumni dan alumni yang terserap.
         </p>
 
-        <div class="mt-5 grid gap-5 sm:grid-cols-3">
+        <div class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
             <div>
                 <x-input-label for="alumni_count" value="Jumlah Alumni" />
                 <x-text-input id="alumni_count" name="alumni_count" type="number" min="0" class="mt-1 block w-full"

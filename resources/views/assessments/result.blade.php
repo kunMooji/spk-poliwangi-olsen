@@ -2,7 +2,7 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-display text-[10px] font-bold uppercase tracking-wide text-ink-900 dark:text-porcelain-50 sm:text-sm">
+        <h2 class="font-display text-[10px] font-extrabold tracking-wide text-ink-900 dark:text-porcelain-50 sm:text-sm">
             Hasil Rekomendasi Program Studi
         </h2>
     </x-slot>
@@ -43,9 +43,11 @@
                         </span>
                     </div>
 
+                    {{-- Pilihan prodi responden tampil sebagai kartu gradien (palet sama dengan
+                         dasbor admin) agar menonjol; daftar peringkat di bawahnya tetap netral. --}}
                     <div class="student-panel-muted mt-5 rounded-xl border border-black/5 p-4 dark:border-white/10">
                         <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Pilihan program studi Anda</p>
-                        <div class="mt-3 grid gap-3 md:grid-cols-3">
+                        <div class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
                             @foreach ($assessment->priorities->take(3) as $priority)
                                 {{-- Sengaja memakai blok PHP, bukan bentuk inline berkurung: seksi ini
                                      berada di atas blok PHP lain, dan Blade akan menelan bentuk inline
@@ -55,38 +57,36 @@
                                     $isPriorityRecommended = $priority->study_program_id === $assessment->recommended_program_id;
                                     $priorityUrl = $priority->studyProgram?->website_url;
                                 @endphp
-                                {{-- <a> tanpa href bukan tautan: kartu hanya bisa diklik bila prodinya punya situs. --}}
-                                <a
-                                    @if ($priorityUrl) href="{{ $priorityUrl }}" target="_blank" rel="noopener noreferrer" title="Buka situs prodi" @endif
-                                    class="block rounded-lg border border-black/5 bg-white p-3 shadow-sm shadow-ink-950/5 dark:border-white/10 dark:bg-white/[0.04] {{ $priorityUrl ? 'transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md dark:hover:border-brand-500/50' : '' }}">
+                                <x-gradient-card :index="$loop->index" :href="$priorityUrl" class="p-4"
+                                                 :title="$priorityUrl ? 'Buka situs prodi' : null">
                                     <div class="flex items-center justify-between gap-2">
-                                        <span class="text-xs font-semibold uppercase tracking-wide text-brand-700 dark:text-brand-300">Pilihan {{ $priority->priority_order }}</span>
-                                        <span class="font-mono text-xs font-bold tabular-nums text-gray-600 dark:text-gray-300">
+                                        <span class="text-xs font-bold uppercase tracking-wide text-white/85">Pilihan {{ $priority->priority_order }}</span>
+                                        <span class="rounded-md bg-white/20 px-2 py-0.5 font-mono text-xs font-bold tabular-nums">
                                             #{{ $priorityResult?->ranking ?? '-' }}
                                         </span>
                                     </div>
-                                    <p class="mt-2 text-sm font-semibold leading-snug text-gray-900 dark:text-gray-100">
+                                    <p class="mt-2 text-sm font-bold leading-snug sm:text-base">
                                         {{ $priority->studyProgram?->full_name ?? '-' }}
                                         @if ($priorityUrl)
-                                            <x-heroicon-o-arrow-top-right-on-square class="ms-0.5 inline h-3.5 w-3.5 align-[-1px] text-brand-600 dark:text-brand-300" aria-hidden="true" />
+                                            <x-heroicon-o-arrow-top-right-on-square class="ms-0.5 inline h-3.5 w-3.5 align-[-1px] opacity-80" aria-hidden="true" />
                                         @endif
                                     </p>
                                     @if ($isPriorityRecommended)
-                                        <p class="mt-1 text-xs font-semibold text-brand-700 dark:text-brand-300">Rekomendasi utama</p>
+                                        <span class="mt-2 inline-block rounded-md bg-white px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink-900">Rekomendasi utama</span>
                                     @endif
-                                </a>
+                                </x-gradient-card>
                             @endforeach
                         </div>
                     </div>
 
                 </div>
 
-                {{-- Daftar peringkat berupa kartu gradien (palet sama dengan dasbor admin).
-                     Prodi yang punya situs menjadi tautan ke situs jurusan/prodinya. --}}
+                {{-- Daftar peringkat: kartu putih netral. Prodi yang punya situs menjadi
+                     tautan ke situs jurusan/prodinya (<a> tanpa href bukan tautan). --}}
                 @php
                     $tieGroups = $assessment->tieGroups();
                 @endphp
-                <ol class="space-y-3 px-6 pb-6">
+                <ol class="space-y-2 px-6 pb-6">
                     @foreach ($assessment->results as $result)
                         @php
                             $isRecommended = $result->study_program_id === $assessment->recommended_program_id;
@@ -95,36 +95,34 @@
                             $websiteUrl = $result->studyProgram->website_url;
                         @endphp
                         <li @if ($result->ranking > 5) x-cloak x-show="showAllRanks" @endif>
-                            <x-gradient-card :index="$loop->index" :href="$websiteUrl" class="px-4 py-3.5 {{ $isRecommended ? 'ring-2 ring-brand-300 ring-offset-2 dark:ring-offset-ink-900' : '' }}"
-                                             :title="$websiteUrl ? 'Buka situs prodi' : null">
-                                <div class="flex items-center gap-3">
-                                    <span class="w-5 shrink-0 font-mono text-sm font-bold tabular-nums">{{ $result->ranking }}</span>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="text-sm font-bold leading-snug sm:text-base">
-                                            {{ $result->studyProgram->full_name }}
-                                            @if ($websiteUrl)
-                                                <x-heroicon-o-arrow-top-right-on-square class="ms-0.5 inline h-3.5 w-3.5 align-[-1px] opacity-80" aria-hidden="true" />
-                                            @endif
-                                        </p>
-                                        @if ($isRecommended || $tie || $priorityOrder)
-                                            <div class="mt-1.5 flex flex-wrap gap-1.5 text-[10px] font-bold uppercase tracking-wide">
-                                                @if ($isRecommended)
-                                                    <span class="rounded-md bg-white px-2 py-0.5 text-ink-900">Rekomendasi</span>
-                                                @endif
-                                                @if ($tie)
-                                                    <span class="rounded-md bg-white/20 px-2 py-0.5"
-                                                          title="Selisih skornya terlalu kecil untuk dianggap berbeda. Peringkat {{ $tie['from'] }}–{{ $tie['to'] }} sebaiknya dibaca setara.">
-                                                        Setara #{{ $tie['from'] }}&ndash;{{ $tie['to'] }}
-                                                    </span>
-                                                @endif
-                                                @if ($priorityOrder)
-                                                    <span class="rounded-md bg-white/20 px-2 py-0.5">Pilihan {{ $priorityOrder }}</span>
-                                                @endif
-                                            </div>
+                            <a @if ($websiteUrl) href="{{ $websiteUrl }}" target="_blank" rel="noopener noreferrer" title="Buka situs prodi" @endif
+                               class="flex items-center gap-3 rounded-xl border px-4 py-3 {{ $isRecommended ? 'border-brand-200 bg-brand-50 dark:border-brand-500/30 dark:bg-brand-500/10' : 'border-black/5 bg-white dark:border-white/10 dark:bg-white/[0.04]' }} {{ $websiteUrl ? 'transition hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md dark:hover:border-brand-500/50' : '' }}">
+                                <span class="w-5 shrink-0 font-mono text-sm font-bold tabular-nums text-gray-500 dark:text-gray-400">{{ $result->ranking }}</span>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-sm font-semibold leading-snug text-gray-900 dark:text-gray-100">
+                                        {{ $result->studyProgram->full_name }}
+                                        @if ($websiteUrl)
+                                            <x-heroicon-o-arrow-top-right-on-square class="ms-0.5 inline h-3.5 w-3.5 align-[-1px] text-brand-600 dark:text-brand-300" aria-hidden="true" />
                                         @endif
-                                    </div>
+                                    </p>
+                                    @if ($isRecommended || $tie || $priorityOrder)
+                                        <div class="mt-1.5 flex flex-wrap gap-1.5 text-[10px] font-semibold uppercase tracking-wide">
+                                            @if ($isRecommended)
+                                                <span class="rounded-md bg-brand-600 px-2 py-0.5 text-white">Rekomendasi</span>
+                                            @endif
+                                            @if ($tie)
+                                                <span class="rounded-md bg-amber-100 px-2 py-0.5 text-amber-700 dark:bg-amber-400/15 dark:text-amber-100"
+                                                      title="Selisih skornya terlalu kecil untuk dianggap berbeda. Peringkat {{ $tie['from'] }}–{{ $tie['to'] }} sebaiknya dibaca setara.">
+                                                    Setara #{{ $tie['from'] }}&ndash;{{ $tie['to'] }}
+                                                </span>
+                                            @endif
+                                            @if ($priorityOrder)
+                                                <span class="rounded-md bg-gray-200 px-2 py-0.5 text-gray-700 dark:bg-gray-600 dark:text-gray-200">Pilihan {{ $priorityOrder }}</span>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </div>
-                            </x-gradient-card>
+                            </a>
                         </li>
                     @endforeach
                 </ol>
@@ -149,7 +147,7 @@
                 $hasMargin = $assessment->margin_to_runner_up !== null;
             @endphp
             <section class="student-panel dashboard-enter overflow-hidden">
-                <dl class="grid divide-y divide-black/5 dark:divide-white/10 sm:divide-x sm:divide-y-0 {{ $hasMargin ? 'sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1.2fr)]' : 'sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]' }}">
+                <dl class="grid grid-cols-1 divide-y divide-black/5 dark:divide-white/10 sm:divide-x sm:divide-y-0 {{ $hasMargin ? 'sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1.2fr)]' : 'sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]' }}">
                     <div class="px-5 py-4">
                         <dt class="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-ink-500 dark:text-porcelain-300/70">Pilihan pertama Anda</dt>
                         <dd class="mt-1.5 text-base font-semibold leading-snug text-ink-900 dark:text-porcelain-50">{{ $assessment->primaryProgram?->full_name ?? '-' }}</dd>

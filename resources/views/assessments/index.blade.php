@@ -2,7 +2,7 @@
 
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-display text-[10px] font-bold uppercase tracking-wide text-ink-900 dark:text-porcelain-50 sm:text-sm">Riwayat tes saya</h2>
+        <h2 class="font-display text-[10px] font-extrabold tracking-wide text-ink-900 dark:text-porcelain-50 sm:text-sm">Riwayat Tes Saya</h2>
     </x-slot>
 
     <div class="py-8">
@@ -90,7 +90,7 @@
                 </div>
 
                 <div x-show="view === 'card'" x-cloak class="mt-4">
-                    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                         @foreach ($assessments as $assessment)
                             @php($color = $assessment->dominant_type ? Riasec::color($assessment->dominant_type) : '#64748b')
                             <article class="group flex min-h-72 flex-col overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm shadow-ink-950/5 transition duration-300 ease-brand-out hover:-translate-y-1 hover:shadow-lg hover:shadow-ink-950/10 dark:border-white/10 dark:bg-ink-900/60">

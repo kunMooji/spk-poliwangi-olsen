@@ -15,7 +15,7 @@
                 <x-slot:content>
                 <div class="space-y-4">
 
-            <div class="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                 @foreach ($labels as $code => $label)
                     <a href="{{ route('admin.questions.index', ['dimension' => $code]) }}"
                        class="rounded-xl bg-white p-4 shadow-sm transition hover:ring-2 hover:ring-brand-500 dark:bg-gray-800 {{ request('dimension') === $code ? 'ring-2 ring-brand-500' : '' }}">
@@ -122,7 +122,7 @@
 
             @if (! $questions->isEmpty())
                 <div x-show="view === 'card'" x-cloak>
-                    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         @foreach ($questions as $question)
                             @php($qColor = \App\Support\Riasec::color($question->dimension))
                             @php($qIcon = match ($question->dimension) {

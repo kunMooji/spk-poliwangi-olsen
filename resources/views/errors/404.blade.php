@@ -13,7 +13,7 @@
         </script>
 
         <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700,800|unbounded:600,700,800&display=swap" rel="stylesheet" />
+        <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700,800&display=swap" rel="stylesheet" />
         @vite(['resources/css/app.css'])
         <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}?v=2">
     </head>
@@ -26,19 +26,19 @@
                 <header class="relative z-10 flex items-center justify-between gap-5">
                     <a href="{{ route('home') }}" class="inline-flex items-center gap-2.5 rounded-xl text-ink-900 transition hover:opacity-75 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:ring-offset-2 dark:text-porcelain-50 dark:focus:ring-offset-ink-900" aria-label="Kembali ke halaman utama SPK Poliwangi">
                         <img src="{{ asset('images/poliwangi_logo.png') }}" alt="Logo Politeknik Negeri Banyuwangi" class="h-10 w-10 object-contain sm:h-11 sm:w-11">
-                        <span class="font-display text-xs font-bold uppercase tracking-tight sm:text-sm">SPK Poliwangi</span>
+                        <span class="font-display text-xs font-extrabold tracking-tight sm:text-sm">SPK Poliwangi</span>
                     </a>
                     <a href="{{ route('home') }}" class="text-sm font-semibold text-ink-500 transition hover:text-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:ring-offset-2 dark:text-porcelain-300 dark:hover:text-brand-300 dark:focus:ring-offset-ink-900">Beranda</a>
                 </header>
 
-                <div class="relative z-10 mx-auto grid max-w-6xl items-center gap-3 pt-6 lg:grid-cols-[1.04fr_0.96fr] lg:gap-12 lg:pt-0">
+                <div class="relative z-10 mx-auto grid grid-cols-1 max-w-6xl items-center gap-3 pt-6 lg:grid-cols-[1.04fr_0.96fr] lg:gap-12 lg:pt-0">
                     <div class="order-2 flex justify-center lg:order-1 lg:justify-start">
                         <img src="{{ asset('images/not-found-student.png') }}" alt="Mahasiswa mengenakan toga yang kebingungan melihat pesan 404 di ponsel" class="w-full max-w-[37rem] object-contain mix-blend-multiply dark:mix-blend-normal lg:w-[52rem] lg:max-w-none lg:translate-x-4 lg:scale-110">
                     </div>
 
                     <div class="order-1 max-w-xl lg:order-2">
                         <p class="font-mono text-xs font-bold uppercase tracking-[0.2em] text-brand-600 dark:text-brand-300">Halaman tidak ditemukan</p>
-                        <h1 id="not-found-title" class="mt-4 font-display text-4xl font-bold leading-[1.12] tracking-tight text-ink-900 dark:text-porcelain-50 sm:text-5xl xl:text-6xl">Waduh, halaman ini tidak ada.</h1>
+                        <h1 id="not-found-title" class="mt-4 font-display text-4xl font-extrabold leading-[1.12] tracking-tight text-ink-900 dark:text-porcelain-50 sm:text-5xl xl:text-6xl">Waduh, Halaman Ini Tidak Ada.</h1>
                         <p class="mt-5 max-w-lg text-base leading-7 text-ink-600 dark:text-porcelain-300 sm:text-lg">Tautan yang Anda buka mungkin sudah dipindahkan, dihapus, atau alamatnya tidak tepat. Mari kembali ke halaman utama.</p>
 
                         <div class="mt-8 flex flex-wrap items-center gap-4">

@@ -21,7 +21,7 @@
                     sesi tes ini, dengan λ dan bobot yang digeser. Hasil asli tidak diubah sama sekali.
                 </p>
 
-                <div class="mt-5 grid gap-4 sm:grid-cols-3">
+                <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
                     <div class="rounded-lg bg-gray-50 p-4 dark:bg-gray-900/50">
                         <p class="text-sm text-gray-500 dark:text-gray-400">Skenario Stabil</p>
                         <p class="mt-1 text-3xl font-bold {{ $summary['ratio'] >= 80 ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400' }}">
