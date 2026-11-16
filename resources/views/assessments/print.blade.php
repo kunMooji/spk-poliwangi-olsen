@@ -177,7 +177,7 @@
             .aksi { display: none; }
         }
     </style>
-    <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}?v=2">
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}?v=3">
 </head>
 <body>
     <div class="aksi">

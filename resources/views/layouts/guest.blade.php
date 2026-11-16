@@ -23,7 +23,7 @@
         <link href="https://fonts.bunny.net/css?family=poppins:400,500,600,700,800&display=swap" rel="stylesheet" />
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}?v=2">
+        <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}?v=3">
     </head>
 
     <body class="font-sans text-gray-900 antialiased dark:text-gray-100">

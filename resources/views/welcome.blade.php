@@ -20,7 +20,7 @@
              tidak perlu skrip anti-flash pembaca localStorage seperti di
              layouts/app.blade.php & layouts/guest.blade.php. --}}
         @vite(['resources/css/app.css', 'resources/js/app.js'])
-        <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}?v=2">
+        <link rel="icon" type="image/png" href="{{ asset('images/favicon.png') }}?v=3">
     </head>
 
     <body class="bg-porcelain-50 font-sans text-ink-900 antialiased">
