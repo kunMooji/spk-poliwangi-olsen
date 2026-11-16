@@ -336,60 +336,6 @@
                 </div>
             </section>
 
-            {{-- Bagaimana cara kerjanya — band gelap dengan tiga blok fitur bernomor,
-                 ala section "Advanced Trading Tools" milik nefa. --}}
-            <section class="relative mx-2 my-4 overflow-hidden rounded-[2rem] bg-ink-950 shadow sm:mx-6">
-                <div class="absolute inset-0 bg-[radial-gradient(ellipse_70%_70%_at_80%_0%,rgba(63,174,196,0.22),transparent)]"></div>
-                <div class="absolute inset-0 bg-grain opacity-20 mix-blend-overlay"></div>
-
-                <div class="relative mx-auto grid max-w-6xl grid-cols-1 gap-8 px-6 py-12 sm:px-10 sm:py-16 lg:grid-cols-12">
-                    <div class="reveal lg:col-span-5">
-                        <span class="font-mono text-xs uppercase tracking-[0.2em] text-brand-300">Alur &middot; 3 langkah</span>
-                        <h2 data-split-reveal class="mt-2 font-display text-2xl font-extrabold tracking-tight text-porcelain-50 sm:text-3xl">Bagaimana Cara Kerjanya?</h2>
-                        <p class="mt-3 text-porcelain-200/70">
-                            Tiga langkah, satu kali duduk. Anda tidak perlu tahu rumusnya, tetapi seluruh
-                            perhitungannya tetap dapat Anda buka bila ingin memeriksanya.
-                        </p>
-                        @guest
-                            <a href="{{ route('register') }}"
-                               class="group mt-8 inline-flex items-center gap-3 rounded-full bg-brand-300 py-2 pl-6 pr-2 text-sm font-bold uppercase tracking-wide text-ink-950 transition duration-500 ease-brand-out hover:-translate-y-0.5 hover:bg-brand-200 hover:shadow-lg active:scale-[0.98]">
-                                Mulai Sekarang
-                                <span class="flex h-8 w-8 items-center justify-center rounded-full bg-ink-950/10 transition duration-500 ease-brand-out group-hover:translate-x-0.5">
-                                    <x-heroicon-o-arrow-up-right class="h-4 w-4" />
-                                </span>
-                            </a>
-                        @endguest
-                    </div>
-
-                    <ol class="reveal space-y-6 lg:col-span-7">
-                        @foreach ([
-                            [
-                                'title' => 'Isi biodata & nilai rapor',
-                                'body' => 'Masukkan nilai enam mata pelajaran dan urutkan program studi sesuai minat Anda. Urutan ini ikut diperhitungkan, jadi pilihan Anda tetap punya bobot.',
-                            ],
-                            [
-                                'title' => 'Kerjakan kuesioner minat bakat',
-                                'body' => $questionCount.' pernyataan dengan skala 1 sampai 5. Hasilnya adalah profil kepribadian RIASEC Anda, lengkap dengan kode Holland tiga huruf.',
-                            ],
-                            [
-                                'title' => 'Terima peringkat & alasannya',
-                                'body' => 'Sistem memberi peringkat seluruh program studi, menjelaskan kriteria mana yang mengangkat dan menahan tiap prodi, serta membandingkannya dengan pilihan pertama Anda.',
-                            ],
-                        ] as $index => $step)
-                            <li class="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/5 p-5">
-                                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-500/20 font-mono text-sm font-bold text-brand-200 ring-1 ring-inset ring-brand-300/30">
-                                    {{ $index + 1 }}
-                                </span>
-                                <div>
-                                    <h3 class="text-base font-semibold text-porcelain-50">{{ $step['title'] }}</h3>
-                                    <p class="mt-1 text-sm leading-relaxed text-porcelain-200/70">{{ $step['body'] }}</p>
-                                </div>
-                            </li>
-                        @endforeach
-                    </ol>
-                </div>
-            </section>
-
             {{-- Program studi --}}
             <section id="prodi" class="py-12 text-ink-900 sm:py-16">
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -515,6 +461,22 @@
                         <ul class="mt-8 divide-y divide-black/10 rounded-[1.5rem] border border-black/10 bg-white">
                             @foreach ([
                                 [
+                                    'title' => 'Bagaimana alur menggunakan sistem ini?',
+                                    'body' => 'Ada tiga langkah dalam satu kali duduk. Anda tidak perlu tahu rumusnya, tetapi seluruh perhitungannya tetap dapat dibuka bila ingin memeriksanya.',
+                                ],
+                                [
+                                    'title' => '1. Isi biodata & nilai rapor',
+                                    'body' => 'Masukkan nilai enam mata pelajaran dan urutkan program studi sesuai minat Anda. Urutan ini ikut diperhitungkan, jadi pilihan Anda tetap punya bobot.',
+                                ],
+                                [
+                                    'title' => '2. Kerjakan kuesioner minat bakat',
+                                    'body' => $questionCount.' pernyataan dengan skala 1 sampai 5. Hasilnya adalah profil kepribadian RIASEC Anda, lengkap dengan kode Holland tiga huruf.',
+                                ],
+                                [
+                                    'title' => '3. Terima peringkat & alasannya',
+                                    'body' => 'Sistem memberi peringkat seluruh program studi, menjelaskan kriteria mana yang mengangkat dan menahan tiap prodi, serta membandingkannya dengan pilihan pertama Anda.',
+                                ],
+                                [
                                     'title' => 'Apakah hasil tes ini menentukan jurusan saya?',
                                     'body' => 'Tidak. Sistem hanya memberi peringkat & rekomendasi berdasarkan data yang Anda masukkan. Keputusan akhir tetap di tangan Anda, orang tua, dan guru BK.',
                                 ],
@@ -543,56 +505,6 @@
                                 </li>
                             @endforeach
                         </ul>
-                    </div>
-                </div>
-            </section>
-
-            {{-- Ajakan --}}
-            <section class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-                <div class="reveal relative overflow-hidden rounded-[2rem] px-6 py-12 text-center text-white shadow-2xl sm:px-12 sm:py-16">
-                    <img src="{{ asset('images/poliwangi-kampus.png') }}"
-                         alt="Gedung kampus Politeknik Negeri Banyuwangi"
-                         class="absolute inset-0 h-full w-full object-cover" loading="lazy">
-                    <div class="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/90 to-brand-950/60"></div>
-                    <div class="absolute inset-0 bg-grain opacity-30 mix-blend-overlay"></div>
-                    <div class="pointer-events-none absolute inset-0 rounded-[2rem] ring-1 ring-inset ring-brand-300/20"></div>
-
-                    <div class="relative">
-                        <span class="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-brand-300">
-                            <x-heroicon-o-shield-check class="h-4 w-4" />
-                            Keputusan tetap di tangan Anda
-                        </span>
-                        <h2 data-split-reveal class="mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">Siap Tahu Prodi Paling Cocok?</h2>
-                        <p class="mx-auto mt-3 max-w-2xl text-porcelain-200/80">
-                            Buat akun calon mahasiswa, kerjakan tesnya, dan bawa hasilnya untuk berdiskusi dengan guru
-                            BK maupun orang tua.
-                        </p>
-
-                        @guest
-                            <div class="mt-8 flex flex-wrap justify-center gap-3">
-                                <a href="{{ route('register') }}"
-                                   class="group inline-flex items-center gap-3 rounded-full bg-brand-300 py-2 pl-6 pr-2 text-sm font-bold uppercase tracking-wide text-ink-950 transition duration-500 ease-brand-out hover:-translate-y-0.5 hover:bg-brand-200 hover:shadow-lg active:scale-[0.98]">
-                                    Daftar Sekarang
-                                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-ink-950/10 transition duration-500 ease-brand-out group-hover:translate-x-0.5">
-                                        <x-heroicon-o-arrow-up-right class="h-4 w-4" />
-                                    </span>
-                                </a>
-                                <a href="{{ route('login') }}"
-                                   class="inline-flex items-center rounded-full border border-white/25 px-6 py-3 text-sm font-semibold text-white transition duration-300 ease-brand-out hover:-translate-y-0.5 hover:border-brand-300/50 hover:bg-white/10 active:scale-[0.98]">
-                                    Masuk
-                                </a>
-                            </div>
-                        @else
-                            <div class="mt-8">
-                                <a href="{{ route('dashboard') }}"
-                                   class="group inline-flex items-center gap-3 rounded-full bg-brand-300 py-2 pl-6 pr-2 text-sm font-bold uppercase tracking-wide text-ink-950 transition duration-500 ease-brand-out hover:-translate-y-0.5 hover:bg-brand-200 hover:shadow-lg active:scale-[0.98]">
-                                    Buka Dasbor Saya
-                                    <span class="flex h-8 w-8 items-center justify-center rounded-full bg-ink-950/10 transition duration-500 ease-brand-out group-hover:translate-x-0.5">
-                                        <x-heroicon-o-arrow-up-right class="h-4 w-4" />
-                                    </span>
-                                </a>
-                            </div>
-                        @endguest
                     </div>
                 </div>
             </section>
