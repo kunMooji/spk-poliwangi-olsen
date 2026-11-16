@@ -461,6 +461,13 @@ function initSmoothScroll() {
             const target = document.querySelector(id);
             if (!target) return;
             event.preventDefault();
+            // Tautan ke header/navbar (mis. tombol "kembali ke atas") harus ke paling
+            // atas halaman; header yang sticky posisinya selalu "di sini", jadi
+            // menggulir ke elemennya hanya menggeser sedikit.
+            if (target.closest('[data-site-header]') || id === '#top') {
+                lenis.scrollTo(0, { duration: 1.4 });
+                return;
+            }
             lenis.scrollTo(target, { offset: -84 });
         });
     });

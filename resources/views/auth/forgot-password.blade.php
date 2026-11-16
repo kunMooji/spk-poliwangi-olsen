@@ -83,7 +83,7 @@
                         </form>
                     </main>
 
-                    <aside class="relative hidden lg:block">
+                    <aside class="relative order-first h-36 sm:h-52 lg:order-none lg:h-auto">
                         <img src="{{ asset('images/hotel_poliwangi.png') }}"
                              alt="Gedung kampus Politeknik Negeri Banyuwangi"
                              class="absolute inset-0 h-full w-full object-cover">

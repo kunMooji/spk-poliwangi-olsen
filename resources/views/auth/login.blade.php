@@ -120,7 +120,7 @@
                                 </button>
 
                                 <a href="{{ route('register') }}" class="group inline-flex items-center text-sm text-ink-500 transition duration-150 ease-brand-out hover:text-brand-600 dark:text-porcelain-300/70 dark:hover:text-brand-300">
-                                    Belum punya akun? Daftar sebagai calon mahasiswa
+                                    Belum punya akun? Register
                                     <x-heroicon-o-arrow-right class="ml-1 h-4 w-4 transform transition-transform duration-200 ease-brand-out group-hover:translate-x-1" />
                                 </a>
                             </div>
@@ -129,7 +129,7 @@
                         <x-google-button class="mt-5" label="Masuk dengan Google" />
                     </div>
 
-                    <div class="relative hidden lg:block">
+                    <div class="relative order-first h-36 sm:h-52 lg:order-none lg:h-auto">
                         <img src="{{ asset('images/hotel_poliwangi.png') }}"
                              alt="Gedung kampus Politeknik Negeri Banyuwangi"
                              class="absolute inset-0 h-full w-full object-cover">

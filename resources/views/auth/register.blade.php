@@ -43,8 +43,8 @@
                      layar terasa satu pasang, bukan dua desain yang kebetulan mirip. --}}
                 <div class="grid grid-cols-1 overflow-hidden rounded-[2rem] border border-black/5 bg-white shadow-2xl shadow-ink-950/10 dark:border-white/10 dark:bg-ink-900/60 lg:grid-cols-2">
 
-                    <div class="relative hidden lg:block lg:order-1">
-                        <img src="{{ asset('images/poliwangi-kampus.png') }}"
+                    <div class="relative h-36 sm:h-52 lg:order-1 lg:h-auto">
+                        <img src="{{ asset('images/gambar-gedung.jpeg') }}"
                              alt="Gedung kampus Politeknik Negeri Banyuwangi"
                              class="absolute inset-0 h-full w-full object-cover">
                         <div class="absolute inset-0 bg-gradient-to-t from-ink-950/40 via-transparent to-transparent"></div>
@@ -151,14 +151,6 @@
                         </form>
 
                         <x-google-button class="mt-5" label="Daftar dengan Google" />
-
-                        <p class="mt-4 flex items-start gap-2.5 rounded-lg border border-black/5 bg-black/[0.02] px-4 py-2.5 text-xs leading-relaxed text-ink-500 dark:border-white/10 dark:bg-white/5 dark:text-porcelain-300/60">
-                            <x-heroicon-o-information-circle class="mt-0.5 h-4 w-4 shrink-0 text-ink-400 dark:text-porcelain-400/60" />
-                            <span>
-                                Pendaftaran mandiri hanya untuk calon mahasiswa. Akun administrator tidak dapat dibuat melalui halaman ini
-                                dan disiapkan langsung oleh pengelola sistem.
-                            </span>
-                        </p>
                     </div>
                 </div>
 

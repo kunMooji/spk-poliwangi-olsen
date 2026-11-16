@@ -107,7 +107,7 @@
                 <div class="pointer-events-none absolute inset-0 bg-grain opacity-20 mix-blend-overlay"></div>
 
                 <div class="relative mx-auto max-w-7xl px-4 pb-24 pt-14 sm:px-6 sm:pb-28 lg:px-8 lg:pt-20">
-                    <div class="animate-fade-up max-w-xl text-center lg:text-left">
+                    <div class="animate-fade-up max-w-xl">
                         <span class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.2em] text-porcelain-100 backdrop-blur">
                             <x-heroicon-o-sparkles class="h-3.5 w-3.5 text-brand-300" aria-hidden="true" />
                             Dossier Penjurusan &middot; CoCoSo &times; RIASEC
@@ -118,14 +118,14 @@
                             <span class="block bg-gradient-to-r from-brand-300 via-brand-200 to-porcelain-100 bg-clip-text text-transparent">Bukan Tebakan.</span>
                         </h1>
 
-                        <p class="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-porcelain-200/85 lg:mx-0">
+                        <p class="mt-6 max-w-xl text-lg leading-relaxed text-porcelain-200/85">
                             Nilai rapor, minat bakat, urutan pilihan, sampai serapan kerja alumni ditimbang
                             sekaligus dan diberi peringkat.
                             <strong class="font-semibold text-porcelain-50">Setiap angka bisa Anda bongkar alasannya</strong>,
                             bukan cuma percaya begitu saja.
                         </p>
 
-                        <div class="mt-9 flex flex-col items-center gap-3 sm:flex-row sm:justify-center lg:justify-start">
+                        <div class="mt-9 flex flex-col items-center gap-3 sm:flex-row">
                             @auth
                                 <a href="{{ route('dashboard') }}"
                                    class="group inline-flex w-full items-center justify-center gap-3 rounded-full bg-brand-600 py-2 pl-6 pr-2 text-sm font-bold uppercase tracking-wide text-porcelain-50 shadow-[0_0_0_1px_rgba(124,205,220,0.4)] transition duration-500 ease-brand-out hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-lg active:scale-[0.98] sm:w-auto">
@@ -204,8 +204,8 @@
                                         </span>
                                     </div>
                                     <div class="mt-2.5 h-1.5 overflow-hidden rounded-full bg-black/10">
-                                        <div class="h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-300"
-                                             style="width: {{ $criterion->weight * 100 }}%"></div>
+                                        <div class="criteria-bar h-full rounded-full bg-gradient-to-r from-brand-400 to-brand-300"
+                                             style="width: {{ $criterion->weight * 100 }}%; --i: {{ $loop->index }}"></div>
                                     </div>
                                 </li>
                             @endforeach
@@ -495,13 +495,21 @@
                                 ],
                             ] as $index => $faq)
                                 <li class="p-5">
-                                    <button type="button" @click="openFaq = (openFaq === {{ $index }} ? null : {{ $index }})" class="flex w-full items-center justify-between gap-4 text-left">
+                                    <button type="button" @click="openFaq = (openFaq === {{ $index }} ? null : {{ $index }})"
+                                            :aria-expanded="openFaq === {{ $index }}"
+                                            class="flex w-full items-center justify-between gap-4 text-left">
                                         <span class="font-medium text-ink-900">{{ $faq['title'] }}</span>
-                                        <x-heroicon-o-chevron-up x-show="openFaq === {{ $index }}" class="h-4 w-4 shrink-0 text-brand-600" />
-                                        <x-heroicon-o-chevron-down x-show="openFaq !== {{ $index }}" class="h-4 w-4 shrink-0 text-ink-400" />
+                                        <x-heroicon-o-chevron-down class="h-4 w-4 shrink-0 transition-transform duration-500 ease-brand-out"
+                                                                   ::class="openFaq === {{ $index }} ? 'rotate-180 text-brand-600' : 'text-ink-400'" />
                                     </button>
-                                    <div x-show="openFaq === {{ $index }}" x-cloak x-transition class="pt-3">
-                                        <p class="text-sm leading-relaxed text-ink-600">{{ $faq['body'] }}</p>
+                                    {{-- Tinggi dianimasikan lewat grid-template-rows 0fr -> 1fr, jadi
+                                         membuka/menutup mulus tanpa perlu mengukur tinggi isi. --}}
+                                    <div x-cloak class="grid transition-[grid-template-rows,opacity] duration-500 ease-brand-out motion-reduce:transition-none"
+                                         :class="openFaq === {{ $index }} ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'"
+                                         :aria-hidden="openFaq !== {{ $index }}">
+                                        <div class="overflow-hidden">
+                                            <p class="pt-3 text-sm leading-relaxed text-ink-600">{{ $faq['body'] }}</p>
+                                        </div>
                                     </div>
                                 </li>
                             @endforeach
@@ -510,14 +518,21 @@
                 </div>
             </section>
 
-            {{-- Kembali ke atas — sentuhan kecil ala nefa. --}}
-            <div class="mb-10 flex w-full justify-center">
-                <a href="#navbar"
-                   class="flex items-center space-x-2 rounded-full border border-black/10 bg-white px-6 py-3 text-sm text-ink-600 shadow-sm transition hover:border-brand-500/40 hover:text-brand-600 hover:shadow-md">
-                    <span>Kembali ke atas</span>
-                    <x-heroicon-o-arrow-up class="h-4 w-4" />
-                </a>
-            </div>
+            {{-- Tombol melayang kembali ke atas: muncul setelah halaman digulir. --}}
+            <a href="#navbar" aria-label="Kembali ke atas"
+               x-data="{ show: false }"
+               x-init="show = window.scrollY > 400"
+               @scroll.window.passive="show = window.scrollY > 400"
+               x-show="show" x-cloak
+               x-transition:enter="transition duration-300 ease-out"
+               x-transition:enter-start="translate-y-3 opacity-0"
+               x-transition:enter-end="translate-y-0 opacity-100"
+               x-transition:leave="transition duration-200 ease-in"
+               x-transition:leave-start="opacity-100"
+               x-transition:leave-end="opacity-0"
+               class="fixed bottom-5 right-4 z-40 flex h-11 w-11 items-center justify-center rounded-full bg-brand-600 text-white shadow-lg shadow-ink-950/20 transition hover:-translate-y-0.5 hover:bg-brand-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2 active:scale-95 sm:bottom-6 sm:right-6">
+                <x-heroicon-o-chevron-up class="h-5 w-5" />
+            </a>
         </main>
 
         {{-- Footer — struktur 4 kolom ala nefa, diisi tautan & info yang sungguhan ada. --}}
