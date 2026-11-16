@@ -444,13 +444,14 @@
             </section>
 
             {{-- FAQ — image di kiri, accordion Alpine di kanan (ala section FAQ nefa). --}}
-            <section id="faq" class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
-                <div class="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
+            <section id="faq" class="mx-auto max-w-7xl px-4 pb-12 pt-0 sm:px-6 sm:pb-16 lg:px-8">
+                <div class="grid grid-cols-1 items-start gap-12 lg:grid-cols-12">
                     <div class="reveal lg:col-span-5">
-                        <div class="relative aspect-[4/3] w-full overflow-hidden rounded-[2rem] shadow-xl shadow-ink-950/10">
-                            <img src="{{ asset('images/poliwangi-kampus.png') }}" alt="Gedung kampus Politeknik Negeri Banyuwangi"
+                        {{-- Tinggi gambar dikunci (tidak mengikuti tinggi FAQ) supaya tidak
+                             bergerak naik-turun saat accordion dibuka atau ditutup. --}}
+                        <div class="relative aspect-[3/4] w-full overflow-hidden rounded-[2rem] shadow-xl shadow-ink-950/10 lg:sticky lg:top-24 lg:aspect-auto lg:h-[44rem]">
+                            <img src="{{ asset('images/stan-poliwangi.jpg') }}" alt="Mahasiswa Politeknik Negeri Banyuwangi di stan pameran bersama model kapal"
                                  class="absolute inset-0 h-full w-full object-cover" loading="lazy">
-                            <div class="absolute inset-0 bg-gradient-to-t from-ink-950/50 via-transparent to-transparent"></div>
                         </div>
                     </div>
 
@@ -521,7 +522,7 @@
 
         {{-- Footer — struktur 4 kolom ala nefa, diisi tautan & info yang sungguhan ada. --}}
         <footer class="border-t border-black/5 bg-porcelain-50">
-            <section class="mx-2 my-4 grid grid-cols-1 overflow-hidden rounded-[2rem] bg-white shadow-xl shadow-ink-950/[0.06] sm:mx-6 lg:grid-cols-2">
+            <section class="mx-2 my-4 grid grid-cols-1 overflow-hidden rounded-[2rem] bg-porcelain-50 shadow-xl shadow-ink-950/[0.06] sm:mx-6 lg:grid-cols-2">
                 <div class="flex items-center px-6 py-14 sm:px-12 lg:px-20 xl:px-28">
                     <div class="w-full max-w-md">
                         <span class="font-mono text-xs uppercase tracking-[0.2em] text-brand-600">Suara Anda</span>
@@ -530,11 +531,11 @@
 
                         <form class="mt-7 space-y-3" x-data="{ sent: false }" @submit.prevent="sent = true">
                             <label class="sr-only" for="contact-name">Nama</label>
-                            <input id="contact-name" type="text" required placeholder="Nama Anda" class="block w-full border-0 bg-porcelain-50 px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 focus:ring-2 focus:ring-brand-500">
+                            <input id="contact-name" type="text" required placeholder="Nama Anda" class="block w-full border-0 bg-white px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 focus:ring-2 focus:ring-brand-500">
                             <label class="sr-only" for="contact-email">Email</label>
-                            <input id="contact-email" type="email" required placeholder="Email Anda" class="block w-full border-0 bg-porcelain-50 px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 focus:ring-2 focus:ring-brand-500">
+                            <input id="contact-email" type="email" required placeholder="Email Anda" class="block w-full border-0 bg-white px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 focus:ring-2 focus:ring-brand-500">
                             <label class="sr-only" for="contact-message">Testimonial</label>
-                            <textarea id="contact-message" rows="4" required placeholder="Tuliskan testimonial Anda" class="block w-full resize-none border-0 bg-porcelain-50 px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 focus:ring-2 focus:ring-brand-500"></textarea>
+                            <textarea id="contact-message" rows="4" required placeholder="Tuliskan testimonial Anda" class="block w-full resize-none border-0 bg-white px-4 py-3 text-sm text-ink-900 placeholder:text-ink-400 focus:ring-2 focus:ring-brand-500"></textarea>
                             <button type="submit" class="inline-flex bg-brand-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-brand-700 active:scale-[0.98]">Kirim testimonial</button>
                             <p x-cloak x-show="sent" x-transition class="text-sm text-brand-700" role="status">Terima kasih atas testimonial Anda.</p>
                         </form>
