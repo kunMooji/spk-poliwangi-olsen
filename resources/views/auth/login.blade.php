@@ -112,14 +112,14 @@
                                 @endif
                             </div>
 
-                            <div class="flex flex-wrap items-center gap-5 pt-2">
+                            <div class="flex flex-col items-stretch gap-4 pt-2 sm:flex-row sm:items-center sm:gap-5">
                                 <button type="submit" :disabled="submitting"
-                                        class="inline-flex h-11 items-center justify-center gap-2 rounded-full bg-brand-600 px-8 text-sm font-bold uppercase tracking-wide text-porcelain-50 shadow-[0_0_0_1px_rgba(21,115,140,0.35)] transition duration-300 ease-brand-out hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-lg active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70">
+                                        class="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-brand-600 px-8 text-sm font-bold uppercase tracking-wide text-porcelain-50 shadow-[0_0_0_1px_rgba(21,115,140,0.35)] transition duration-300 ease-brand-out hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-lg active:scale-[0.98] disabled:pointer-events-none disabled:opacity-70 sm:w-auto">
                                     <x-heroicon-o-arrow-path x-show="submitting" x-cloak class="h-4 w-4 animate-spin" />
                                     <span x-text="submitting ? 'Memproses…' : 'Masuk'"></span>
                                 </button>
 
-                                <a href="{{ route('register') }}" class="group inline-flex items-center text-sm text-ink-500 transition duration-150 ease-brand-out hover:text-brand-600 dark:text-porcelain-300/70 dark:hover:text-brand-300">
+                                <a href="{{ route('register') }}" class="group inline-flex items-center justify-center text-sm text-ink-500 transition duration-150 ease-brand-out hover:text-brand-600 dark:text-porcelain-300/70 dark:hover:text-brand-300">
                                     Belum punya akun? Register
                                     <x-heroicon-o-arrow-right class="ml-1 h-4 w-4 transform transition-transform duration-200 ease-brand-out group-hover:translate-x-1" />
                                 </a>

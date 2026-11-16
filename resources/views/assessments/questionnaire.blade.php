@@ -15,27 +15,9 @@
         // Jawaban yang sudah tersimpan di server dipakai sebagai nilai awal;
         // draft di localStorage hanya menambal butir yang belum tersimpan.
         $initial = $saved->mapWithKeys(fn ($score, $id) => [(string) $id => (int) $score]);
-        // Palet pertanyaan mengikuti urutan warna kartu rekomendasi; tiap
-        // dimensi RIASEC mendapat aksen tetap agar mudah dikenali saat mengisi.
-        $questionPalettes = [
-            'R' => '#42A5F5',
-            'I' => '#26C281',
-            'A' => '#AB47BC',
-            'S' => '#FFA200',
-            'E' => '#EF5350',
-            'C' => '#26C6DA',
-        ];
         // Label kedua ujung skala, ditampilkan di bawah deretan angka.
         $likertFirst = $likert[array_key_first($likert)];
         $likertLast = $likert[array_key_last($likert)];
-        $questionIcons = [
-            'R' => 'wrench-screwdriver',
-            'I' => 'magnifying-glass',
-            'A' => 'paint-brush',
-            'S' => 'user-group',
-            'E' => 'arrow-trending-up',
-            'C' => 'clipboard-document-list',
-        ];
     @endphp
 
     <div class="py-6 sm:py-8"
@@ -110,13 +92,9 @@
                 @csrf
 
                 @foreach ($questions as $index => $question)
-                    @php($questionColor = $questionPalettes[$question->dimension] ?? '#42A5F5')
-                    @php($questionIcon = $questionIcons[$question->dimension] ?? 'sparkles')
                     <div id="question-{{ $index }}" data-question-id="{{ $question->id }}"
-                         class="riasec-question-card relative scroll-mt-32 overflow-hidden rounded-2xl border bg-white p-4 shadow-sm shadow-ink-950/5 transition dark:bg-white/[0.06] dark:shadow-black/10 sm:p-6"
-                         style="--question-color: {{ $questionColor }}">
-                        <x-dynamic-component :component="'heroicon-o-'.$questionIcon" class="riasec-question-silhouette pointer-events-none absolute -bottom-7 -right-5 hidden h-32 w-32 sm:block" aria-hidden="true" />
-
+                         class="scroll-mt-32 rounded-2xl border bg-white p-4 transition-colors duration-300 dark:bg-white/[0.04] sm:p-6"
+                         :class="answers['{{ $question->id }}'] ? 'border-brand-200 dark:border-brand-500/40' : 'border-black/10 dark:border-white/10'">
                         {{-- Tanpa nomor soal: teks pernyataan dan deretan lingkaran sama-sama
                              mulai dari tepi kiri kartu, jadi tidak ada indentasi. --}}
                         <p class="relative z-10 text-[15px] font-medium leading-relaxed text-gray-800 dark:text-gray-100">{{ $question->statement }}</p>

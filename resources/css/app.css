@@ -420,40 +420,6 @@ html.lenis body {
     }
 }
 
-/* Aksen dimensi pada kartu kuesioner RIASEC. Warna hadir sebagai bingkai dan
-   sapuan tipis agar pengisian tetap nyaman dibaca, bukan sebagai blok warna penuh. */
-.riasec-question-card {
-    border-color: color-mix(in srgb, var(--question-color) 42%, transparent);
-    border-left: 4px solid var(--question-color);
-    background-image: linear-gradient(115deg, color-mix(in srgb, var(--question-color) 9%, white), white 55%);
-}
-
-.riasec-question-card:hover {
-    border-color: var(--question-color);
-    box-shadow: 0 10px 22px color-mix(in srgb, var(--question-color) 14%, transparent);
-}
-
-.riasec-question-silhouette {
-    color: var(--question-color);
-    opacity: 0.09;
-    transform: rotate(-12deg);
-    transition: transform 200ms ease, opacity 200ms ease;
-}
-
-.riasec-question-card:hover .riasec-question-silhouette {
-    opacity: 0.15;
-    transform: rotate(-6deg) scale(1.04);
-}
-
-.dark .riasec-question-card {
-    border-color: color-mix(in srgb, var(--question-color) 60%, transparent);
-    background-image: linear-gradient(115deg, color-mix(in srgb, var(--question-color) 16%, #0a1a20), rgba(255, 255, 255, 0.06) 62%);
-}
-
-.dark .riasec-question-silhouette {
-    opacity: 0.16;
-}
-
 /* Beranda siswa hadir secara berurutan agar orientasi saat halaman pertama
    dimuat tetap jelas: ringkasan, statistik, lalu detail. Hanya transform dan
    opacity yang dianimasikan agar tidak memicu reflow. */
