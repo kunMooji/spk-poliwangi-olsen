@@ -18,6 +18,9 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResultController;
+use App\Http\Controllers\Tpa\AuthController as TpaAuthController;
+use App\Http\Controllers\Tpa\DashboardController as TpaDashboardController;
+use App\Http\Controllers\Tpa\TryoutController as TpaTryoutController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
@@ -114,6 +117,35 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/rekap/{assessment}/sensitivitas', [AssessmentRecapController::class, 'sensitivity'])
         ->name('recap.sensitivity');
     Route::delete('/rekap/{assessment}', [AssessmentRecapController::class, 'destroy'])->name('recap.destroy');
+});
+
+// Area latihan SKD CPNS — sengaja tidak ditautkan dari halaman mana pun,
+// hanya bisa dibuka dengan mengetik /logintpa. Memakai guard "tpa".
+Route::prefix('logintpa')->name('tpa.')->group(function () {
+    Route::get('/', [TpaAuthController::class, 'create'])->name('login');
+    Route::post('/', [TpaAuthController::class, 'store'])->name('login.store');
+    Route::post('/logout', [TpaAuthController::class, 'destroy'])->name('logout');
+
+    Route::middleware('tpa.auth')->group(function () {
+        Route::get('/dashboard', [TpaDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/riwayat', [TpaDashboardController::class, 'history'])->name('history');
+
+        Route::get('/tryout/{category}', [TpaTryoutController::class, 'start'])
+            ->whereIn('category', ['twk', 'tiu', 'tkp'])->name('tryout.start');
+        Route::post('/tryout/{category}/generate', [TpaTryoutController::class, 'generate'])
+            ->whereIn('category', ['twk', 'tiu', 'tkp'])->middleware('throttle:10,60')->name('tryout.generate');
+
+        Route::get('/tryout/{tryout}/kerjakan', [TpaTryoutController::class, 'quiz'])
+            ->whereNumber('tryout')->name('tryout.quiz');
+        Route::post('/tryout/{tryout}/jawab', [TpaTryoutController::class, 'answer'])
+            ->whereNumber('tryout')->name('tryout.answer');
+        Route::post('/tryout/{tryout}/selesai', [TpaTryoutController::class, 'finish'])
+            ->whereNumber('tryout')->name('tryout.finish');
+        Route::get('/tryout/{tryout}/pembahasan', [TpaTryoutController::class, 'result'])
+            ->whereNumber('tryout')->name('tryout.result');
+        Route::delete('/tryout/{tryout}', [TpaTryoutController::class, 'destroy'])
+            ->whereNumber('tryout')->name('tryout.destroy');
+    });
 });
 
 require __DIR__.'/auth.php';

@@ -40,6 +40,12 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Area latihan SKD CPNS (/logintpa) — akun terpisah dari SPK.
+        'tpa' => [
+            'driver' => 'session',
+            'provider' => 'tpa_users',
+        ],
     ],
 
     /*
@@ -63,6 +69,11 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+
+        'tpa_users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\TpaUser::class,
         ],
 
         // 'users' => [

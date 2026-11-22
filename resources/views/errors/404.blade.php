@@ -46,8 +46,8 @@
                                 Kembali ke beranda
                                 <x-heroicon-o-arrow-right class="h-4 w-4" />
                             </a>
-                            @auth
-                                <a href="{{ Auth::user()->isAdmin() ? route('admin.dashboard') : route('dashboard') }}" class="text-sm font-semibold text-brand-700 transition hover:text-brand-900 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:ring-offset-2 dark:text-brand-300 dark:hover:text-brand-100 dark:focus:ring-offset-ink-900">Buka dasbor</a>
+                            @auth('web')
+                                <a href="{{ Auth::guard('web')->user()->isAdmin() ? route('admin.dashboard') : route('dashboard') }}" class="text-sm font-semibold text-brand-700 transition hover:text-brand-900 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:ring-offset-2 dark:text-brand-300 dark:hover:text-brand-100 dark:focus:ring-offset-ink-900">Buka dasbor</a>
                             @else
                                 <a href="{{ route('login') }}" class="text-sm font-semibold text-brand-700 transition hover:text-brand-900 focus:outline-none focus:ring-2 focus:ring-brand-500/60 focus:ring-offset-2 dark:text-brand-300 dark:hover:text-brand-100 dark:focus:ring-offset-ink-900">Masuk ke akun</a>
                             @endauth

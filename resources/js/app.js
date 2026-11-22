@@ -4,6 +4,8 @@ import Alpine from 'alpinejs';
 import Chart from 'chart.js/auto';
 import { animate, stagger } from 'animejs';
 import Lenis from 'lenis';
+// Didaftarkan lewat event alpine:init, jadi harus diimpor sebelum Alpine.start().
+import { renderTpaCharts } from './tpa';
 
 window.Alpine = Alpine;
 window.Chart = Chart;
@@ -691,6 +693,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initSelectMenus();
     renderRiasecCharts();
     renderAssessmentHistoryCharts();
+    renderTpaCharts();
     initResultExplanationAnimation();
     initScrollReveal();
     initCarousels();

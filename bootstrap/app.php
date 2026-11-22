@@ -20,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'mahasiswa' => \App\Http\Middleware\EnsureUserIsMahasiswa::class,
+            'tpa.auth' => \App\Http\Middleware\EnsureTpaAuthenticated::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
