@@ -56,7 +56,13 @@ class QuestionGenerator
             throw new RuntimeException('Terlalu banyak permintaan ke Claude. Tunggu sebentar lalu coba lagi.');
         } catch (APIStatusException $e) {
             report($e);
-            throw new RuntimeException('Claude API sedang bermasalah. Coba lagi beberapa saat.');
+            $detail = $this->apiErrorMessage($e);
+
+            if (str_contains(strtolower($detail), 'credit balance')) {
+                throw new RuntimeException('Saldo kredit API Claude kurang. Isi ulang di console.anthropic.com → Billing.');
+            }
+
+            throw new RuntimeException("Claude API menolak permintaan ({$e->status}): {$detail}");
         } catch (APIConnectionException $e) {
             report($e);
             throw new RuntimeException('Gagal terhubung ke Claude API (koneksi/timeout). Coba lagi.');
@@ -79,6 +85,15 @@ class QuestionGenerator
         }
 
         return $this->validate($json['questions'] ?? null, $category === 'tkp');
+    }
+
+    /** Ambil pesan error asli dari body respons API, tanpa membocorkan detail request. */
+    private function apiErrorMessage(APIStatusException $e): string
+    {
+        $body = json_decode((string) $e->response?->getBody(), true);
+        $message = $body['error']['message'] ?? 'tanpa keterangan';
+
+        return mb_strimwidth((string) $message, 0, 300, '…');
     }
 
     private function systemPrompt(string $category): string

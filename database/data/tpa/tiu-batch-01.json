@@ -1,0 +1,362 @@
+[
+  {
+    "code": "tiu-001", "category": "tiu", "sub_topic": "Verbal - Analogi", "level": 1,
+    "question": "PENA : MENULIS = GUNTING : …",
+    "options": {"A": "Kertas", "B": "Tajam", "C": "Memotong", "D": "Penjahit", "E": "Kain"},
+    "answer": "C",
+    "hint": "Perhatikan hubungan antara sebuah alat dan kegunaannya.",
+    "explanation": "Hubungannya adalah alat : fungsi. Pena adalah alat untuk menulis, maka gunting adalah alat untuk memotong.\n• Kertas dan kain = benda yang dipotong (objek), bukan fungsi.\n• Tajam = sifat gunting.\n• Penjahit = orang yang memakai gunting."
+  },
+  {
+    "code": "tiu-002", "category": "tiu", "sub_topic": "Verbal - Analogi", "level": 2,
+    "question": "PADI : SAWAH = … : …",
+    "options": {"A": "Ikan : Laut", "B": "Pohon : Hutan", "C": "Air : Sumur", "D": "Garam : Dapur", "E": "Teh : Kebun"},
+    "answer": "E",
+    "hint": "Padi tidak sekadar berada di sawah — padi sengaja ditanam (dibudidayakan) di sana.",
+    "explanation": "Hubungannya adalah tanaman budidaya : lahan tempat membudidayakannya. Padi dibudidayakan di sawah, teh dibudidayakan di kebun.\n• Ikan : Laut dan Pohon : Hutan = makhluk hidup : habitat alaminya (tidak dibudidayakan).\n• Air : Sumur = benda : tempat menampung.\n• Garam : Dapur = benda : tempat menyimpan/memakai."
+  },
+  {
+    "code": "tiu-003", "category": "tiu", "sub_topic": "Verbal - Analogi", "level": 3,
+    "question": "MELATI : BUNGA : HARUM = … : … : …",
+    "options": {"A": "Garam : Laut : Asin", "B": "Kucing : Hewan : Mengeong", "C": "Mawar : Merah : Berduri", "D": "Lemon : Buah : Asam", "E": "Besi : Logam : Berkarat"},
+    "answer": "D",
+    "hint": "Kata pertama adalah anggota dari kata kedua, sedangkan kata ketiga adalah sifat khasnya.",
+    "explanation": "Pola tiga kata: jenis : kelompoknya : sifat khasnya. Melati adalah jenis bunga yang sifat khasnya harum; lemon adalah jenis buah yang sifat khasnya asam.\n• A: garam bukan jenis laut.\n• B: mengeong adalah suara/perilaku, bukan sifat.\n• C: merah bukan kelompok dari mawar.\n• E: berkarat adalah proses/akibat oksidasi, bukan sifat khas logam."
+  },
+  {
+    "code": "tiu-004", "category": "tiu", "sub_topic": "Verbal - Analogi", "level": 4,
+    "question": "TERMOMETER : SUHU = … : …",
+    "options": {"A": "Barometer : Cuaca", "B": "Higrometer : Kelembapan", "C": "Ampermeter : Tegangan", "D": "Speedometer : Jarak", "E": "Anemometer : Arah angin"},
+    "answer": "B",
+    "hint": "Semua pilihan berisi alat ukur. Cek dengan teliti besaran apa yang benar-benar diukur oleh masing-masing alat.",
+    "explanation": "Hubungannya adalah alat ukur : besaran yang diukurnya. Termometer mengukur suhu, higrometer mengukur kelembapan udara.\nSemua pilihan lain mengandung jebakan:\n• Barometer mengukur tekanan udara (bukan cuaca).\n• Ampermeter mengukur kuat arus listrik (tegangan diukur voltmeter).\n• Speedometer mengukur kecepatan (jarak diukur odometer).\n• Anemometer mengukur kecepatan angin (arah angin ditunjukkan wind vane/bendera angin)."
+  },
+  {
+    "code": "tiu-005", "category": "tiu", "sub_topic": "Verbal - Silogisme", "level": 1,
+    "question": "Semua pegawai negeri wajib mengikuti apel pagi.\nRina adalah pegawai negeri.\n\nKesimpulan yang tepat adalah …",
+    "options": {"A": "Rina wajib mengikuti apel pagi.", "B": "Rina mungkin mengikuti apel pagi.", "C": "Rina tidak wajib mengikuti apel pagi.", "D": "Semua yang mengikuti apel pagi adalah pegawai negeri.", "E": "Tidak dapat ditarik kesimpulan."},
+    "answer": "A",
+    "hint": "Jika Rina termasuk dalam kelompok \"semua pegawai negeri\", apa yang berlaku untuk kelompok itu juga berlaku untuknya.",
+    "explanation": "Pola silogisme kategoris (modus Barbara):\nSemua A adalah B. C adalah A. Maka C adalah B.\nSemua pegawai negeri wajib apel → Rina pegawai negeri → Rina wajib mengikuti apel pagi.\n• B terlalu lemah (\"mungkin\"), padahal premisnya pasti.\n• D membalik premis; premis tidak menyatakan bahwa yang ikut apel hanya pegawai negeri."
+  },
+  {
+    "code": "tiu-006", "category": "tiu", "sub_topic": "Verbal - Silogisme", "level": 2,
+    "question": "Semua peserta yang lulus SKD mengikuti SKB.\nSebagian peserta dari Banyuwangi tidak mengikuti SKB.\n\nKesimpulan yang tepat adalah …",
+    "options": {"A": "Semua peserta dari Banyuwangi tidak lulus SKD.", "B": "Sebagian peserta dari Banyuwangi lulus SKD.", "C": "Sebagian peserta dari Banyuwangi tidak lulus SKD.", "D": "Semua peserta yang tidak lulus SKD berasal dari Banyuwangi.", "E": "Sebagian peserta yang mengikuti SKB tidak lulus SKD."},
+    "answer": "C",
+    "hint": "Ubah premis pertama ke bentuk kontraposisinya: jika tidak mengikuti SKB, maka …",
+    "explanation": "Premis 1: Lulus SKD → ikut SKB. Kontraposisinya: tidak ikut SKB → tidak lulus SKD.\nPremis 2: Sebagian peserta Banyuwangi tidak ikut SKB.\nMaka: sebagian peserta Banyuwangi tidak lulus SKD.\n• A berlebihan (\"semua\"), premis hanya menyebut \"sebagian\".\n• B tidak bisa dipastikan dari premis.\n• E bertentangan dengan logika: premis tidak membahas peserta SKB yang tidak lulus SKD."
+  },
+  {
+    "code": "tiu-007", "category": "tiu", "sub_topic": "Verbal - Silogisme", "level": 3,
+    "question": "Jika hujan deras, jalan protokol tergenang.\nJika jalan protokol tergenang, bus kota terlambat.\nHari ini bus kota tidak terlambat.\n\nKesimpulan yang tepat adalah …",
+    "options": {"A": "Hari ini hujan deras, tetapi jalan protokol tidak tergenang.", "B": "Hari ini jalan protokol tergenang.", "C": "Bus kota terlambat bukan karena hujan.", "D": "Hari ini hujan ringan.", "E": "Hari ini tidak hujan deras."},
+    "answer": "E",
+    "hint": "Gabungkan dua premis pertama menjadi satu implikasi (silogisme), lalu gunakan modus tollens.",
+    "explanation": "Premis 1 dan 2 digabung (silogisme): hujan deras → bus kota terlambat.\nPremis 3: bus kota tidak terlambat.\nModus tollens (p → q, ~q, maka ~p): hari ini tidak hujan deras.\n• D (hujan ringan) tidak dapat dipastikan; bisa saja tidak hujan sama sekali.\n• B dan A bertentangan dengan premis."
+  },
+  {
+    "code": "tiu-008", "category": "tiu", "sub_topic": "Verbal - Silogisme", "level": 4,
+    "question": "Tidak ada atlet yang merokok.\nSebagian mahasiswa adalah atlet.\nSemua orang yang merokok berisiko terkena penyakit paru.\n\nPernyataan yang PASTI benar adalah …",
+    "options": {"A": "Sebagian mahasiswa berisiko terkena penyakit paru.", "B": "Semua mahasiswa tidak merokok.", "C": "Sebagian mahasiswa tidak merokok.", "D": "Sebagian atlet berisiko terkena penyakit paru.", "E": "Semua orang yang tidak merokok adalah atlet."},
+    "answer": "C",
+    "hint": "Fokus pada mahasiswa yang juga atlet. Apa yang pasti berlaku untuk mereka? Premis ketiga hanyalah pengecoh.",
+    "explanation": "Premis 2: ada mahasiswa yang atlet. Premis 1: atlet tidak merokok. Maka mahasiswa yang atlet itu pasti tidak merokok → sebagian mahasiswa tidak merokok.\n• A: tidak pasti; kita tidak tahu apakah ada mahasiswa yang merokok.\n• B: berlebihan; mahasiswa yang bukan atlet bisa saja merokok.\n• D: premis 3 hanya berlaku bagi perokok, dan atlet bukan perokok, jadi tidak bisa disimpulkan.\n• E: membalik premis 1 secara keliru."
+  },
+  {
+    "code": "tiu-009", "category": "tiu", "sub_topic": "Verbal - Analitis", "level": 1,
+    "question": "Andi lebih tinggi daripada Budi. Citra lebih tinggi daripada Andi. Dedi lebih pendek daripada Budi.\n\nSiapakah yang paling tinggi?",
+    "options": {"A": "Andi", "B": "Citra", "C": "Budi", "D": "Dedi", "E": "Tidak dapat ditentukan"},
+    "answer": "B",
+    "hint": "Susun urutan dari yang paling pendek ke yang paling tinggi.",
+    "explanation": "Dari pernyataan: Dedi < Budi < Andi < Citra.\nYang paling tinggi adalah Citra."
+  },
+  {
+    "code": "tiu-010", "category": "tiu", "sub_topic": "Verbal - Analitis", "level": 2,
+    "question": "Lima orang—P, Q, R, S, dan T—duduk berjajar dari kiri ke kanan.\n• P duduk paling kiri.\n• R duduk tepat di tengah.\n• Q duduk di sebelah kanan R, tetapi tidak di ujung.\n• S tidak duduk bersebelahan dengan P.\n\nSiapakah yang duduk di posisi kedua dari kiri?",
+    "options": {"A": "Q", "B": "R", "C": "S", "D": "T", "E": "Tidak dapat ditentukan"},
+    "answer": "D",
+    "hint": "Isi dulu posisi yang sudah pasti (1, 3, dan 4), baru tentukan sisanya.",
+    "explanation": "Posisi 1–5 dari kiri:\n• P = posisi 1, R = posisi 3 (tengah).\n• Q di kanan R tetapi tidak di ujung → posisi 4.\n• Sisa posisi 2 dan 5 untuk S dan T. S tidak boleh bersebelahan dengan P, jadi S ≠ posisi 2 → S = posisi 5, T = posisi 2.\nUrutan: P – T – R – Q – S. Posisi kedua dari kiri adalah T."
+  },
+  {
+    "code": "tiu-011", "category": "tiu", "sub_topic": "Verbal - Analitis", "level": 3,
+    "question": "Enam pelatihan—K, L, M, N, O, dan P—dijadwalkan satu per hari dari Senin sampai Sabtu.\n• M dilaksanakan hari Rabu.\n• K dilaksanakan sebelum M.\n• N dilaksanakan tepat sehari setelah L.\n• P dilaksanakan hari Sabtu.\n• O tidak dilaksanakan hari Senin.\n\nPelatihan apa yang dilaksanakan hari Kamis?",
+    "options": {"A": "K", "B": "L", "C": "N", "D": "O", "E": "P"},
+    "answer": "B",
+    "hint": "Pasangan L–N harus berurutan. Coba letakkan pasangan itu di Senin–Selasa, lalu lihat apakah K masih punya tempat.",
+    "explanation": "Yang pasti: M = Rabu, P = Sabtu. Hari tersisa: Senin, Selasa, Kamis, Jumat.\nK harus sebelum Rabu → K di Senin atau Selasa.\nL–N berurutan: kemungkinan Senin–Selasa atau Kamis–Jumat.\n• Jika L–N = Senin–Selasa, K tidak punya tempat sebelum Rabu → tidak mungkin.\n• Jadi L = Kamis, N = Jumat.\nSisa Senin dan Selasa untuk K dan O; O tidak boleh Senin → O = Selasa, K = Senin.\nJadwal: K (Sen), O (Sel), M (Rab), L (Kam), N (Jum), P (Sab). Kamis = L."
+  },
+  {
+    "code": "tiu-012", "category": "tiu", "sub_topic": "Verbal - Analitis", "level": 4,
+    "question": "Empat pegawai—Ayu, Bayu, Candra, dan Dewi—masing-masing ditempatkan di satu bidang yang berbeda: Keuangan, Hukum, Kepegawaian, dan IT.\n1. Ayu tidak di Keuangan maupun IT.\n2. Bayu ditempatkan di Hukum atau IT.\n3. Candra tidak di Hukum.\n4. Dewi di Keuangan jika dan hanya jika Bayu di IT.\n5. Ayu tidak di Kepegawaian.\n\nPernyataan yang pasti benar adalah …",
+    "options": {"A": "Candra di bidang Kepegawaian.", "B": "Dewi di bidang IT.", "C": "Ayu di bidang Kepegawaian.", "D": "Bayu di bidang Hukum.", "E": "Candra di bidang Keuangan."},
+    "answer": "A",
+    "hint": "Mulailah dari orang yang pilihannya paling sedikit. Syarat 1 dan 5 sama-sama membahas Ayu.",
+    "explanation": "• Syarat 1 dan 5: Ayu bukan Keuangan, IT, atau Kepegawaian → Ayu = Hukum.\n• Syarat 2: Bayu di Hukum atau IT; Hukum sudah terisi → Bayu = IT.\n• Syarat 4: Bayu di IT → Dewi = Keuangan.\n• Tersisa Kepegawaian → Candra = Kepegawaian (sesuai syarat 3: Candra tidak di Hukum).\nJadi pernyataan yang pasti benar: Candra di bidang Kepegawaian."
+  },
+  {
+    "code": "tiu-013", "category": "tiu", "sub_topic": "Verbal - Sinonim & Antonim", "level": 1,
+    "question": "Sinonim (persamaan kata) dari PANDIR adalah …",
+    "options": {"A": "Pintar", "B": "Bodoh", "C": "Pandai", "D": "Cerdik", "E": "Pendiam"},
+    "answer": "B",
+    "hint": "Kata ini sering muncul dalam cerita rakyat \"Pak Pandir\" yang tokohnya digambarkan kurang akal.",
+    "explanation": "Menurut KBBI, pandir berarti bodoh atau kurang akal.\nPintar, pandai, dan cerdik justru merupakan lawan katanya, sedangkan pendiam tidak berkaitan."
+  },
+  {
+    "code": "tiu-014", "category": "tiu", "sub_topic": "Verbal - Sinonim & Antonim", "level": 2,
+    "question": "Antonim (lawan kata) dari PROGRESIF adalah …",
+    "options": {"A": "Agresif", "B": "Represif", "C": "Regresif", "D": "Masif", "E": "Ekspresif"},
+    "answer": "C",
+    "hint": "Progresif berarti bergerak maju. Cari kata yang berarti bergerak mundur.",
+    "explanation": "Progresif = ke arah kemajuan/bergerak maju. Lawannya regresif = bergerak mundur/kembali ke keadaan sebelumnya.\n• Agresif = bersifat menyerang.\n• Represif = bersifat menekan/mengekang.\n• Masif = utuh/padat/besar-besaran.\n• Ekspresif = mampu mengungkapkan perasaan."
+  },
+  {
+    "code": "tiu-015", "category": "tiu", "sub_topic": "Verbal - Sinonim & Antonim", "level": 3,
+    "question": "Sinonim (persamaan kata) dari NISBI adalah …",
+    "options": {"A": "Mutlak", "B": "Semu", "C": "Abstrak", "D": "Relatif", "E": "Pasti"},
+    "answer": "D",
+    "hint": "Nisbi adalah lawan dari \"mutlak\".",
+    "explanation": "Menurut KBBI, nisbi berarti hanya terlihat (terasa) jika dibandingkan dengan yang lain; tidak mutlak; relatif.\n• Mutlak dan pasti adalah lawan katanya.\n• Semu = tampak seperti asli padahal bukan; maknanya berbeda.\n• Abstrak = tidak berwujud."
+  },
+  {
+    "code": "tiu-016", "category": "tiu", "sub_topic": "Verbal - Sinonim & Antonim", "level": 4,
+    "question": "Antonim (lawan kata) dari KONKAF adalah …",
+    "options": {"A": "Cekung", "B": "Datar", "C": "Lengkung", "D": "Bulat", "E": "Cembung"},
+    "answer": "E",
+    "hint": "Ingat lensa dan cermin pada pelajaran fisika: konkaf dan konveks.",
+    "explanation": "Konkaf berarti cekung (permukaannya melengkung ke dalam). Lawan katanya adalah konveks, yaitu cembung (melengkung ke luar).\n• A (cekung) adalah sinonim, bukan antonim — jebakan utama soal ini.\n• Datar, lengkung, dan bulat bukan lawan kata yang tepat."
+  },
+  {
+    "code": "tiu-017", "category": "tiu", "sub_topic": "Numerik - Berhitung", "level": 1,
+    "question": "25% dari 480 ditambah 1/3 dari 240 sama dengan …",
+    "options": {"A": "220", "B": "180", "C": "210", "D": "200", "E": "190"},
+    "answer": "D",
+    "hint": "25% sama dengan 1/4.",
+    "explanation": "25% × 480 = 1/4 × 480 = 120.\n1/3 × 240 = 80.\n120 + 80 = 200."
+  },
+  {
+    "code": "tiu-018", "category": "tiu", "sub_topic": "Numerik - Berhitung", "level": 2,
+    "question": "√0,0144 × 250 − (1,2)² = …",
+    "options": {"A": "28,56", "B": "29,44", "C": "28,44", "D": "30,00", "E": "27,56"},
+    "answer": "A",
+    "hint": "√144 = 12. Hitung dulu akar dan pangkat sebelum perkalian dan pengurangan.",
+    "explanation": "√0,0144 = 0,12 (karena 0,12 × 0,12 = 0,0144).\n0,12 × 250 = 30.\n(1,2)² = 1,44.\n30 − 1,44 = 28,56."
+  },
+  {
+    "code": "tiu-019", "category": "tiu", "sub_topic": "Numerik - Berhitung", "level": 3,
+    "question": "Jika 3/x = 0,15 dan y = 20% dari x, maka nilai x + y adalah …",
+    "options": {"A": "20", "B": "22", "C": "26", "D": "28", "E": "24"},
+    "answer": "E",
+    "hint": "Cari x lebih dulu: x = 3 ÷ 0,15.",
+    "explanation": "3/x = 0,15 → x = 3 ÷ 0,15 = 20.\ny = 20% × 20 = 4.\nx + y = 20 + 4 = 24."
+  },
+  {
+    "code": "tiu-020", "category": "tiu", "sub_topic": "Numerik - Berhitung", "level": 4,
+    "question": "(2¹⁰ − 2⁸) ÷ (2⁷ + 2⁶) = …",
+    "options": {"A": "3", "B": "4", "C": "6", "D": "8", "E": "2"},
+    "answer": "B",
+    "hint": "Keluarkan faktor persekutuan: pembilang mengandung 2⁸, penyebut mengandung 2⁶.",
+    "explanation": "Cara cepat dengan faktorisasi:\nPembilang: 2¹⁰ − 2⁸ = 2⁸(2² − 1) = 2⁸ × 3.\nPenyebut: 2⁷ + 2⁶ = 2⁶(2 + 1) = 2⁶ × 3.\nHasil: (2⁸ × 3) ÷ (2⁶ × 3) = 2² = 4.\nCek: (1024 − 256) ÷ (128 + 64) = 768 ÷ 192 = 4."
+  },
+  {
+    "code": "tiu-021", "category": "tiu", "sub_topic": "Numerik - Deret Angka", "level": 1,
+    "question": "3, 7, 11, 15, 19, …\n\nBilangan berikutnya adalah …",
+    "options": {"A": "21", "B": "22", "C": "24", "D": "23", "E": "25"},
+    "answer": "D",
+    "hint": "Hitung selisih antara dua bilangan yang berdekatan.",
+    "explanation": "Setiap suku bertambah 4: 3 → 7 → 11 → 15 → 19 → 23."
+  },
+  {
+    "code": "tiu-022", "category": "tiu", "sub_topic": "Numerik - Deret Angka", "level": 2,
+    "question": "2, 6, 12, 20, 30, …\n\nBilangan berikutnya adalah …",
+    "options": {"A": "42", "B": "40", "C": "44", "D": "36", "E": "48"},
+    "answer": "A",
+    "hint": "Selisihnya tidak tetap. Perhatikan pola selisih tersebut.",
+    "explanation": "Selisih antarsuku: +4, +6, +8, +10 (bertambah 2). Selisih berikutnya +12.\n30 + 12 = 42.\nPola lain: n × (n + 1) → 1×2, 2×3, 3×4, 4×5, 5×6, lalu 6×7 = 42."
+  },
+  {
+    "code": "tiu-023", "category": "tiu", "sub_topic": "Numerik - Deret Angka", "level": 3,
+    "question": "5, 10, 8, 16, 14, 28, …\n\nBilangan berikutnya adalah …",
+    "options": {"A": "56", "B": "30", "C": "24", "D": "54", "E": "26"},
+    "answer": "E",
+    "hint": "Ada dua operasi yang bergantian.",
+    "explanation": "Polanya bergantian: ×2, lalu −2.\n5 ×2 = 10 → 10 −2 = 8 → 8 ×2 = 16 → 16 −2 = 14 → 14 ×2 = 28 → 28 −2 = 26.\nJebakan: 56 muncul jika mengira polanya selalu ×2."
+  },
+  {
+    "code": "tiu-024", "category": "tiu", "sub_topic": "Numerik - Deret Angka", "level": 3,
+    "question": "A, C, F, J, O, …\n\nHuruf berikutnya adalah …",
+    "options": {"A": "T", "B": "U", "C": "V", "D": "S", "E": "W"},
+    "answer": "B",
+    "hint": "Ubah huruf menjadi nomor urut alfabet (A = 1, B = 2, …).",
+    "explanation": "A = 1, C = 3, F = 6, J = 10, O = 15.\nSelisih: +2, +3, +4, +5 → berikutnya +6.\n15 + 6 = 21 = U."
+  },
+  {
+    "code": "tiu-025", "category": "tiu", "sub_topic": "Numerik - Deret Angka", "level": 4,
+    "question": "1, 2, 6, 15, 31, 56, …\n\nBilangan berikutnya adalah …",
+    "options": {"A": "81", "B": "87", "C": "97", "D": "92", "E": "100"},
+    "answer": "D",
+    "hint": "Hitung selisihnya, lalu perhatikan apakah selisih-selisih itu merupakan bilangan istimewa.",
+    "explanation": "Selisih antarsuku: 1, 4, 9, 16, 25 — bilangan kuadrat (1², 2², 3², 4², 5²).\nSelisih berikutnya 6² = 36.\n56 + 36 = 92."
+  },
+  {
+    "code": "tiu-026", "category": "tiu", "sub_topic": "Numerik - Perbandingan Kuantitatif", "level": 1,
+    "question": "x = 15% dari 60\ny = 60% dari 15\n\nHubungan x dan y yang tepat adalah …",
+    "options": {"A": "x > y", "B": "x < y", "C": "x = y", "D": "Hubungan x dan y tidak dapat ditentukan", "E": "x + y = 20"},
+    "answer": "C",
+    "hint": "a% dari b selalu sama dengan b% dari a.",
+    "explanation": "x = 15/100 × 60 = 9.\ny = 60/100 × 15 = 9.\nJadi x = y. (x + y = 18, sehingga pilihan E salah.)\nSifat yang berguna: a% × b = b% × a, karena keduanya sama dengan a × b ÷ 100."
+  },
+  {
+    "code": "tiu-027", "category": "tiu", "sub_topic": "Numerik - Perbandingan Kuantitatif", "level": 4,
+    "question": "a dan b adalah bilangan bulat positif dengan a + b = 10.\nx = a × b\ny = 25\n\nHubungan x dan y yang tepat adalah …",
+    "options": {"A": "x > y", "B": "x < y", "C": "x = y", "D": "Hubungan x dan y tidak dapat ditentukan", "E": "x = 2y"},
+    "answer": "D",
+    "hint": "Coba beberapa pasangan (a, b): (1, 9), (3, 7), (5, 5). Apakah hubungannya selalu sama?",
+    "explanation": "Kemungkinan nilai a × b: 1×9 = 9, 2×8 = 16, 3×7 = 21, 4×6 = 24, 5×5 = 25.\nJadi x bisa lebih kecil dari 25 atau sama dengan 25. Karena hubungannya tidak selalu sama (bisa x < y, bisa x = y), hubungan x dan y tidak dapat ditentukan.\nJebakan: memilih x < y karena sebagian besar pasangan memberi hasil di bawah 25."
+  },
+  {
+    "code": "tiu-028", "category": "tiu", "sub_topic": "Numerik - Perbandingan Kuantitatif", "level": 3,
+    "question": "x = 0,333… × 0,6 (angka 3 berulang terus)\ny = 1/5\n\nHubungan x dan y yang tepat adalah …",
+    "options": {"A": "x > y", "B": "x < y", "C": "x = y", "D": "Hubungan x dan y tidak dapat ditentukan", "E": "x = 2y"},
+    "answer": "C",
+    "hint": "Desimal berulang 0,333… dapat ditulis sebagai pecahan biasa.",
+    "explanation": "0,333… (berulang) = 1/3.\nx = 1/3 × 0,6 = 0,2.\ny = 1/5 = 0,2.\nJadi x = y.\nJebakan: jika 0,333… dibulatkan menjadi 0,333, hasilnya 0,1998, sehingga seolah-olah x < y."
+  },
+  {
+    "code": "tiu-029", "category": "tiu", "sub_topic": "Numerik - Soal Cerita", "level": 1,
+    "question": "Harga 3 buku tulis adalah Rp12.000. Berapa harga 8 buku tulis yang sama?",
+    "options": {"A": "Rp32.000", "B": "Rp28.000", "C": "Rp30.000", "D": "Rp34.000", "E": "Rp36.000"},
+    "answer": "A",
+    "hint": "Cari dulu harga satu buku.",
+    "explanation": "Harga 1 buku = Rp12.000 ÷ 3 = Rp4.000.\nHarga 8 buku = 8 × Rp4.000 = Rp32.000."
+  },
+  {
+    "code": "tiu-030", "category": "tiu", "sub_topic": "Numerik - Soal Cerita", "level": 2,
+    "question": "Sebuah laptop berharga Rp6.000.000 mendapat diskon 20%. Setelah diskon, laptop dikenai pajak 10% dari harga setelah diskon. Berapa harga yang harus dibayar?",
+    "options": {"A": "Rp5.400.000", "B": "Rp5.280.000", "C": "Rp5.200.000", "D": "Rp5.320.000", "E": "Rp5.500.000"},
+    "answer": "B",
+    "hint": "Diskon dan pajak tidak boleh langsung dijumlahkan (−20% + 10% = −10%). Hitung bertahap.",
+    "explanation": "Harga setelah diskon: 80% × Rp6.000.000 = Rp4.800.000.\nPajak 10%: 10% × Rp4.800.000 = Rp480.000.\nTotal: Rp4.800.000 + Rp480.000 = Rp5.280.000.\nJebakan: menghitung langsung −10% menghasilkan Rp5.400.000 (pilihan A)."
+  },
+  {
+    "code": "tiu-031", "category": "tiu", "sub_topic": "Numerik - Soal Cerita", "level": 3,
+    "question": "Andi dapat menyelesaikan sebuah pekerjaan sendirian dalam 12 hari, sedangkan Budi dalam 6 hari. Mereka bekerja bersama selama 2 hari, lalu Budi berhenti dan sisa pekerjaan diselesaikan Andi sendirian. Berapa hari total waktu penyelesaian pekerjaan itu?",
+    "options": {"A": "6 hari", "B": "7 hari", "C": "9 hari", "D": "10 hari", "E": "8 hari"},
+    "answer": "E",
+    "hint": "Nyatakan kecepatan kerja sebagai bagian pekerjaan per hari: Andi 1/12, Budi 1/6.",
+    "explanation": "Kecepatan bersama: 1/12 + 1/6 = 1/12 + 2/12 = 3/12 = 1/4 pekerjaan per hari.\nDalam 2 hari: 2 × 1/4 = 1/2 pekerjaan selesai.\nSisa 1/2 dikerjakan Andi: (1/2) ÷ (1/12) = 6 hari.\nTotal: 2 + 6 = 8 hari."
+  },
+  {
+    "code": "tiu-032", "category": "tiu", "sub_topic": "Numerik - Soal Cerita", "level": 3,
+    "question": "Jarak kota P dan Q adalah 240 km. Mobil A berangkat dari P menuju Q pukul 07.00 dengan kecepatan 60 km/jam. Mobil B berangkat dari Q menuju P pukul 07.30 dengan kecepatan 80 km/jam. Pukul berapa kedua mobil berpapasan?",
+    "options": {"A": "08.30", "B": "08.45", "C": "09.15", "D": "09.00", "E": "09.30"},
+    "answer": "D",
+    "hint": "Hitung dulu jarak yang sudah ditempuh Mobil A sebelum Mobil B berangkat.",
+    "explanation": "Pukul 07.00–07.30 Mobil A menempuh 60 × 0,5 = 30 km. Sisa jarak: 240 − 30 = 210 km.\nSejak 07.30 keduanya saling mendekat dengan kecepatan gabungan 60 + 80 = 140 km/jam.\nWaktu berpapasan: 210 ÷ 140 = 1,5 jam setelah 07.30 → pukul 09.00."
+  },
+  {
+    "code": "tiu-033", "category": "tiu", "sub_topic": "Numerik - Soal Cerita", "level": 4,
+    "question": "Lima tahun yang lalu, umur ayah tujuh kali umur anaknya. Lima belas tahun yang akan datang, umur ayah dua kali umur anaknya. Berapa jumlah umur ayah dan anak saat ini?",
+    "options": {"A": "42 tahun", "B": "40 tahun", "C": "44 tahun", "D": "45 tahun", "E": "48 tahun"},
+    "answer": "A",
+    "hint": "Misalkan umur anak lima tahun lalu = a. Jarak dari lima tahun lalu ke lima belas tahun lagi adalah 20 tahun.",
+    "explanation": "Misalkan lima tahun lalu umur anak = a, maka umur ayah = 7a.\n20 tahun setelah saat itu (= 15 tahun lagi dari sekarang): 7a + 20 = 2(a + 20).\n7a + 20 = 2a + 40 → 5a = 20 → a = 4.\nSekarang: anak = 4 + 5 = 9 tahun, ayah = 28 + 5 = 33 tahun.\nJumlah: 9 + 33 = 42 tahun.\nCek: 15 tahun lagi anak 24, ayah 48 → 48 = 2 × 24 ✓."
+  },
+  {
+    "code": "tiu-034", "category": "tiu", "sub_topic": "Figural - Analogi", "level": 1,
+    "question": "▲ : ▲▲ = ● : …",
+    "options": {"A": "●", "B": "●●", "C": "●●●", "D": "○○", "E": "■■"},
+    "answer": "B",
+    "hint": "Perhatikan apa yang berubah dari ▲ menjadi ▲▲: bentuknya, warnanya, atau jumlahnya?",
+    "explanation": "Dari pasangan pertama, bentuk dan warna tetap, tetapi jumlahnya menjadi dua kali. Maka ● menjadi ●●.\n• ○○ mengubah warna, ■■ mengubah bentuk, sehingga keduanya salah."
+  },
+  {
+    "code": "tiu-035", "category": "tiu", "sub_topic": "Figural - Analogi", "level": 2,
+    "question": "↑ : → = ← : …",
+    "options": {"A": "↓", "B": "→", "C": "←", "D": "↑", "E": "↗"},
+    "answer": "D",
+    "hint": "Bayangkan jarum jam: dari ↑ ke → arah panah berputar berapa derajat, dan ke mana?",
+    "explanation": "↑ menjadi → berarti panah diputar 90° searah jarum jam.\nUrutan putaran searah jarum jam: ↑ → ↓ ← ↑.\nJadi ← diputar 90° searah jarum jam menjadi ↑."
+  },
+  {
+    "code": "tiu-036", "category": "tiu", "sub_topic": "Figural - Analogi", "level": 3,
+    "question": "□■□ : ■□■ = ○●●○ : …",
+    "options": {"A": "○●●○", "B": "●●○○", "C": "●○○●", "D": "○○●●", "E": "●○●○"},
+    "answer": "C",
+    "hint": "Bandingkan setiap posisi satu per satu: yang putih menjadi apa, yang hitam menjadi apa?",
+    "explanation": "Dari □■□ ke ■□■, setiap elemen dibalik warnanya (putih ↔ hitam) dengan posisi tetap.\nTerapkan pada ○●●○: ○→●, ●→○, ●→○, ○→● sehingga menjadi ●○○●.\n• D (○○●●) dan B (●●○○) hanya menggeser posisi, bukan membalik warna."
+  },
+  {
+    "code": "tiu-037", "category": "tiu", "sub_topic": "Figural - Analogi", "level": 4,
+    "question": "△12 : 21▲ = ○34 : …",
+    "options": {"A": "34●", "B": "43●", "C": "43○", "D": "●43", "E": "●34"},
+    "answer": "B",
+    "hint": "Ada DUA perubahan sekaligus: satu pada urutan, satu pada isi bangun.",
+    "explanation": "Dari △12 ke 21▲ terjadi dua perubahan:\n1. Seluruh urutan dibalik: △12 → 21△.\n2. Bangun kosong diisi (diarsir): △ → ▲.\nTerapkan pada ○34: dibalik menjadi 43○, lalu diisi menjadi 43●.\n• C hanya menerapkan perubahan pertama.\n• A dan E tidak membalik angka."
+  },
+  {
+    "code": "tiu-038", "category": "tiu", "sub_topic": "Figural - Ketidaksamaan", "level": 1,
+    "question": "Manakah susunan yang BERBEDA dari yang lain?",
+    "options": {"A": "■■■", "B": "▲▲▲", "C": "●●●", "D": "★★★", "E": "■■●"},
+    "answer": "E",
+    "hint": "Perhatikan apakah tiap susunan terdiri atas bangun yang sama.",
+    "explanation": "Pilihan A–D masing-masing terdiri atas tiga bangun yang sama persis. Pilihan E mencampur dua bangun berbeda (■ dan ●), sehingga berbeda dari yang lain."
+  },
+  {
+    "code": "tiu-039", "category": "tiu", "sub_topic": "Figural - Ketidaksamaan", "level": 2,
+    "question": "Manakah pasangan panah yang BERBEDA dari yang lain?",
+    "options": {"A": "↑→", "B": "→←", "C": "↗↙", "D": "↑↓", "E": "↖↘"},
+    "answer": "A",
+    "hint": "Perhatikan sudut antara dua panah dalam setiap pasangan.",
+    "explanation": "Pasangan B, C, D, dan E berisi dua panah yang berlawanan arah (membentuk sudut 180°).\nPasangan A (↑→) berisi dua panah yang saling tegak lurus (90°), sehingga berbeda."
+  },
+  {
+    "code": "tiu-040", "category": "tiu", "sub_topic": "Figural - Ketidaksamaan", "level": 3,
+    "question": "Manakah susunan yang BERBEDA dari yang lain?",
+    "options": {"A": "●●○○", "B": "▲▲△△", "C": "◆◇◇◇", "D": "■■□□", "E": "★★☆☆"},
+    "answer": "C",
+    "hint": "Abaikan bentuk bangunnya. Hitung berapa yang berisi (hitam) dan berapa yang kosong (putih).",
+    "explanation": "Setiap pilihan memakai bentuk berbeda, jadi bentuk bukan pembedanya. Pola yang sama: dua bangun hitam diikuti dua bangun putih (2 : 2).\nPilihan C berisi satu bangun hitam dan tiga bangun putih (1 : 3), sehingga berbeda."
+  },
+  {
+    "code": "tiu-041", "category": "tiu", "sub_topic": "Figural - Ketidaksamaan", "level": 4,
+    "question": "Setiap pilihan menunjukkan sebuah panah yang berubah arah. Manakah yang perubahannya BERBEDA dari yang lain?",
+    "options": {"A": "↑ jadi →", "B": "→ jadi ↓", "C": "↓ jadi ←", "D": "← jadi ↑", "E": "↑ jadi ←"},
+    "answer": "E",
+    "hint": "Tentukan untuk setiap pilihan: panah berputar 90° ke arah mana, searah atau berlawanan arah jarum jam?",
+    "explanation": "Baca setiap pilihan sebagai \"panah awal → panah akhir\":\n• A: ↑ menjadi → (90° searah jarum jam)\n• B: → menjadi ↓ (90° searah jarum jam)\n• C: ↓ menjadi ← (90° searah jarum jam)\n• D: ← menjadi ↑ (90° searah jarum jam)\n• E: ↑ menjadi ← (90° berlawanan arah jarum jam)\nHanya E yang berputar berlawanan arah jarum jam."
+  },
+  {
+    "code": "tiu-042", "category": "tiu", "sub_topic": "Figural - Serial", "level": 1,
+    "question": "● ○ ● ○ ● …\n\nBangun berikutnya adalah …",
+    "options": {"A": "○", "B": "●", "C": "◐", "D": "■", "E": "□"},
+    "answer": "A",
+    "hint": "Polanya berselang-seling.",
+    "explanation": "Lingkaran hitam dan putih muncul bergantian: ● ○ ● ○ ● ○. Setelah ● muncul ○."
+  },
+  {
+    "code": "tiu-043", "category": "tiu", "sub_topic": "Figural - Serial", "level": 2,
+    "question": "↑ → ↓ ← ↑ → …\n\nPanah berikutnya adalah …",
+    "options": {"A": "↑", "B": "→", "C": "↓", "D": "←", "E": "↗"},
+    "answer": "C",
+    "hint": "Panah berputar dengan sudut yang sama setiap langkah.",
+    "explanation": "Setiap langkah, panah berputar 90° searah jarum jam: ↑ → ↓ ← lalu berulang.\nSetelah → muncul ↓."
+  },
+  {
+    "code": "tiu-044", "category": "tiu", "sub_topic": "Figural - Serial", "level": 3,
+    "question": "Susunan 1: ▲\nSusunan 2: ▲▲□\nSusunan 3: ▲▲▲□□\nSusunan 4: ▲▲▲▲□□□\n\nSusunan 5 adalah …",
+    "options": {"A": "▲▲▲▲▲□□□", "B": "▲▲▲▲□□□□", "C": "▲▲▲▲▲▲□□□□", "D": "▲▲▲▲▲□□□□", "E": "▲▲▲▲▲□□□□□"},
+    "answer": "D",
+    "hint": "Hitung jumlah ▲ dan □ secara terpisah pada setiap susunan.",
+    "explanation": "Jumlah ▲ pada susunan ke-n = n: 1, 2, 3, 4 → susunan 5 punya 5 ▲.\nJumlah □ pada susunan ke-n = n − 1: 0, 1, 2, 3 → susunan 5 punya 4 □.\nJadi susunan 5 = ▲▲▲▲▲□□□□."
+  },
+  {
+    "code": "tiu-045", "category": "tiu", "sub_topic": "Figural - Serial", "level": 4,
+    "question": "Lingkaran hitam berpindah posisi dalam deretan lima kotak:\n●○○○○ → ○○●○○ → ○○○○● → ○●○○○ → …\n\nSusunan berikutnya adalah …",
+    "options": {"A": "●○○○○", "B": "○○●○○", "C": "○○○○●", "D": "○●○○○", "E": "○○○●○"},
+    "answer": "E",
+    "hint": "Beri nomor posisi 1–5. Berapa langkah ● bergeser setiap kali, dan apa yang terjadi saat melewati ujung kanan?",
+    "explanation": "Posisi ●: 1 → 3 → 5 → 2. Setiap langkah ● bergeser 2 kotak ke kanan; jika melewati ujung kanan, ia berlanjut dari ujung kiri (berputar).\nDari posisi 5, maju 2: posisi 1, lalu 2 ✓.\nDari posisi 2, maju 2 → posisi 4 → ○○○●○."
+  }
+]

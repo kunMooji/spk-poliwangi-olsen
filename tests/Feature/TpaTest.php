@@ -2,7 +2,9 @@
 
 namespace Tests\Feature;
 
+use App\Models\TpaBankQuestion;
 use App\Models\TpaTryout;
+use App\Services\Tpa\BankImporter;
 use App\Models\TpaUser;
 use App\Models\User;
 use App\Services\Tpa\QuestionGenerator;
@@ -68,7 +70,7 @@ class TpaTest extends TestCase
         $this->mockGenerator();
 
         $redirect = $this->actingAs($user, 'tpa')
-            ->postJson('/logintpa/tryout/twk/generate', ['difficulty' => 70])
+            ->postJson('/logintpa/tryout/twk/generate', ['difficulty' => 70, 'source' => 'ai'])
             ->assertOk()->json('redirect');
 
         $tryout = TpaTryout::firstOrFail();
@@ -108,7 +110,7 @@ class TpaTest extends TestCase
         $user = $this->tpaUser();
         $this->mockGenerator(tkp: true);
 
-        $this->actingAs($user, 'tpa')->postJson('/logintpa/tryout/tkp/generate', ['difficulty' => 40])->assertOk();
+        $this->actingAs($user, 'tpa')->postJson('/logintpa/tryout/tkp/generate', ['difficulty' => 40, 'source' => 'ai'])->assertOk();
         $tryout = TpaTryout::firstOrFail();
 
         foreach ($tryout->questions as $q) {
@@ -131,7 +133,7 @@ class TpaTest extends TestCase
             ->andThrow(new RuntimeException('Saldo kredit API Claude habis.'));
 
         $this->actingAs($user, 'tpa')
-            ->postJson('/logintpa/tryout/tiu/generate', ['difficulty' => 50])
+            ->postJson('/logintpa/tryout/tiu/generate', ['difficulty' => 50, 'source' => 'ai'])
             ->assertStatus(502)->assertJson(['message' => 'Saldo kredit API Claude habis.']);
 
         $this->assertSame(0, TpaTryout::count());
@@ -143,9 +145,56 @@ class TpaTest extends TestCase
         $other = TpaUser::create(['username' => 'chodijah', 'password' => 'rahasia123']);
         $this->mockGenerator();
 
-        $this->actingAs($owner, 'tpa')->postJson('/logintpa/tryout/twk/generate', ['difficulty' => 50]);
+        $this->actingAs($owner, 'tpa')->postJson('/logintpa/tryout/twk/generate', ['difficulty' => 50, 'source' => 'ai']);
         $tryout = TpaTryout::firstOrFail();
 
         $this->actingAs($other, 'tpa')->get(route('tpa.tryout.quiz', $tryout))->assertNotFound();
+    }
+
+    public function test_bank_file_is_valid_and_imported(): void
+    {
+        foreach (glob(database_path('data/tpa/*.json')) as $file) {
+            $this->assertGreaterThan(0, app(BankImporter::class)->import($file), basename($file));
+        }
+
+        $this->assertSame(45, TpaBankQuestion::where('category', 'tiu')->count());
+    }
+
+    public function test_bank_tryout_prefers_unseen_questions_near_the_chosen_level(): void
+    {
+        $user = $this->tpaUser();
+        $this->actingAs($user, 'tpa');
+
+        // Tryout pertama: tanpa memanggil API, semua soal dari bank dan dari level 3±1.
+        $this->postJson('/logintpa/tryout/tiu/generate', ['difficulty' => 70])->assertOk();
+        $first = TpaTryout::latest('id')->firstOrFail();
+
+        $this->assertSame('bank', $first->source);
+        $firstIds = $first->questions->pluck('tpa_bank_question_id');
+        $this->assertCount(15, $firstIds->unique());
+        $this->assertTrue(
+            TpaBankQuestion::whereIn('id', $firstIds)->pluck('level')->every(fn ($l) => abs($l - 3) <= 1)
+        );
+
+        // Kunci jawaban tidak dikirim ke halaman kuis.
+        $this->get(route('tpa.tryout.quiz', $first))->assertOk()->assertDontSee('"correct_key"', false);
+
+        $this->post(route('tpa.tryout.finish', $first));
+
+        // Tryout kedua di level sama: tidak mengulang soal selama stok baru masih ada.
+        $this->postJson('/logintpa/tryout/tiu/generate', ['difficulty' => 70])->assertOk();
+        $secondIds = TpaTryout::latest('id')->firstOrFail()->questions->pluck('tpa_bank_question_id');
+
+        $unseenNear = TpaBankQuestion::where('category', 'tiu')->whereBetween('level', [2, 4])->count() - 15;
+        $this->assertSame(min(15, $unseenNear), $secondIds->diff($firstIds)->count());
+
+        $this->get(route('tpa.tryout.start', 'tiu'))->assertOk()->assertSee('Mulai tryout');
+    }
+
+    public function test_bank_tryout_reports_empty_bank(): void
+    {
+        $this->actingAs($this->tpaUser(), 'tpa')
+            ->postJson('/logintpa/tryout/tkp/generate', ['difficulty' => 50])
+            ->assertStatus(422)->assertJsonFragment(['message' => 'Bank soal TKP belum cukup (baru 0 soal, butuh 15). Minta tambahan soal lewat Claude Code, atau pakai "Buat soal baru dengan AI".']);
     }
 }

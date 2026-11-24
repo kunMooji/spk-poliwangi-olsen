@@ -13,7 +13,7 @@ class TpaTryout extends Model
     public const STATUS_FINISHED = 'finished';
 
     protected $fillable = [
-        'tpa_user_id', 'category', 'difficulty', 'status', 'score', 'max_score',
+        'tpa_user_id', 'category', 'difficulty', 'source', 'status', 'score', 'max_score',
         'correct_count', 'total_time_ms', 'started_at', 'finished_at',
     ];
 

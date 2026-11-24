@@ -37,24 +37,32 @@ const LEVEL_LABELS = [
 document.addEventListener('alpine:init', () => {
     const Alpine = window.Alpine;
 
-    Alpine.data('tpaStart', (url) => ({
+    Alpine.data('tpaStart', (url, stock = {}) => ({
         difficulty: 50,
         loading: false,
         error: '',
         elapsed: 0,
         timer: null,
+        source: 'bank',
 
         get level() {
             return LEVEL_LABELS.find(([max]) => this.difficulty <= max);
         },
 
-        async generate() {
+        /** Stok bank untuk level slider (indeks level 1-4 sama dengan LEVEL_LABELS). */
+        get levelStock() {
+            const level = LEVEL_LABELS.findIndex(([max]) => this.difficulty <= max) + 1;
+            return stock[level] ?? { total: 0, unseen: 0 };
+        },
+
+        async generate(source = 'bank') {
+            this.source = source;
             this.loading = true;
             this.error = '';
             this.elapsed = 0;
             this.timer = setInterval(() => this.elapsed++, 1000);
             try {
-                const data = await postJson(url, { difficulty: Number(this.difficulty) });
+                const data = await postJson(url, { difficulty: Number(this.difficulty), source });
                 window.location.href = data.redirect;
             } catch (e) {
                 this.error = e.message === 'Failed to fetch'

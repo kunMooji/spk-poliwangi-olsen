@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TpaQuestion extends Model
 {
     protected $fillable = [
-        'tpa_tryout_id', 'number', 'sub_topic', 'question', 'options', 'correct_key', 'hint',
+        'tpa_tryout_id', 'tpa_bank_question_id', 'number', 'sub_topic', 'question', 'options', 'correct_key', 'hint',
         'explanation', 'user_answer', 'is_correct', 'points', 'time_spent_ms', 'hint_used', 'answered_at',
     ];
 

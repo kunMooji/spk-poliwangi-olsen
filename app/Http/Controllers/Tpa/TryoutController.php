@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Tpa;
 use App\Http\Controllers\Controller;
 use App\Models\TpaQuestion;
 use App\Models\TpaTryout;
+use App\Services\Tpa\BankPicker;
 use App\Services\Tpa\QuestionGenerator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -20,39 +21,68 @@ class TryoutController extends Controller
     /** Batas waktu wajar per soal agar timer yang tertinggal di tab terbuka tidak merusak statistik. */
     private const MAX_MS_PER_QUESTION = 15 * 60 * 1000;
 
-    public function start(string $category): View
+    public function start(string $category, BankPicker $bank): View
     {
         $this->ensureCategory($category);
 
         return view('tpa.start', [
             'category' => $category,
             'meta' => config("tpa.categories.{$category}"),
+            'stock' => $bank->stock(Auth::guard('tpa')->user(), $category),
+            'aiAvailable' => filled(config('tpa.anthropic_api_key')),
         ]);
     }
 
-    public function generate(Request $request, string $category, QuestionGenerator $generator): JsonResponse
+    public function generate(Request $request, string $category, BankPicker $bank, QuestionGenerator $generator): JsonResponse
     {
         $this->ensureCategory($category);
 
         $data = $request->validate([
             'difficulty' => ['required', 'integer', 'min:10', 'max:100', 'multiple_of:10'],
+            'source' => ['nullable', Rule::in(['bank', 'ai'])],
         ]);
 
-        // Menyusun 15 soal bisa memakan waktu 1-3 menit.
-        @set_time_limit(300);
-        @ignore_user_abort(true);
+        $count = config('tpa.questions_per_tryout');
+        $source = $data['source'] ?? 'bank';
 
-        try {
-            $questions = $generator->generate($category, (int) $data['difficulty']);
-        } catch (RuntimeException $e) {
-            return response()->json(['message' => $e->getMessage()], 502);
+        if ($source === 'bank') {
+            $questions = $bank->pick(Auth::guard('tpa')->user(), $category, (int) $data['difficulty'], $count)
+                ->map(fn ($q) => [
+                    'tpa_bank_question_id' => $q->id,
+                    'sub_topic' => $q->sub_topic,
+                    'question' => $q->question,
+                    'options' => $q->options,
+                    'correct_key' => $q->correct_key,
+                    'hint' => $q->hint,
+                    'explanation' => $q->explanation,
+                ])->all();
+
+            if (count($questions) < $count) {
+                $label = config("tpa.categories.{$category}.short");
+
+                return response()->json([
+                    'message' => "Bank soal {$label} belum cukup (baru ".count($questions)." soal, butuh {$count}). "
+                        .'Minta tambahan soal lewat Claude Code, atau pakai "Buat soal baru dengan AI".',
+                ], 422);
+            }
+        } else {
+            // Menyusun 15 soal lewat API bisa memakan waktu 1-3 menit.
+            @set_time_limit(300);
+            @ignore_user_abort(true);
+
+            try {
+                $questions = $generator->generate($category, (int) $data['difficulty']);
+            } catch (RuntimeException $e) {
+                return response()->json(['message' => $e->getMessage()], 502);
+            }
         }
 
-        $tryout = DB::transaction(function () use ($category, $data, $questions) {
+        $tryout = DB::transaction(function () use ($category, $data, $questions, $source) {
             $tryout = TpaTryout::create([
                 'tpa_user_id' => Auth::guard('tpa')->id(),
                 'category' => $category,
                 'difficulty' => $data['difficulty'],
+                'source' => $source,
                 'status' => TpaTryout::STATUS_IN_PROGRESS,
                 'max_score' => count($questions) * 5,
                 'started_at' => now(),
