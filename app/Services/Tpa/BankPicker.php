@@ -64,6 +64,26 @@ class BankPicker
         return $stock;
     }
 
+    /**
+     * Ringkasan bank untuk dasbor: jumlah soal tersedia dan jumlah soal berbeda
+     * yang sudah dijawab pengguna (soal yang hanya muncul tanpa dijawab tidak dihitung).
+     *
+     * @return array{total:int, answered:int}
+     */
+    public function progress(TpaUser $user, string $category): array
+    {
+        $bankIds = TpaBankQuestion::where('category', $category)->pluck('id');
+
+        $answered = TpaQuestion::query()
+            ->whereIn('tpa_bank_question_id', $bankIds)
+            ->whereNotNull('answered_at')
+            ->whereHas('tryout', fn ($q) => $q->where('tpa_user_id', $user->id))
+            ->distinct()
+            ->count('tpa_bank_question_id');
+
+        return ['total' => $bankIds->count(), 'answered' => $answered];
+    }
+
     /** @return Collection<int, array{last_seen:int, last_correct:bool}> */
     private function history(TpaUser $user, string $category): Collection
     {

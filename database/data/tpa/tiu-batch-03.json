@@ -1,0 +1,682 @@
+[
+    {
+        "code": "tiu-101",
+        "category": "tiu",
+        "sub_topic": "Numerik - Berhitung",
+        "level": 4,
+        "question": "Jika (2x + 4)/5 + (x − 1)/3 = 10, nilai x adalah …",
+        "options": {
+            "A": "10",
+            "B": "11",
+            "C": "12",
+            "D": "13",
+            "E": "14"
+        },
+        "answer": "D",
+        "hint": "Samakan penyebut dengan mengalikan kedua ruas dengan KPK 5 dan 3, yaitu 15.",
+        "explanation": "Kalikan 15: 3(2x + 4) + 5(x − 1) = 150.\n6x + 12 + 5x − 5 = 150 → 11x = 143 → x = 13.\nCek: (26 + 4)/5 + 12/3 = 6 + 4 = 10. ✓"
+    },
+    {
+        "code": "tiu-102",
+        "category": "tiu",
+        "sub_topic": "Numerik - Soal Cerita",
+        "level": 4,
+        "question": "Sebuah proyek dapat diselesaikan oleh 15 pekerja dalam 24 hari. Setelah bekerja selama 8 hari, proyek dihentikan selama 4 hari. Agar proyek tetap selesai sesuai jadwal awal, berapa tambahan pekerja yang dibutuhkan?",
+        "options": {
+            "A": "3 orang",
+            "B": "4 orang",
+            "C": "5 orang",
+            "D": "6 orang",
+            "E": "8 orang"
+        },
+        "answer": "C",
+        "hint": "Sisa beban kerja tetap, tetapi sisa waktunya berkurang 4 hari.",
+        "explanation": "Beban total = 15 × 24 = 360 orang-hari. Setelah 8 hari tersisa 360 − 120 = 240 orang-hari.\nSisa waktu = 24 − 8 − 4 = 12 hari → butuh 240 ÷ 12 = 20 pekerja.\nTambahan = 20 − 15 = 5 orang."
+    },
+    {
+        "code": "tiu-103",
+        "category": "tiu",
+        "sub_topic": "Numerik - Deret Angka",
+        "level": 3,
+        "question": "Tentukan angka selanjutnya:\n\n2, 6, 15, 31, 56, 92, …",
+        "options": {
+            "A": "129",
+            "B": "135",
+            "C": "141",
+            "D": "148",
+            "E": "152"
+        },
+        "answer": "C",
+        "hint": "Tuliskan selisih antarsuku, lalu perhatikan apakah selisihnya bilangan istimewa.",
+        "explanation": "Selisihnya 4, 9, 16, 25, 36 = 2², 3², 4², 5², 6².\nSelisih berikutnya 7² = 49, sehingga 92 + 49 = 141."
+    },
+    {
+        "code": "tiu-104",
+        "category": "tiu",
+        "sub_topic": "Numerik - Soal Cerita",
+        "level": 3,
+        "question": "Sebuah toko menaikkan harga barang sebesar 25%, kemudian memberikan diskon 20% dari harga setelah kenaikan. Dibandingkan harga awal, harga akhirnya adalah …",
+        "options": {
+            "A": "Turun 5%",
+            "B": "Tetap",
+            "C": "Naik 2%",
+            "D": "Naik 5%",
+            "E": "Naik 10%"
+        },
+        "answer": "B",
+        "hint": "Kalikan faktor perubahannya, jangan menjumlahkan persentase.",
+        "explanation": "Faktor akhir = 1,25 × 0,80 = 1,00, jadi harga akhir sama dengan harga awal.\nContoh: Rp100.000 → Rp125.000 → Rp100.000.\n• Naik 5% adalah jebakan karena menghitung 25% − 20%."
+    },
+    {
+        "code": "tiu-105",
+        "category": "tiu",
+        "sub_topic": "Numerik - Soal Cerita",
+        "level": 4,
+        "question": "Perbandingan uang Andi dan Budi adalah 3 : 5. Perbandingan uang Budi dan Candra adalah 4 : 7. Jika jumlah uang mereka Rp670.000, uang Candra adalah …",
+        "options": {
+            "A": "Rp280.000",
+            "B": "Rp300.000",
+            "C": "Rp320.000",
+            "D": "Rp350.000",
+            "E": "Rp360.000"
+        },
+        "answer": "D",
+        "hint": "Samakan bagian Budi pada kedua perbandingan (KPK 5 dan 4).",
+        "explanation": "A : B = 3 : 5 = 12 : 20, B : C = 4 : 7 = 20 : 35.\nA : B : C = 12 : 20 : 35, total 67 bagian.\nUang Candra = 35/67 × Rp670.000 = Rp350.000."
+    },
+    {
+        "code": "tiu-106",
+        "category": "tiu",
+        "sub_topic": "Numerik - Soal Cerita",
+        "level": 3,
+        "question": "Sebuah mobil menempuh perjalanan dari kota A ke B dengan kecepatan 60 km/jam dan kembali dengan kecepatan 40 km/jam. Jika total waktu perjalanan adalah 5 jam tanpa berhenti, jarak A ke B adalah …",
+        "options": {
+            "A": "100 km",
+            "B": "110 km",
+            "C": "120 km",
+            "D": "125 km",
+            "E": "150 km"
+        },
+        "answer": "C",
+        "hint": "Waktu = jarak ÷ kecepatan. Jumlahkan waktu pergi dan pulang.",
+        "explanation": "d/60 + d/40 = 5 → (2d + 3d)/120 = 5 → 5d = 600 → d = 120 km.\nCek: 120/60 + 120/40 = 2 + 3 = 5 jam. ✓"
+    },
+    {
+        "code": "tiu-107",
+        "category": "tiu",
+        "sub_topic": "Numerik - Soal Cerita",
+        "level": 3,
+        "question": "Rata-rata nilai 12 siswa adalah 72. Setelah nilai seorang siswa yang sebelumnya tercatat 48 dikoreksi menjadi 84, rata-rata kelas menjadi …",
+        "options": {
+            "A": "73",
+            "B": "74",
+            "C": "75",
+            "D": "76",
+            "E": "77"
+        },
+        "answer": "C",
+        "hint": "Koreksi hanya mengubah jumlah nilai sebesar selisih nilai lama dan baru.",
+        "explanation": "Jumlah awal = 12 × 72 = 864. Koreksi menambah 84 − 48 = 36.\nJumlah baru = 900 → rata-rata = 900 ÷ 12 = 75.\nCara cepat: 72 + 36/12 = 75."
+    },
+    {
+        "code": "tiu-108",
+        "category": "tiu",
+        "sub_topic": "Numerik - Berhitung",
+        "level": 3,
+        "question": "Jika 40% dari A sama dengan 60% dari B, sedangkan A + B = 250, maka nilai A − B adalah …",
+        "options": {
+            "A": "25",
+            "B": "40",
+            "C": "50",
+            "D": "60",
+            "E": "75"
+        },
+        "answer": "C",
+        "hint": "Ubah persamaan persen menjadi perbandingan A : B.",
+        "explanation": "0,4A = 0,6B → A : B = 3 : 2.\nA = 3/5 × 250 = 150, B = 100.\nA − B = 50."
+    },
+    {
+        "code": "tiu-109",
+        "category": "tiu",
+        "sub_topic": "Numerik - Soal Cerita",
+        "level": 4,
+        "question": "Sebuah pekerjaan dapat diselesaikan oleh A dalam 12 hari dan B dalam 18 hari. Mereka bekerja bersama selama 4 hari, kemudian A berhenti. Berapa hari yang dibutuhkan B untuk menyelesaikan sisanya?",
+        "options": {
+            "A": "6 hari",
+            "B": "7 hari",
+            "C": "8 hari",
+            "D": "9 hari",
+            "E": "10 hari"
+        },
+        "answer": "C",
+        "hint": "Nyatakan kecepatan kerja sebagai bagian pekerjaan per hari (gunakan KPK 36).",
+        "explanation": "Per hari: A = 1/12 = 3/36, B = 1/18 = 2/36, bersama 5/36.\n4 hari bersama = 20/36, sisa 16/36.\nB menyelesaikan sisa = (16/36) ÷ (2/36) = 8 hari."
+    },
+    {
+        "code": "tiu-110",
+        "category": "tiu",
+        "sub_topic": "Numerik - Soal Cerita",
+        "level": 3,
+        "question": "Sebuah bilangan terdiri dari dua angka. Jumlah kedua angkanya adalah 11. Jika posisi kedua angka dibalik, bilangan baru lebih besar 27 daripada bilangan semula. Bilangan semula adalah …",
+        "options": {
+            "A": "38",
+            "B": "47",
+            "C": "56",
+            "D": "65",
+            "E": "74"
+        },
+        "answer": "B",
+        "hint": "Bilangan dua angka \"ab\" bernilai 10a + b. Selisih bilangan dibalik = 9 × (selisih angka).",
+        "explanation": "(10b + a) − (10a + b) = 27 → 9(b − a) = 27 → b − a = 3.\na + b = 11 → a = 4, b = 7. Bilangan semula 47.\nCek: 74 − 47 = 27. ✓"
+    },
+    {
+        "code": "tiu-111",
+        "category": "tiu",
+        "sub_topic": "Verbal - Sinonim & Antonim",
+        "level": 3,
+        "question": "Sinonim kata INKONSISTEN adalah …",
+        "options": {
+            "A": "Tetap",
+            "B": "Berubah-ubah",
+            "C": "Terstruktur",
+            "D": "Terencana",
+            "E": "Berkesinambungan"
+        },
+        "answer": "B",
+        "hint": "Awalan in- berarti tidak; konsisten berarti tetap/taat asas.",
+        "explanation": "Inkonsisten = tidak tetap, tidak taat asas, berubah-ubah.\nTetap dan berkesinambungan justru lawan katanya; terstruktur dan terencana tidak bermakna sama."
+    },
+    {
+        "code": "tiu-112",
+        "category": "tiu",
+        "sub_topic": "Verbal - Sinonim & Antonim",
+        "level": 3,
+        "question": "Antonim kata PROGRESIF adalah …",
+        "options": {
+            "A": "Dinamis",
+            "B": "Inovatif",
+            "C": "Konservatif",
+            "D": "Produktif",
+            "E": "Adaptif"
+        },
+        "answer": "C",
+        "hint": "Progresif berarti ke arah kemajuan atau perubahan.",
+        "explanation": "Progresif = berhaluan ke arah perbaikan/kemajuan. Lawannya konservatif = mempertahankan keadaan dan tradisi yang berlaku.\nDinamis, inovatif, dan adaptif justru dekat maknanya dengan progresif."
+    },
+    {
+        "code": "tiu-113",
+        "category": "tiu",
+        "sub_topic": "Verbal - Analogi",
+        "level": 3,
+        "question": "Dokter : Diagnosis = Hakim : …",
+        "options": {
+            "A": "Pengadilan",
+            "B": "Hukum",
+            "C": "Putusan",
+            "D": "Saksi",
+            "E": "Pengacara"
+        },
+        "answer": "C",
+        "hint": "Hubungannya profesi : keputusan profesional yang dihasilkannya.",
+        "explanation": "Dokter memeriksa lalu menetapkan diagnosis; hakim memeriksa perkara lalu menjatuhkan putusan.\n• Pengadilan = tempat, hukum = dasar, saksi dan pengacara = pihak dalam persidangan."
+    },
+    {
+        "code": "tiu-114",
+        "category": "tiu",
+        "sub_topic": "Verbal - Silogisme",
+        "level": 3,
+        "question": "Semua programmer memahami algoritma. Sebagian orang yang memahami algoritma adalah dosen.\n\nKesimpulan yang tepat adalah …",
+        "options": {
+            "A": "Semua programmer adalah dosen.",
+            "B": "Sebagian programmer adalah dosen.",
+            "C": "Semua dosen adalah programmer.",
+            "D": "Tidak dapat dipastikan bahwa programmer adalah dosen.",
+            "E": "Tidak ada programmer yang menjadi dosen."
+        },
+        "answer": "D",
+        "hint": "Apakah \"sebagian orang yang memahami algoritma\" itu pasti mencakup programmer?",
+        "explanation": "Programmer ⊂ orang yang memahami algoritma, tetapi dosen yang dimaksud bisa saja bukan programmer.\nJadi hubungan programmer–dosen tidak dapat dipastikan.\n• B adalah jebakan klasik: mungkin benar, tetapi tidak pasti."
+    },
+    {
+        "code": "tiu-115",
+        "category": "tiu",
+        "sub_topic": "Verbal - Analitis",
+        "level": 4,
+        "question": "Lima orang, yaitu P, Q, R, S, dan T, duduk berjajar dari kiri ke kanan dengan ketentuan:\n• P duduk tepat di sebelah kiri Q.\n• R duduk di sebelah kanan S.\n• T berada di posisi paling tengah.\n• Q tidak duduk di posisi paling ujung.\n\nSusunan yang mungkin adalah …",
+        "options": {
+            "A": "P – Q – T – S – R",
+            "B": "S – R – T – P – Q",
+            "C": "P – T – Q – R – S",
+            "D": "R – S – T – P – Q",
+            "E": "Q – P – T – S – R"
+        },
+        "answer": "A",
+        "hint": "Uji setiap pilihan satu per satu terhadap keempat syarat; coret begitu ada yang dilanggar.",
+        "explanation": "• A: T di tengah, P tepat di kiri Q, Q di posisi 2 (bukan ujung), R di kanan S. Semua syarat terpenuhi.\n• B: Q di ujung kanan.\n• C: T tidak di tengah.\n• D: Q di ujung dan R di kiri S.\n• E: Q di ujung kiri dan P di kanan Q."
+    },
+    {
+        "code": "tiu-116",
+        "category": "tiu",
+        "sub_topic": "Verbal - Analitis",
+        "level": 3,
+        "question": "Jika hari ini adalah Jumat, maka 250 hari yang akan datang adalah hari …",
+        "options": {
+            "A": "Senin",
+            "B": "Selasa",
+            "C": "Rabu",
+            "D": "Kamis",
+            "E": "Jumat"
+        },
+        "answer": "C",
+        "hint": "Cari sisa pembagian 250 oleh 7.",
+        "explanation": "250 = 7 × 35 + 5, sisa 5.\nJumat + 5 hari = Rabu."
+    },
+    {
+        "code": "tiu-117",
+        "category": "tiu",
+        "sub_topic": "Verbal - Silogisme",
+        "level": 4,
+        "question": "Perhatikan pernyataan berikut:\n• Semua pegawai teladan memiliki kedisiplinan tinggi.\n• Tidak ada pegawai yang tidak disiplin mendapatkan penghargaan.\n• Sebagian pegawai teladan mendapatkan promosi.\n\nKesimpulan yang pasti benar adalah …",
+        "options": {
+            "A": "Semua pegawai yang mendapat promosi adalah pegawai teladan.",
+            "B": "Sebagian pegawai yang mendapat promosi memiliki kedisiplinan tinggi.",
+            "C": "Semua pegawai disiplin mendapatkan promosi.",
+            "D": "Tidak ada pegawai teladan yang tidak mendapatkan promosi.",
+            "E": "Semua pegawai yang mendapat penghargaan adalah pegawai teladan."
+        },
+        "answer": "B",
+        "hint": "Telusuri pegawai teladan yang mendapat promosi: sifat apa yang pasti mereka miliki?",
+        "explanation": "Sebagian pegawai teladan mendapat promosi, dan semua pegawai teladan disiplin tinggi.\nMaka pegawai teladan yang dipromosikan itu disiplin tinggi → sebagian yang mendapat promosi berdisiplin tinggi.\n• A, C, D berlebihan. E membalik arah: penerima penghargaan pasti disiplin, tetapi belum tentu teladan."
+    },
+    {
+        "code": "tiu-118",
+        "category": "tiu",
+        "sub_topic": "Verbal - Analitis",
+        "level": 3,
+        "question": "Dalam sebuah perlombaan, posisi lima peserta A, B, C, D, dan E diketahui:\n• A lebih cepat daripada C.\n• B lebih lambat daripada D.\n• E lebih cepat daripada A.\n• C lebih cepat daripada B.\n• D lebih lambat daripada C.\n\nSiapa yang menempati posisi pertama?",
+        "options": {
+            "A": "A",
+            "B": "B",
+            "C": "C",
+            "D": "D",
+            "E": "E"
+        },
+        "answer": "E",
+        "hint": "Ubah semua pernyataan ke bentuk \"X lebih cepat daripada Y\", lalu rangkai.",
+        "explanation": "E > A > C (pernyataan 1 dan 3), C > D (pernyataan 5), D > B (pernyataan 2).\nUrutan: E, A, C, D, B. Posisi pertama adalah E."
+    },
+    {
+        "code": "tiu-119",
+        "category": "tiu",
+        "sub_topic": "Numerik - Berhitung",
+        "level": 3,
+        "question": "Jika:\n• 2x + 3y = 19\n• 3x − 2y = 9\n\nMaka nilai x + y adalah …",
+        "options": {
+            "A": "5",
+            "B": "6",
+            "C": "7",
+            "D": "8",
+            "E": "9"
+        },
+        "answer": "D",
+        "hint": "Eliminasi y: kalikan persamaan pertama dengan 2 dan kedua dengan 3.",
+        "explanation": "4x + 6y = 38 dan 9x − 6y = 27. Dijumlahkan: 13x = 65 → x = 5.\n2(5) + 3y = 19 → y = 3.\nx + y = 8."
+    },
+    {
+        "code": "tiu-120",
+        "category": "tiu",
+        "sub_topic": "Verbal - Analitis",
+        "level": 4,
+        "question": "Enam orang mengikuti seleksi. Diketahui:\n• A mendapat nilai lebih tinggi daripada B.\n• C mendapat nilai lebih rendah daripada D.\n• E mendapat nilai lebih tinggi daripada A.\n• B mendapat nilai lebih tinggi daripada C.\n• F mendapat nilai lebih rendah daripada C.\n• D mendapat nilai lebih rendah daripada B.\n\nSiapa yang pasti berada di posisi ketiga jika diurutkan dari nilai tertinggi?",
+        "options": {
+            "A": "A",
+            "B": "B",
+            "C": "C",
+            "D": "D",
+            "E": "F"
+        },
+        "answer": "B",
+        "hint": "Rangkai E, A, B, C, F dulu, lalu tempatkan D dengan pernyataan terakhir.",
+        "explanation": "E > A > B > C > F (pernyataan 1, 3, 4, 5).\nD < B dan D > C, sehingga D berada di antara B dan C.\nUrutan lengkap: E, A, B, D, C, F. Posisi ketiga adalah B.\nCatatan: tanpa pernyataan terakhir, D bisa berada di atas A atau E sehingga posisi ketiga tidak pasti."
+    },
+    {
+        "code": "tiu-121",
+        "category": "tiu",
+        "sub_topic": "Numerik - Berhitung",
+        "level": 3,
+        "question": "Jika (x + 4)/3 + (2x − 1)/5 = 7, nilai x adalah …",
+        "options": {
+            "A": "6",
+            "B": "7",
+            "C": "8",
+            "D": "9",
+            "E": "10"
+        },
+        "answer": "C",
+        "hint": "Kalikan kedua ruas dengan 15.",
+        "explanation": "5(x + 4) + 3(2x − 1) = 105 → 5x + 20 + 6x − 3 = 105 → 11x = 88 → x = 8.\nCek: 12/3 + 15/5 = 4 + 3 = 7. ✓"
+    },
+    {
+        "code": "tiu-122",
+        "category": "tiu",
+        "sub_topic": "Numerik - Soal Cerita",
+        "level": 4,
+        "question": "Sebuah gedung dapat diselesaikan oleh 20 pekerja dalam 30 hari. Setelah bekerja selama 12 hari, pekerjaan dihentikan selama 3 hari karena keterlambatan material. Agar gedung tetap selesai sesuai jadwal, berapa tambahan pekerja yang dibutuhkan?",
+        "options": {
+            "A": "3 orang",
+            "B": "4 orang",
+            "C": "5 orang",
+            "D": "6 orang",
+            "E": "8 orang"
+        },
+        "answer": "B",
+        "hint": "Hitung sisa orang-hari dan sisa hari kerja yang tersedia.",
+        "explanation": "Beban total = 20 × 30 = 600 orang-hari. Setelah 12 hari tersisa 600 − 240 = 360.\nSisa waktu = 30 − 12 − 3 = 15 hari → butuh 360 ÷ 15 = 24 pekerja.\nTambahan = 24 − 20 = 4 orang."
+    },
+    {
+        "code": "tiu-123",
+        "category": "tiu",
+        "sub_topic": "Numerik - Deret Angka",
+        "level": 3,
+        "question": "Tentukan angka selanjutnya:\n\n3, 5, 10, 18, 29, 43, …",
+        "options": {
+            "A": "52",
+            "B": "55",
+            "C": "57",
+            "D": "58",
+            "E": "60"
+        },
+        "answer": "E",
+        "hint": "Selisih antarsuku membentuk deret tersendiri.",
+        "explanation": "Selisihnya 2, 5, 8, 11, 14 (bertambah 3), berikutnya 17.\nSuku berikutnya = 43 + 17 = 60."
+    },
+    {
+        "code": "tiu-124",
+        "category": "tiu",
+        "sub_topic": "Numerik - Deret Angka",
+        "level": 4,
+        "question": "Tentukan angka selanjutnya:\n\n4, 5, 9, 18, 34, 59, …",
+        "options": {
+            "A": "84",
+            "B": "91",
+            "C": "95",
+            "D": "97",
+            "E": "100"
+        },
+        "answer": "C",
+        "hint": "Tuliskan selisihnya, lalu kenali polanya sebagai bilangan berpangkat.",
+        "explanation": "Selisihnya 1, 4, 9, 16, 25 = 1², 2², 3², 4², 5².\nSelisih berikutnya 6² = 36, sehingga 59 + 36 = 95."
+    },
+    {
+        "code": "tiu-125",
+        "category": "tiu",
+        "sub_topic": "Numerik - Soal Cerita",
+        "level": 3,
+        "question": "Sebuah toko menaikkan harga barang sebesar 20%, kemudian memberikan diskon 25% dari harga setelah kenaikan. Dibandingkan harga awal, harga akhirnya adalah …",
+        "options": {
+            "A": "Turun 10%",
+            "B": "Turun 5%",
+            "C": "Tetap",
+            "D": "Naik 5%",
+            "E": "Naik 10%"
+        },
+        "answer": "A",
+        "hint": "Kalikan faktor perubahan 1,20 dan 0,75.",
+        "explanation": "Faktor akhir = 1,20 × 0,75 = 0,90 → harga turun 10%.\nContoh: Rp100.000 → Rp120.000 → Rp90.000.\n• Turun 5% adalah jebakan karena menghitung 20% − 25%."
+    },
+    {
+        "code": "tiu-126",
+        "category": "tiu",
+        "sub_topic": "Numerik - Soal Cerita",
+        "level": 4,
+        "question": "Perbandingan uang Dina dan Eka adalah 2 : 3. Perbandingan uang Eka dan Fajar adalah 4 : 5. Jika jumlah uang mereka Rp700.000, uang Eka adalah …",
+        "options": {
+            "A": "Rp200.000",
+            "B": "Rp224.000",
+            "C": "Rp240.000",
+            "D": "Rp280.000",
+            "E": "Rp300.000"
+        },
+        "answer": "C",
+        "hint": "Samakan bagian Eka pada kedua perbandingan (KPK 3 dan 4).",
+        "explanation": "D : E = 2 : 3 = 8 : 12, E : F = 4 : 5 = 12 : 15.\nD : E : F = 8 : 12 : 15, total 35 bagian.\nUang Eka = 12/35 × Rp700.000 = Rp240.000."
+    },
+    {
+        "code": "tiu-127",
+        "category": "tiu",
+        "sub_topic": "Numerik - Soal Cerita",
+        "level": 3,
+        "question": "Sebuah bus berangkat dari kota P ke kota Q dengan kecepatan 75 km/jam dan kembali melalui jalan yang sama dengan kecepatan 50 km/jam. Jika total waktu perjalanan pulang-pergi adalah 4 jam tanpa berhenti, jarak P ke Q adalah …",
+        "options": {
+            "A": "100 km",
+            "B": "120 km",
+            "C": "125 km",
+            "D": "135 km",
+            "E": "150 km"
+        },
+        "answer": "B",
+        "hint": "Jumlahkan waktu pergi (d/75) dan waktu pulang (d/50).",
+        "explanation": "d/75 + d/50 = 4 → (2d + 3d)/150 = 4 → 5d = 600 → d = 120 km.\nCek: 120/75 + 120/50 = 1,6 + 2,4 = 4 jam. ✓"
+    },
+    {
+        "code": "tiu-128",
+        "category": "tiu",
+        "sub_topic": "Numerik - Soal Cerita",
+        "level": 3,
+        "question": "Rata-rata nilai 15 peserta adalah 68. Ternyata nilai seorang peserta tercatat 92, padahal seharusnya 62. Setelah dikoreksi, rata-rata nilai menjadi …",
+        "options": {
+            "A": "62",
+            "B": "64",
+            "C": "65",
+            "D": "66",
+            "E": "67"
+        },
+        "answer": "D",
+        "hint": "Koreksi mengurangi jumlah nilai sebesar 92 − 62.",
+        "explanation": "Jumlah awal = 15 × 68 = 1.020. Koreksi mengurangi 30.\nJumlah baru = 990 → rata-rata = 990 ÷ 15 = 66.\nCara cepat: 68 − 30/15 = 66."
+    },
+    {
+        "code": "tiu-129",
+        "category": "tiu",
+        "sub_topic": "Numerik - Berhitung",
+        "level": 3,
+        "question": "Jika 25% dari A sama dengan 75% dari B, sedangkan A + B = 320, maka nilai A − B adalah …",
+        "options": {
+            "A": "80",
+            "B": "100",
+            "C": "120",
+            "D": "140",
+            "E": "160"
+        },
+        "answer": "E",
+        "hint": "Ubah persamaan persen menjadi perbandingan A : B.",
+        "explanation": "0,25A = 0,75B → A = 3B → A : B = 3 : 1.\nA = 3/4 × 320 = 240, B = 80.\nA − B = 160."
+    },
+    {
+        "code": "tiu-130",
+        "category": "tiu",
+        "sub_topic": "Numerik - Soal Cerita",
+        "level": 4,
+        "question": "Sebuah pekerjaan dapat diselesaikan oleh A dalam 10 hari dan B dalam 15 hari. Mereka bekerja bersama selama 3 hari, kemudian A berhenti. Berapa hari yang dibutuhkan B untuk menyelesaikan sisanya?",
+        "options": {
+            "A": "6 hari",
+            "B": "6,5 hari",
+            "C": "7 hari",
+            "D": "7,5 hari",
+            "E": "8 hari"
+        },
+        "answer": "D",
+        "hint": "Gunakan KPK 30: berapa bagian yang dikerjakan A dan B per hari?",
+        "explanation": "Per hari: A = 3/30, B = 2/30, bersama 5/30 = 1/6.\n3 hari bersama = 1/2 pekerjaan, sisa 1/2.\nB menyelesaikan sisa = (1/2) ÷ (1/15) = 7,5 hari."
+    },
+    {
+        "code": "tiu-131",
+        "category": "tiu",
+        "sub_topic": "Numerik - Soal Cerita",
+        "level": 3,
+        "question": "Sebuah bilangan terdiri dari dua angka. Jumlah kedua angkanya adalah 9. Jika posisi kedua angka dibalik, bilangan baru lebih kecil 45 daripada bilangan semula. Bilangan semula adalah …",
+        "options": {
+            "A": "27",
+            "B": "36",
+            "C": "63",
+            "D": "72",
+            "E": "81"
+        },
+        "answer": "D",
+        "hint": "Selisih bilangan dan kebalikannya selalu 9 × (selisih kedua angka).",
+        "explanation": "(10a + b) − (10b + a) = 45 → 9(a − b) = 45 → a − b = 5.\na + b = 9 → a = 7, b = 2. Bilangan semula 72.\nCek: 72 − 27 = 45. ✓\n• 27 adalah jebakan: itu bilangan setelah dibalik."
+    },
+    {
+        "code": "tiu-132",
+        "category": "tiu",
+        "sub_topic": "Numerik - Berhitung",
+        "level": 3,
+        "question": "Jika:\n• 4x + 3y = 26\n• 2x − y = 8\n\nMaka nilai x × y adalah …",
+        "options": {
+            "A": "7",
+            "B": "8",
+            "C": "10",
+            "D": "12",
+            "E": "14"
+        },
+        "answer": "C",
+        "hint": "Dari persamaan kedua, y = 2x − 8. Substitusikan ke persamaan pertama.",
+        "explanation": "4x + 3(2x − 8) = 26 → 10x − 24 = 26 → x = 5.\ny = 2(5) − 8 = 2.\nx × y = 10.\n• 7 adalah jebakan: itu nilai x + y."
+    },
+    {
+        "code": "tiu-133",
+        "category": "tiu",
+        "sub_topic": "Verbal - Sinonim & Antonim",
+        "level": 3,
+        "question": "Sinonim kata AMBIGU adalah …",
+        "options": {
+            "A": "Lugas",
+            "B": "Tegas",
+            "C": "Taksa",
+            "D": "Ringkas",
+            "E": "Rinci"
+        },
+        "answer": "C",
+        "hint": "Kata ini dipakai untuk kalimat yang bisa ditafsirkan lebih dari satu makna.",
+        "explanation": "Ambigu = bermakna lebih dari satu (bermakna ganda). Padanannya dalam KBBI: taksa.\nLugas dan tegas justru lawan maknanya; ringkas dan rinci tidak berkaitan dengan makna ganda."
+    },
+    {
+        "code": "tiu-134",
+        "category": "tiu",
+        "sub_topic": "Verbal - Sinonim & Antonim",
+        "level": 3,
+        "question": "Antonim kata SPORADIS adalah …",
+        "options": {
+            "A": "Jarang",
+            "B": "Terpencar",
+            "C": "Acak",
+            "D": "Sesekali",
+            "E": "Terus-menerus"
+        },
+        "answer": "E",
+        "hint": "Sporadis menggambarkan kejadian yang muncul hanya di sana-sini atau sesekali.",
+        "explanation": "Sporadis = tidak tentu, kadang-kadang, terpencar. Lawannya terus-menerus (kontinu).\nJarang, terpencar, acak, dan sesekali justru mirip makna sporadis."
+    },
+    {
+        "code": "tiu-135",
+        "category": "tiu",
+        "sub_topic": "Verbal - Analogi",
+        "level": 4,
+        "question": "Arsitek : Cetak biru = Komposer : …",
+        "options": {
+            "A": "Melodi",
+            "B": "Penyanyi",
+            "C": "Partitur",
+            "D": "Konser",
+            "E": "Instrumen"
+        },
+        "answer": "C",
+        "hint": "Cetak biru adalah rancangan tertulis yang kemudian diwujudkan orang lain.",
+        "explanation": "Arsitek menuangkan rancangannya dalam cetak biru yang kemudian dibangun; komposer menuangkan karyanya dalam partitur yang kemudian dimainkan.\n• Melodi = unsur musik, penyanyi = pelaku, konser = pertunjukan, instrumen = alat."
+    },
+    {
+        "code": "tiu-136",
+        "category": "tiu",
+        "sub_topic": "Verbal - Analogi",
+        "level": 4,
+        "question": "Dokter : Diagnosis = Auditor : …",
+        "options": {
+            "A": "Laporan keuangan",
+            "B": "Opini audit",
+            "C": "Akuntan",
+            "D": "Perusahaan",
+            "E": "Pajak"
+        },
+        "answer": "B",
+        "hint": "Dokter memeriksa pasien lalu menghasilkan diagnosis. Apa hasil akhir pemeriksaan seorang auditor?",
+        "explanation": "Hubungannya profesi : kesimpulan profesional dari hasil pemeriksaan.\nAuditor memeriksa laporan keuangan lalu menyatakan opini audit.\n• Laporan keuangan adalah jebakan: itu objek yang diperiksa (setara pasien), bukan hasilnya."
+    },
+    {
+        "code": "tiu-137",
+        "category": "tiu",
+        "sub_topic": "Verbal - Silogisme",
+        "level": 4,
+        "question": "Perhatikan pernyataan berikut:\n• Semua peserta pelatihan mendapat sertifikat.\n• Tidak ada pemegang sertifikat yang wajib mengikuti remedial.\n• Sebagian karyawan baru adalah peserta pelatihan.\n\nKesimpulan yang pasti benar adalah …",
+        "options": {
+            "A": "Semua karyawan baru mendapat sertifikat.",
+            "B": "Sebagian karyawan baru tidak wajib mengikuti remedial.",
+            "C": "Semua yang tidak wajib remedial adalah peserta pelatihan.",
+            "D": "Tidak ada karyawan baru yang wajib mengikuti remedial.",
+            "E": "Sebagian peserta pelatihan wajib mengikuti remedial."
+        },
+        "answer": "B",
+        "hint": "Ikuti karyawan baru yang menjadi peserta pelatihan melewati kedua premis pertama.",
+        "explanation": "Karyawan baru yang ikut pelatihan → mendapat sertifikat → tidak wajib remedial.\nJadi sebagian karyawan baru tidak wajib remedial.\n• D berlebihan: karyawan baru yang tidak ikut pelatihan tidak diketahui.\n• E bertentangan dengan premis, C membalik arah premis."
+    },
+    {
+        "code": "tiu-138",
+        "category": "tiu",
+        "sub_topic": "Verbal - Silogisme",
+        "level": 3,
+        "question": "Jika proyek disetujui, anggaran dicairkan. Jika anggaran dicairkan, pengadaan barang dimulai. Ternyata pengadaan barang belum dimulai.\n\nKesimpulan yang tepat adalah …",
+        "options": {
+            "A": "Proyek disetujui.",
+            "B": "Anggaran sudah dicairkan.",
+            "C": "Anggaran dicairkan tetapi pengadaan ditunda.",
+            "D": "Proyek tidak disetujui.",
+            "E": "Tidak dapat ditarik kesimpulan."
+        },
+        "answer": "D",
+        "hint": "Rangkai dulu kedua implikasi (silogisme), lalu gunakan modus tollens.",
+        "explanation": "Silogisme: proyek disetujui → anggaran dicairkan → pengadaan dimulai, jadi proyek disetujui → pengadaan dimulai.\nPengadaan belum dimulai, maka (modus tollens) proyek tidak disetujui.\n• B dan C bertentangan dengan premis kedua."
+    },
+    {
+        "code": "tiu-139",
+        "category": "tiu",
+        "sub_topic": "Verbal - Analitis",
+        "level": 4,
+        "question": "Lima orang K, L, M, N, dan O duduk berjajar dari kiri ke kanan dengan ketentuan:\n• M berada di posisi paling tengah.\n• K duduk tepat di sebelah kiri L.\n• N tidak duduk di posisi paling ujung.\n• O duduk di sebelah kanan N.\n\nSusunan yang mungkin adalah …",
+        "options": {
+            "A": "N – O – M – K – L",
+            "B": "O – N – M – K – L",
+            "C": "L – K – M – N – O",
+            "D": "K – L – M – N – O",
+            "E": "K – N – M – L – O"
+        },
+        "answer": "D",
+        "hint": "Uji setiap pilihan terhadap keempat syarat; satu pelanggaran sudah cukup untuk mencoret.",
+        "explanation": "• A: N di ujung kiri.\n• B: O di kiri N.\n• C: K di kanan L.\n• D: M di tengah, K tepat di kiri L, N di posisi 4 (bukan ujung), O di kanan N. Semua terpenuhi.\n• E: K tidak tepat di sebelah kiri L."
+    },
+    {
+        "code": "tiu-140",
+        "category": "tiu",
+        "sub_topic": "Verbal - Analitis",
+        "level": 4,
+        "question": "Jika lusa adalah hari Sabtu, maka 150 hari setelah kemarin adalah hari …",
+        "options": {
+            "A": "Kamis",
+            "B": "Jumat",
+            "C": "Sabtu",
+            "D": "Minggu",
+            "E": "Senin"
+        },
+        "answer": "C",
+        "hint": "Tentukan dulu hari ini dan kemarin, baru hitung sisa pembagian 150 oleh 7.",
+        "explanation": "Lusa Sabtu → hari ini Kamis → kemarin Rabu.\n150 = 7 × 21 + 3, sisa 3.\nRabu + 3 hari = Sabtu."
+    }
+]

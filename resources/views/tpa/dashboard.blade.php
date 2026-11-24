@@ -35,6 +35,18 @@
                     <p class="font-mono text-xs font-bold tracking-[.18em] text-white/80">{{ $cat['short'] }}</p>
                     <h2 class="mt-1 text-lg font-bold leading-snug">{{ $cat['name'] }}</h2>
                     <p class="mt-3 text-xs text-white/80">{{ count($cat['subtopics']) }} sub-materi · 15 soal</p>
+                    @php $bp = $bankProgress[$key] ?? ['total' => 0, 'answered' => 0]; @endphp
+                    @if ($bp['total'] > 0)
+                        <div class="mt-3 rounded-xl bg-white/15 p-3">
+                            <div class="flex items-baseline justify-between gap-2 text-xs">
+                                <span><span class="font-mono text-base font-bold">{{ number_format($bp['total'], 0, ',', '.') }}</span> soal tersedia</span>
+                                <span><span class="font-mono font-bold">{{ number_format($bp['answered'], 0, ',', '.') }}</span> sudah dikerjakan</span>
+                            </div>
+                            <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-white/25" role="progressbar" aria-label="Soal {{ $cat['short'] }} yang sudah dikerjakan" aria-valuemin="0" aria-valuemax="{{ $bp['total'] }}" aria-valuenow="{{ $bp['answered'] }}">
+                                <div class="h-full rounded-full bg-white" style="width: {{ min(100, round($bp['answered'] / $bp['total'] * 100)) }}%"></div>
+                            </div>
+                        </div>
+                    @endif
                     <span class="mt-4 inline-flex items-center gap-1 text-sm font-bold">Mulai tryout <x-heroicon-o-arrow-right class="h-4 w-4 transition group-hover:translate-x-1" /></span>
                 </a>
             @endforeach

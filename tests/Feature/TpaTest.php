@@ -157,7 +157,7 @@ class TpaTest extends TestCase
             $this->assertGreaterThan(0, app(BankImporter::class)->import($file), basename($file));
         }
 
-        $this->assertSame(45, TpaBankQuestion::where('category', 'tiu')->count());
+        $this->assertSame(140, TpaBankQuestion::where('category', 'tiu')->count());
     }
 
     public function test_bank_tryout_prefers_unseen_questions_near_the_chosen_level(): void
@@ -189,6 +189,21 @@ class TpaTest extends TestCase
         $this->assertSame(min(15, $unseenNear), $secondIds->diff($firstIds)->count());
 
         $this->get(route('tpa.tryout.start', 'tiu'))->assertOk()->assertSee('Mulai tryout');
+    }
+
+    public function test_dashboard_shows_bank_stock_and_answered_count(): void
+    {
+        $user = $this->tpaUser();
+        $this->actingAs($user, 'tpa');
+
+        $this->postJson('/logintpa/tryout/tiu/generate', ['difficulty' => 70])->assertOk();
+        $questions = TpaTryout::latest('id')->firstOrFail()->questions()->orderBy('number')->get();
+
+        // 3 soal dijawab; 12 soal lainnya hanya muncul dan tidak dihitung sebagai dikerjakan.
+        $questions->take(3)->each->update(['user_answer' => 'A', 'answered_at' => now()]);
+
+        $this->get(route('tpa.dashboard'))->assertOk()
+            ->assertSeeInOrder(['140', 'soal tersedia', '3', 'sudah dikerjakan'], false);
     }
 
     public function test_bank_tryout_reports_empty_bank(): void
